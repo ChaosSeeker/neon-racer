@@ -1,0 +1,1137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Neon Highway Racer (Deluxe)</title>
+  <style>
+    :root { --bg:#050814; --panel:#0b1230; --text:#eaf0ff; --muted:#9fb0e6; }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; display:grid; place-items:center;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background: radial-gradient(1200px 700px at 50% 15%, #1a2a7a 0%, var(--bg) 60%);
+      color:var(--text);
+      overflow:hidden;
+    }
+    .wrap{width:min(1020px, 95vw); display:grid; gap:14px;}
+    header{
+      background:rgba(11,18,48,.82);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px; padding:12px 14px;
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+      box-shadow:0 12px 30px rgba(0,0,0,.35);
+      backdrop-filter: blur(10px);
+    }
+    h1{margin:0; font-size:16px; letter-spacing:.3px}
+    .sub{font-size:12px; color:var(--muted)}
+    .left{display:flex; flex-direction:column; gap:2px}
+    .stats{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .pill{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      padding:8px 12px; border-radius:999px; font-size:13px;
+      display:flex; gap:6px; align-items:center;
+    }
+    .pill b{font-weight:800}
+    .bar{
+      width:120px; height:8px; border-radius:999px;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.10);
+      overflow:hidden;
+    }
+    .bar > i{display:block; height:100%; width:50%; background:rgba(120,255,220,.85)}
+    .btns{display:flex; gap:8px; flex-wrap:wrap}
+    button{
+      cursor:pointer; color:var(--text);
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:12px; padding:10px 12px;
+      font-weight:800; font-size:13px;
+      transition:.15s transform,.15s background;
+      user-select:none;
+    }
+    button:hover{background:rgba(255,255,255,.12)}
+    button:active{transform:translateY(1px)}
+    .board{
+      background:rgba(11,18,48,.62);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px; padding:12px;
+      box-shadow:0 12px 30px rgba(0,0,0,.35);
+      backdrop-filter: blur(10px);
+    }
+    canvas{
+      width:100%;
+      height:auto;
+      aspect-ratio: 16 / 9;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      display:block;
+      touch-action:none;
+    }
+    .help{
+      margin-top:10px;
+      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
+      color:var(--muted); font-size:13px;
+    }
+    .kbd{font-family: ui-monospace,SFMono-Regular,Menlo,monospace}
+
+    /* Mobile controls */
+    .mobileControls{
+      display:none;
+      margin-top:10px;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      align-items:center;
+      user-select:none;
+    }
+    .pad{
+      display:flex; gap:10px; align-items:center;
+    }
+    .big{
+      padding:14px 16px;
+      border-radius:16px;
+      font-size:14px;
+      min-width:86px;
+      text-align:center;
+    }
+    @media (max-width: 760px){
+      .mobileControls{display:flex}
+    }
+
+    .overlay{
+      position:fixed; inset:0;
+      display:grid; place-items:center;
+      background:rgba(0,0,0,.58);
+      backdrop-filter: blur(6px);
+      padding:18px;
+    }
+    .modal{
+      width:min(620px, 94vw);
+      background:rgba(11,18,48,.94);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:0 24px 70px rgba(0,0,0,.6);
+    }
+    .modal h2{margin:0 0 8px; font-size:18px}
+    .modal p{margin:0 0 12px; color:var(--muted); line-height:1.5}
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .choices{display:grid; gap:10px; grid-template-columns: repeat(3, minmax(0, 1fr));}
+    .card{
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      border-radius:16px; padding:12px;
+      cursor:pointer;
+      transition:.15s transform, .15s background, .15s border;
+      user-select:none;
+    }
+    .card:hover{transform:translateY(-2px); background:rgba(255,255,255,.09)}
+    .card b{display:block; margin-bottom:4px}
+    .tag{font-size:12px; color:var(--muted)}
+    .small{font-size:12px; color:var(--muted)}
+    .tog{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .chip{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:8px 10px; border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      cursor:pointer; user-select:none;
+      font-size:13px; font-weight:800;
+    }
+    .chip input{accent-color:#6ff; cursor:pointer}
+    @media (max-width:760px){ .choices{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="left">
+        <h1>Neon Highway Racer — Deluxe</h1>
+        <div class="sub">Traffic • Nitro • Drift • Power-ups • Auto difficulty</div>
+      </div>
+
+      <div class="stats">
+        <div class="pill">Score: <b id="score">0</b></div>
+        <div class="pill">Best: <b id="best">0</b></div>
+        <div class="pill">Level: <b id="level">Easy</b></div>
+        <div class="pill" title="Nitro">
+          Nitro:
+          <span class="bar"><i id="nitroFill"></i></span>
+        </div>
+        <div class="pill" title="Active power-ups">
+          PU: <b id="pu">—</b>
+        </div>
+      </div>
+
+      <div class="btns">
+        <button id="pauseBtn" title="Pause/Resume (Space)">Pause</button>
+        <button id="restartBtn" title="Restart (R)">Restart</button>
+      </div>
+    </header>
+
+    <div class="board">
+      <canvas id="game" width="960" height="540"></canvas>
+
+      <div class="help">
+        <div>
+          Controls: <span class="kbd">← →</span>/<span class="kbd">A D</span> steer •
+          <span class="kbd">↑</span>/<span class="kbd">W</span> nitro •
+          <span class="kbd">Shift</span> drift •
+          <span class="kbd">Space</span> pause • <span class="kbd">R</span> restart
+        </div>
+        <div class="small">Mobile: buttons below (or swipe left/right; swipe up = nitro)</div>
+      </div>
+
+      <div class="mobileControls">
+        <div class="pad">
+          <button class="big" id="mLeft">◀ Left</button>
+          <button class="big" id="mRight">Right ▶</button>
+        </div>
+        <div class="pad">
+          <button class="big" id="mDrift">⚡ Drift</button>
+          <button class="big" id="mNitro">🚀 Nitro</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="menu">
+    <div class="modal">
+      <h2 id="menuTitle">Choose start difficulty</h2>
+      <p id="menuText">
+        Difficulty will also auto-upgrade as your score increases (Easy → Medium → Hard).
+        Your best score is saved.
+      </p>
+
+      <div class="choices">
+        <div class="card" data-mode="easy">
+          <b>Easy</b>
+          <div class="tag">More space • slower ramp</div>
+        </div>
+        <div class="card" data-mode="medium">
+          <b>Medium</b>
+          <div class="tag">Balanced • faster traffic</div>
+        </div>
+        <div class="card" data-mode="hard">
+          <b>Hard</b>
+          <div class="tag">Dense • aggressive speed</div>
+        </div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="tog">
+        <label class="chip"><input id="musicToggle" type="checkbox" checked /> Music</label>
+        <label class="chip"><input id="sfxToggle" type="checkbox" checked /> SFX</label>
+      </div>
+
+      <div style="height:10px"></div>
+      <div class="row">
+        <button id="playBtn">Play</button>
+        <button id="closeBtn">Close</button>
+      </div>
+
+      <p class="small" style="margin-top:10px">
+        Power-ups: <b>Shield</b> blocks 1 crash • <b>Slow-Mo</b> slows time • <b>Magnet</b> pulls power-ups.
+        Close calls = bonus score.
+      </p>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ===== Canvas =====
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+
+  const W = canvas.width;
+  const H = canvas.height;
+
+  // ===== UI =====
+  const scoreEl = document.getElementById("score");
+  const bestEl  = document.getElementById("best");
+  const levelEl = document.getElementById("level");
+  const nitroFill = document.getElementById("nitroFill");
+  const puEl = document.getElementById("pu");
+
+  const pauseBtn = document.getElementById("pauseBtn");
+  const restartBtn = document.getElementById("restartBtn");
+
+  const menu = document.getElementById("menu");
+  const playBtn = document.getElementById("playBtn");
+  const closeBtn = document.getElementById("closeBtn");
+  const menuTitle = document.getElementById("menuTitle");
+  const menuText  = document.getElementById("menuText");
+
+  const musicToggle = document.getElementById("musicToggle");
+  const sfxToggle = document.getElementById("sfxToggle");
+
+  // Mobile buttons
+  const mLeft = document.getElementById("mLeft");
+  const mRight = document.getElementById("mRight");
+  const mNitro = document.getElementById("mNitro");
+  const mDrift = document.getElementById("mDrift");
+
+  // ===== Difficulty presets =====
+  // "base" chosen by user; "level" auto-progresses based on score thresholds
+  const MODES = {
+    easy:   { name:"Easy",   baseSpeed: 235, accel: 10, spawnRate: 0.85, maxTraffic: 7,  wiggle: 40, trafficRelMin:0.62, trafficRelMax:0.95 },
+    medium: { name:"Medium", baseSpeed: 295, accel: 14, spawnRate: 1.08, maxTraffic: 10, wiggle: 55, trafficRelMin:0.62, trafficRelMax:1.08 },
+    hard:   { name:"Hard",   baseSpeed: 355, accel: 18, spawnRate: 1.30, maxTraffic: 13, wiggle: 75, trafficRelMin:0.65, trafficRelMax:1.18 },
+  };
+
+  // Auto-level thresholds by score
+  // Easy -> Medium at 1200, Medium -> Hard at 2600
+  const LEVELS = [
+    { key:"easy",   at: 0 },
+    { key:"medium", at: 1200 },
+    { key:"hard",   at: 2600 }
+  ];
+
+  // ===== Storage =====
+  const BEST_KEY = "neon_racer_best_deluxe_v1";
+  let best = Number(localStorage.getItem(BEST_KEY) || 0);
+  bestEl.textContent = best;
+
+  // ===== Road & lanes =====
+  const road = { x: W * 0.18, w: W * 0.64, y: 0, h: H };
+  const laneCount = 3;
+  const laneW = road.w / laneCount;
+
+  // ===== Game state =====
+  let baseModeKey = "easy";
+  let baseMode = MODES[baseModeKey];
+  let levelKey = "easy";
+  let levelMode = MODES[levelKey];
+
+  let running = false;
+  let paused = false;
+  let last = performance.now();
+
+  let score = 0;
+  let speed = 0;
+  let roadY = 0;
+
+  // Power-up state
+  const power = {
+    shield: 0,        // hits remaining
+    slowmoT: 0,       // seconds remaining
+    magnetT: 0,       // seconds remaining
+  };
+
+  // Nitro state
+  let nitro = 1.0;      // 0..1
+  let nitroActive = false;
+
+  // Drift state
+  let driftActive = false;
+
+  const keys = new Set();
+
+  const player = {
+    x: road.x + laneW * 1.5,
+    y: H * 0.78,
+    w: 46,
+    h: 86,
+    vx: 0,
+    targetX: null,
+    alive: true
+  };
+
+  const traffic = [];
+  const pickups = [];
+  const sparks = [];
+
+  const stars = Array.from({length: 90}, () => ({
+    x: Math.random() * W, y: Math.random() * H, s: 0.5 + Math.random()*1.6
+  }));
+
+  // ===== Audio (no external files) =====
+  let audioCtx = null;
+  let master = null;
+  let musicNode = null;
+  let musicGain = null;
+
+  function ensureAudio(){
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    master = audioCtx.createGain();
+    master.gain.value = 0.35;
+    master.connect(audioCtx.destination);
+
+    musicGain = audioCtx.createGain();
+    musicGain.gain.value = musicToggle.checked ? 0.25 : 0.0;
+    musicGain.connect(master);
+
+    // Simple ambient music: two detuned oscillators + lowpass LFO
+    const o1 = audioCtx.createOscillator();
+    const o2 = audioCtx.createOscillator();
+    o1.type = "sawtooth";
+    o2.type = "triangle";
+    o1.frequency.value = 110;
+    o2.frequency.value = 220;
+    o2.detune.value = 8;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 550;
+
+    const lfo = audioCtx.createOscillator();
+    lfo.type = "sine";
+    lfo.frequency.value = 0.12;
+    const lfoGain = audioCtx.createGain();
+    lfoGain.gain.value = 220; // mod amount
+    lfo.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+
+    const mix = audioCtx.createGain();
+    mix.gain.value = 0.35;
+
+    o1.connect(mix);
+    o2.connect(mix);
+    mix.connect(filter);
+    filter.connect(musicGain);
+
+    o1.start();
+    o2.start();
+    lfo.start();
+
+    musicNode = {o1,o2,filter,lfo,mix};
+  }
+
+  function sfx(type){
+    if (!sfxToggle.checked) return;
+    ensureAudio();
+    const t0 = audioCtx.currentTime;
+
+    const g = audioCtx.createGain();
+    g.connect(master);
+
+    if (type === "pickup"){
+      const o = audioCtx.createOscillator();
+      o.type = "square";
+      o.frequency.setValueAtTime(660, t0);
+      o.frequency.exponentialRampToValueAtTime(990, t0 + 0.08);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.25, t0 + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.16);
+      o.connect(g); o.start(t0); o.stop(t0 + 0.17);
+      return;
+    }
+
+    if (type === "nitro"){
+      const o = audioCtx.createOscillator();
+      o.type = "sawtooth";
+      o.frequency.setValueAtTime(240, t0);
+      o.frequency.exponentialRampToValueAtTime(140, t0 + 0.12);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.22, t0 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.14);
+      o.connect(g); o.start(t0); o.stop(t0 + 0.15);
+      return;
+    }
+
+    if (type === "crash"){
+      // noise burst using buffer
+      const dur = 0.35;
+      const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * dur, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i=0;i<data.length;i++){
+        data[i] = (Math.random()*2-1) * Math.exp(-i/(data.length/4));
+      }
+      const src = audioCtx.createBufferSource();
+      src.buffer = buffer;
+
+      const f = audioCtx.createBiquadFilter();
+      f.type = "lowpass"; f.frequency.value = 800;
+
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.45, t0 + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+
+      src.connect(f); f.connect(g);
+      src.start(t0); src.stop(t0 + dur);
+    }
+  }
+
+  musicToggle.addEventListener("change", () => {
+    ensureAudio();
+    musicGain.gain.value = musicToggle.checked ? 0.25 : 0.0;
+  });
+
+  // Start audio on first user interaction (browser policy)
+  window.addEventListener("pointerdown", () => { ensureAudio(); audioCtx.resume?.(); }, { once:false });
+
+  // ===== Input =====
+  window.addEventListener("keydown", (e) => {
+    const k = e.key.toLowerCase();
+    keys.add(k);
+
+    if (k === " "){ e.preventDefault(); togglePause(); }
+    if (k === "r") { e.preventDefault(); reset(); }
+  });
+  window.addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
+
+  pauseBtn.addEventListener("click", togglePause);
+  restartBtn.addEventListener("click", reset);
+
+  function holdButton(btn, downFn, upFn){
+    const down = (e)=>{ e.preventDefault(); downFn(); };
+    const up = (e)=>{ e.preventDefault(); upFn(); };
+    btn.addEventListener("pointerdown", down);
+    btn.addEventListener("pointerup", up);
+    btn.addEventListener("pointercancel", up);
+    btn.addEventListener("pointerleave", up);
+  }
+
+  holdButton(mLeft,  ()=> keys.add("arrowleft"), ()=> keys.delete("arrowleft"));
+  holdButton(mRight, ()=> keys.add("arrowright"),()=> keys.delete("arrowright"));
+  holdButton(mNitro, ()=> keys.add("arrowup"),   ()=> keys.delete("arrowup"));
+  holdButton(mDrift, ()=> keys.add("shift"),     ()=> keys.delete("shift"));
+
+  // Touch swipes
+  let touchStart = null;
+  canvas.addEventListener("pointerdown", (e) => touchStart = {x:e.clientX, y:e.clientY});
+  canvas.addEventListener("pointerup", (e) => {
+    if (!touchStart) return;
+    const dx = e.clientX - touchStart.x;
+    const dy = e.clientY - touchStart.y;
+    touchStart = null;
+    const ax = Math.abs(dx), ay = Math.abs(dy);
+    if (Math.max(ax, ay) < 18) return;
+    if (ax > ay){
+      if (dx > 0) steer(1); else steer(-1);
+    } else if (dy < 0){
+      keys.add("arrowup");
+      setTimeout(()=>keys.delete("arrowup"), 120);
+    }
+  });
+
+  function togglePause(){
+    if (!running) return;
+    paused = !paused;
+    last = performance.now();
+    syncUI();
+  }
+
+  // lane step steer
+  function steer(dir){
+    const lane = clamp(Math.floor((player.x - road.x) / laneW), 0, laneCount-1);
+    const nextLane = clamp(lane + dir, 0, laneCount-1);
+    player.targetX = road.x + laneW * (nextLane + 0.5);
+  }
+
+  // ===== Spawning =====
+  let spawnTimer = 0;
+  let pickupTimer = 0;
+
+  function spawnCar(){
+    if (traffic.length >= levelMode.maxTraffic) return;
+    const lane = randInt(0, laneCount-1);
+    const x = road.x + laneW * (lane + 0.5);
+
+    // avoid stacking too close in the same lane
+    const ok = !traffic.some(t => t.lane === lane && t.y < 150);
+    if (!ok) return;
+
+    traffic.push({
+      lane,
+      x,
+      y: -120,
+      w: 44,
+      h: 84,
+      rel: lerp(levelMode.trafficRelMin, levelMode.trafficRelMax, Math.random()),
+      seed: Math.random(),
+    });
+  }
+
+  function spawnPickup(){
+    if (pickups.length >= 2) return;
+    const lane = randInt(0, laneCount-1);
+    const x = road.x + laneW * (lane + 0.5);
+
+    const types = ["shield","slowmo","magnet"];
+    const type = types[randInt(0, types.length-1)];
+
+    pickups.push({
+      type,
+      lane,
+      x,
+      y: -80,
+      w: 34,
+      h: 34,
+      bob: Math.random()*6,
+    });
+  }
+
+  // ===== Reset / Modes =====
+  function setBaseMode(key){
+    baseModeKey = key;
+    baseMode = MODES[baseModeKey];
+  }
+
+  function computeLevel(){
+    // auto progression based on score
+    let k = "easy";
+    for (const lv of LEVELS){
+      if (score >= lv.at) k = lv.key;
+    }
+    levelKey = k;
+
+    // "starting difficulty" influences how early it ramps by shifting thresholds
+    // easy start = normal, medium start = slightly earlier, hard start = earlier
+    let shift = 0;
+    if (baseModeKey === "medium") shift = 250;
+    if (baseModeKey === "hard") shift = 550;
+
+    // apply shift by checking score+shift
+    let kk = "easy";
+    const s = score + shift;
+    for (const lv of LEVELS){
+      if (s >= lv.at) kk = lv.key;
+    }
+    levelKey = kk;
+    levelMode = MODES[levelKey];
+  }
+
+  function reset(){
+    score = 0;
+    speed = baseMode.baseSpeed;
+    roadY = 0;
+
+    nitro = 1.0;
+    nitroActive = false;
+    driftActive = false;
+
+    power.shield = 0;
+    power.slowmoT = 0;
+    power.magnetT = 0;
+
+    player.x = road.x + laneW * 1.5;
+    player.vx = 0;
+    player.targetX = null;
+    player.alive = true;
+
+    traffic.length = 0;
+    pickups.length = 0;
+    sparks.length = 0;
+
+    running = true;
+    paused = false;
+    last = performance.now();
+
+    computeLevel();
+    syncUI();
+  }
+
+  function syncUI(){
+    scoreEl.textContent = Math.floor(score);
+    bestEl.textContent = best;
+    levelEl.textContent = MODES[levelKey].name;
+    nitroFill.style.width = Math.round(nitro * 100) + "%";
+
+    const list = [];
+    if (power.shield > 0) list.push("Shield");
+    if (power.slowmoT > 0) list.push("Slow-Mo");
+    if (power.magnetT > 0) list.push("Magnet");
+    puEl.textContent = list.length ? list.join(", ") : "—";
+
+    pauseBtn.textContent = paused ? "Resume" : "Pause";
+  }
+
+  // ===== Update =====
+  function update(dtRaw){
+    // Slow-mo affects time scale
+    const timeScale = power.slowmoT > 0 ? 0.65 : 1.0;
+    let dt = dtRaw * timeScale;
+
+    // Auto compute level
+    computeLevel();
+
+    // Increase speed over time (based on current level)
+    speed += levelMode.accel * dt;
+
+    // Nitro
+    const nitroKey = keys.has("arrowup") || keys.has("w");
+    nitroActive = nitroKey && nitro > 0.02 && !paused && running;
+
+    if (nitroActive){
+      nitro = Math.max(0, nitro - dt * 0.35);
+      if (Math.random() < 0.08) sfx("nitro");
+    } else {
+      nitro = Math.min(1, nitro + dt * 0.18);
+    }
+
+    // Drift
+    driftActive = keys.has("shift");
+    const driftFactor = driftActive ? 1.35 : 1.0;
+
+    // Effective speed
+    const nitroBoost = nitroActive ? 160 : 0;
+    const effectiveSpeed = speed + nitroBoost;
+
+    // Road scroll
+    roadY += effectiveSpeed * dt;
+    if (roadY > 60) roadY -= 60;
+
+    // Steering
+    const steerLeft  = keys.has("arrowleft") || keys.has("a");
+    const steerRight = keys.has("arrowright") || keys.has("d");
+
+    // Drift makes it slide more
+    const steerPower = driftActive ? 3400 : 2400;
+
+    if (steerLeft)  player.vx -= steerPower * dt;
+    if (steerRight) player.vx += steerPower * dt;
+
+    if (player.targetX !== null){
+      const dx = player.targetX - player.x;
+      player.vx += dx * 18 * dt;
+      if (Math.abs(dx) < 3) { player.x = player.targetX; player.targetX = null; player.vx *= 0.2; }
+    }
+
+    // friction
+    const friction = driftActive ? 0.00135 : 0.0008;
+    player.vx *= Math.pow(friction, dt);
+    player.x += player.vx * dt;
+
+    // clamp within road
+    const minX = road.x + player.w*0.55;
+    const maxX = road.x + road.w - player.w*0.55;
+    player.x = clamp(player.x, minX, maxX);
+
+    // Drift sparks
+    if (driftActive && (steerLeft || steerRight) && Math.abs(player.vx) > 160){
+      if (Math.random() < 0.35) makeSparks(player.x, player.y + player.h*0.40, 10, true);
+    }
+
+    // Spawn traffic
+    spawnTimer += dt * levelMode.spawnRate * (0.85 + effectiveSpeed/560);
+    if (spawnTimer >= 1){
+      spawnTimer = 0;
+      spawnCar();
+      if (levelKey !== "easy" && Math.random() < 0.28) spawnCar();
+      if (levelKey === "hard" && Math.random() < 0.35) spawnCar();
+    }
+
+    // Spawn power-ups occasionally
+    pickupTimer += dt * (0.20 + effectiveSpeed/1200);
+    if (pickupTimer >= 1){
+      pickupTimer = 0;
+      if (Math.random() < 0.55) spawnPickup();
+    }
+
+    // Move traffic
+    for (let i = traffic.length - 1; i >= 0; i--){
+      const t = traffic[i];
+      t.y += effectiveSpeed * dt * t.rel;
+      t.x += Math.sin((t.y/120) + t.seed*10) * dt * levelMode.wiggle;
+      if (t.y > H + 140) traffic.splice(i, 1);
+    }
+
+    // Move pickups
+    for (let i = pickups.length - 1; i >= 0; i--){
+      const p = pickups[i];
+      const bob = Math.sin((p.y/40) + p.bob) * 0.9;
+      p.y += effectiveSpeed * dt * 0.88;
+      p.x = (road.x + laneW*(p.lane + 0.5)) + bob;
+
+      // Magnet pulls pickups slightly toward player
+      if (power.magnetT > 0){
+        const dx = player.x - p.x;
+        p.x += dx * dt * 2.0;
+      }
+
+      if (p.y > H + 80) pickups.splice(i, 1);
+    }
+
+    // Score: distance + close calls + drift + nitro
+    score += dt * (effectiveSpeed * 0.055);
+    if (nitroActive) score += dt * 22;
+    if (driftActive && (steerLeft || steerRight)) score += dt * 10;
+
+    // Close call bonus
+    for (const t of traffic){
+      const d = distRect(player.x, player.y, player.w, player.h, t.x, t.y, t.w, t.h);
+      if (d < 10 && d > 0){
+        score += dt * 48;
+        if (Math.random() < 0.30) makeSparks(player.x, player.y - player.h*0.25, 6, false);
+      }
+    }
+
+    // Pickups collision
+    for (let i = pickups.length - 1; i >= 0; i--){
+      const p = pickups[i];
+      if (rectHit(player.x, player.y, player.w, player.h, p.x, p.y, p.w, p.h)){
+        applyPickup(p.type);
+        pickups.splice(i, 1);
+        sfx("pickup");
+      }
+    }
+
+    // Crash collision
+    for (const t of traffic){
+      if (rectHit(player.x, player.y, player.w, player.h, t.x, t.y, t.w, t.h)){
+        handleCrash();
+        break;
+      }
+    }
+
+    // Timers
+    power.slowmoT = Math.max(0, power.slowmoT - dtRaw); // use raw seconds so it lasts real-time
+    power.magnetT = Math.max(0, power.magnetT - dtRaw);
+
+    // Sparks
+    for (let i = sparks.length - 1; i >= 0; i--){
+      const s = sparks[i];
+      s.vy += 900 * dt;
+      s.x += s.vx * dt;
+      s.y += s.vy * dt;
+      s.life -= dt;
+      if (s.life <= 0) sparks.splice(i, 1);
+    }
+
+    // Best score
+    const sc = Math.floor(score);
+    if (sc > best){
+      best = sc;
+      localStorage.setItem(BEST_KEY, String(best));
+    }
+
+    syncUI();
+  }
+
+  function applyPickup(type){
+    if (type === "shield"){
+      power.shield = Math.min(2, power.shield + 1);
+      makePulse(player.x, player.y, "rgba(120,255,220,0.9)");
+    }
+    if (type === "slowmo"){
+      power.slowmoT = Math.min(7.5, power.slowmoT + 4.5);
+      makePulse(player.x, player.y, "rgba(140,170,255,0.9)");
+    }
+    if (type === "magnet"){
+      power.magnetT = Math.min(10, power.magnetT + 6.0);
+      makePulse(player.x, player.y, "rgba(255,120,220,0.9)");
+    }
+  }
+
+  function handleCrash(){
+    if (power.shield > 0){
+      power.shield -= 1;
+      // bounce back a bit + sparks
+      makeSparks(player.x, player.y, 26, false);
+      player.vx *= -0.35;
+      score = Math.max(0, score - 120); // small penalty
+      return;
+    }
+    crash();
+  }
+
+  function crash(){
+    player.alive = false;
+    running = false;
+    makeSparks(player.x, player.y, 40, false);
+    sfx("crash");
+    showMenu(true);
+  }
+
+  // ===== Render =====
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = "#050814";
+    ctx.fillRect(0,0,W,H);
+
+    // stars
+    ctx.globalAlpha = 0.6;
+    for (const st of stars){
+      ctx.fillRect(st.x, st.y, st.s, st.s);
+      st.y += (speed * 0.02) * (st.s) * 0.03;
+      if (st.y > H) { st.y = -5; st.x = Math.random()*W; }
+    }
+    ctx.globalAlpha = 1;
+
+    // road glow
+    const grad = ctx.createLinearGradient(road.x, 0, road.x + road.w, 0);
+    grad.addColorStop(0, "rgba(20,240,255,.10)");
+    grad.addColorStop(0.5, "rgba(255,255,255,.05)");
+    grad.addColorStop(1, "rgba(255,70,220,.10)");
+    ctx.fillStyle = grad;
+    roundRect(road.x, 0, road.w, H, 22);
+    ctx.fill();
+
+    // edges
+    ctx.strokeStyle = "rgba(255,255,255,.16)";
+    ctx.lineWidth = 2;
+    roundRect(road.x, 0, road.w, H, 22);
+    ctx.stroke();
+
+    // lane lines dashed
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(road.x, 0, road.w, H);
+    ctx.clip();
+    ctx.strokeStyle = "rgba(255,255,255,.20)";
+    ctx.lineWidth = 2;
+    for (let i=1;i<laneCount;i++){
+      const lx = road.x + laneW * i;
+      for (let y=-80; y < H+80; y += 60){
+        const yy = y + (roadY % 60);
+        ctx.beginPath();
+        ctx.moveTo(lx, yy);
+        ctx.lineTo(lx, yy + 26);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+
+    // pickups
+    for (const p of pickups){
+      drawPickup(p);
+    }
+
+    // traffic
+    for (const t of traffic){
+      drawCar(t.x, t.y, t.w, t.h, false, t.seed);
+    }
+
+    // player
+    drawCar(player.x, player.y, player.w, player.h, true, 0.3);
+
+    // Shield ring visual
+    if (power.shield > 0){
+      ctx.save();
+      ctx.globalAlpha = 0.7;
+      ctx.strokeStyle = "rgba(120,255,220,.85)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, 58, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // slowmo vignette
+    if (power.slowmoT > 0){
+      ctx.save();
+      ctx.globalAlpha = 0.15;
+      ctx.fillStyle = "rgba(140,170,255,1)";
+      ctx.fillRect(0,0,W,H);
+      ctx.restore();
+    }
+
+    // sparks
+    for (const s of sparks){
+      ctx.globalAlpha = Math.max(0, Math.min(1, s.life / 0.35));
+      ctx.fillStyle = s.c;
+      ctx.fillRect(s.x, s.y, 3, 3);
+    }
+    ctx.globalAlpha = 1;
+
+    // pause overlay
+    if (paused && running){
+      ctx.fillStyle = "rgba(0,0,0,.45)";
+      ctx.fillRect(0,0,W,H);
+      ctx.fillStyle = "rgba(255,255,255,.92)";
+      ctx.font = "bold 44px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("PAUSED", W/2, H/2);
+    }
+  }
+
+  function drawCar(x, y, w, h, isPlayer, seed){
+    ctx.save();
+
+    // subtle screen shake on hard + high speed
+    const shake = (levelKey==="hard" && speed > 520 && running) ? (Math.random()*2-1) * 1.5 : 0;
+    ctx.translate(shake, 0);
+
+    const bodyGrad = ctx.createLinearGradient(x-w/2, y-h/2, x+w/2, y+h/2);
+    if (isPlayer){
+      bodyGrad.addColorStop(0, "rgba(90,255,200,.95)");
+      bodyGrad.addColorStop(1, "rgba(80,170,255,.92)");
+    } else {
+      const a = 0.85;
+      bodyGrad.addColorStop(0, `rgba(${Math.floor(200+seed*40)},${Math.floor(60+seed*120)},255,${a})`);
+      bodyGrad.addColorStop(1, `rgba(255,${Math.floor(60+seed*140)},${Math.floor(160+seed*80)},${a})`);
+    }
+
+    // glow
+    ctx.shadowBlur = isPlayer ? 18 : 14;
+    ctx.shadowColor = isPlayer ? "rgba(80,255,220,.9)" : "rgba(255,80,220,.55)";
+    ctx.fillStyle = bodyGrad;
+    roundRect(x - w/2, y - h/2, w, h, 14);
+    ctx.fill();
+
+    // windshield
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "rgba(0,0,0,.28)";
+    roundRect(x - w*0.32, y - h*0.22, w*0.64, h*0.28, 10);
+    ctx.fill();
+
+    // lights
+    ctx.fillStyle = isPlayer ? "rgba(255,255,255,.85)" : "rgba(255,210,40,.8)";
+    ctx.fillRect(x - w*0.36, y - h*0.45, w*0.16, 6);
+    ctx.fillRect(x + w*0.20, y - h*0.45, w*0.16, 6);
+
+    ctx.fillStyle = isPlayer ? "rgba(255,70,120,.8)" : "rgba(90,255,200,.55)";
+    ctx.fillRect(x - w*0.36, y + h*0.40, w*0.16, 6);
+    ctx.fillRect(x + w*0.20, y + h*0.40, w*0.16, 6);
+
+    // nitro trail
+    if (isPlayer && nitroActive && running){
+      ctx.globalAlpha = 0.95;
+      ctx.fillStyle = "rgba(255,255,255,.10)";
+      roundRect(x - w*0.20, y + h*0.55, w*0.40, 52, 14);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    ctx.restore();
+  }
+
+  function drawPickup(p){
+    const cx = p.x, cy = p.y;
+    ctx.save();
+    let col = "rgba(120,255,220,.9)";
+    let label = "S";
+    if (p.type === "slowmo"){ col = "rgba(140,170,255,.9)"; label = "⏱"; }
+    if (p.type === "magnet"){ col = "rgba(255,120,220,.9)"; label = "🧲"; }
+    if (p.type === "shield"){ col = "rgba(120,255,220,.9)"; label = "🛡"; }
+
+    ctx.shadowBlur = 18;
+    ctx.shadowColor = col;
+    ctx.fillStyle = col;
+    roundRect(cx - p.w/2, cy - p.h/2, p.w, p.h, 10);
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "rgba(0,0,0,.25)";
+    roundRect(cx - p.w*0.35, cy - p.h*0.35, p.w*0.70, p.h*0.70, 9);
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(255,255,255,.92)";
+    ctx.font = "bold 18px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, cx, cy + 1);
+
+    ctx.restore();
+  }
+
+  function roundRect(x,y,w,h,r){
+    const rr = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+rr, y);
+    ctx.arcTo(x+w, y, x+w, y+h, rr);
+    ctx.arcTo(x+w, y+h, x, y+h, rr);
+    ctx.arcTo(x, y+h, x, y, rr);
+    ctx.arcTo(x, y, x+w, y, rr);
+    ctx.closePath();
+  }
+
+  // ===== Particles =====
+  function makeSparks(x,y,count,drift){
+    for (let i=0;i<count;i++){
+      const fast = drift ? 0.75 : 1.0;
+      sparks.push({
+        x: x + (Math.random()*18-9),
+        y: y + (Math.random()*18-9),
+        vx: (Math.random()*2-1) * 520 * fast,
+        vy: -(120 + Math.random()*520) * fast,
+        life: 0.16 + Math.random()*0.22,
+        c: Math.random() < 0.5 ? "rgba(255,210,60,1)" : "rgba(255,90,220,1)"
+      });
+    }
+  }
+
+  function makePulse(x,y,col){
+    // quick spark ring
+    for (let i=0;i<18;i++){
+      sparks.push({
+        x, y,
+        vx: Math.cos(i/18*Math.PI*2) * (160 + Math.random()*120),
+        vy: Math.sin(i/18*Math.PI*2) * (160 + Math.random()*120),
+        life: 0.18 + Math.random()*0.12,
+        c: col
+      });
+    }
+  }
+
+  // ===== Geometry =====
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+  function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function rectHit(ax,ay,aw,ah, bx,by,bw,bh){
+    const aL = ax-aw/2, aR = ax+aw/2, aT = ay-ah/2, aB = ay+ah/2;
+    const bL = bx-bw/2, bR = bx+bw/2, bT = by-bh/2, bB = by+bh/2;
+    return (aL < bR && aR > bL && aT < bB && aB > bT);
+  }
+  function distRect(ax,ay,aw,ah, bx,by,bw,bh){
+    const aL = ax-aw/2, aR = ax+aw/2, aT = ay-ah/2, aB = ay+ah/2;
+    const bL = bx-bw/2, bR = bx+bw/2, bT = by-bh/2, bB = by+bh/2;
+    const dx = Math.max(bL - aR, aL - bR, 0);
+    const dy = Math.max(bT - aB, aT - bB, 0);
+    return Math.hypot(dx, dy);
+  }
+
+  // ===== Menu / flow =====
+  let pendingMode = "easy";
+
+  function showMenu(isGameOver=false){
+    menu.style.display = "grid";
+    menuTitle.textContent = isGameOver ? "Crashed!" : "Choose start difficulty";
+    menuText.textContent = isGameOver
+      ? `Final score: ${Math.floor(score)}. Choose a start difficulty and play again.`
+      : "Pick a start mode. Difficulty also upgrades automatically as you score (Easy → Medium → Hard).";
+  }
+  function hideMenu(){ menu.style.display = "none"; }
+
+  document.querySelectorAll(".card[data-mode]").forEach(card => {
+    card.addEventListener("click", () => {
+      pendingMode = card.getAttribute("data-mode");
+      document.querySelectorAll(".card").forEach(c => c.style.borderColor = "rgba(255,255,255,.14)");
+      card.style.borderColor = "rgba(120,255,220,.85)";
+    });
+  });
+
+  playBtn.addEventListener("click", () => {
+    setBaseMode(pendingMode);
+    hideMenu();
+    reset();
+  });
+
+  closeBtn.addEventListener("click", () => {
+    hideMenu();
+    if (!running) { setBaseMode(pendingMode); reset(); }
+  });
+
+  // Default select
+  document.querySelector(`.card[data-mode="${pendingMode}"]`)?.click();
+
+  // ===== Main loop =====
+  function loop(now){
+    const dt = Math.min(0.033, (now - last) / 1000);
+    last = now;
+
+    if (running && !paused){
+      // keyboard lane snap (optional)
+      if (keys.has("q")) steer(-1);
+      if (keys.has("e")) steer(1);
+
+      // continuous steering already in update
+      update(dt);
+    }
+
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  // Start in menu
+  showMenu(false);
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
