@@ -489,36 +489,59 @@
   // =========================
   // ONLINE LEADERBOARD CONFIG
   // =========================
-  // Create Supabase (free) + table "leaderboard" and paste keys here.
-  // If you leave these blank, the game still works (leaderboard will show "not configured").
-  const SUPABASE_URL = "https://dnyibstgahnjbkjo.supabase.co";      // e.g. https://xxxx.supabase.co
-  const SUPABASE_ANON_KEY = "sb_publishable_1PLhDg4aoFucc0-7qWH0KA_unYKueat"; // your public anon key
+  // Paste your keys here (publishable key is OK to use in browser).
+  const SUPABASE_URL = "https://dnyibstgahnjbkjo.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_1PLhDg4aoFucc0-7qWH0KA_unYKueat";
 
-  // ---- Supabase REST helpers (no library needed) ----
+  // ---- Supabase REST helpers (NO library needed) ----
+  // ✅ Uses RPC "submit_score" instead of direct table writes
+  // ✅ Fetch tries both "leaderboard" and "Leaderboard" (case mismatch safe)
   const SB = {
     enabled: () => Boolean(SUPABASE_URL && SUPABASE_ANON_KEY),
+
     headers: () => ({
       "apikey": SUPABASE_ANON_KEY,
       "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-      "Content-Type": "application/json",
-      "Prefer": "return=representation"
+      "Content-Type": "application/json"
     }),
-    async upsertScore(name, score){
+
+    async submitScore(name, score){
       if (!this.enabled()) return;
-      const body = [{ name, score, updated_at: new Date().toISOString() }];
-      await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?on_conflict=name`, {
+
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/submit_score`, {
         method: "POST",
-        headers: { ...this.headers(), "Prefer": "resolution=merge-duplicates,return=minimal" },
-        body: JSON.stringify(body)
+        headers: this.headers(),
+        body: JSON.stringify({ p_name: name, p_score: score })
       });
+
+      if (!res.ok) {
+        const txt = await res.text().catch(()=> "");
+        console.warn("submit_score failed:", res.status, txt);
+        throw new Error("submit_score_failed");
+      }
     },
+
     async top10(){
       if (!this.enabled()) return null;
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?select=name,score&order=score.desc&limit=10`, {
-        headers: this.headers()
-      });
-      if (!res.ok) throw new Error("leaderboard_fetch_failed");
-      return await res.json();
+
+      // Try both table names to avoid case mismatch issues
+      const tryTables = ["leaderboard", "Leaderboard"];
+
+      for (const t of tryTables){
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/${t}?select=name,score&order=score.desc&limit=10`,
+          { headers: this.headers() }
+        );
+        if (res.ok) return await res.json();
+
+        // If 404/not found etc, try next table name
+        // But if it's a real permission error, log it
+        if (res.status !== 404){
+          const txt = await res.text().catch(()=> "");
+          console.warn("leaderboard fetch failed:", t, res.status, txt);
+        }
+      }
+      throw new Error("leaderboard_fetch_failed");
     }
   };
 
@@ -601,7 +624,6 @@
   }
 
   // ===== Difficulty (lane-change speed by mode) =====
-  // Easy: slowest lane switching + less frequent (so new players enjoy)
   const MODES = {
     easy:   { name:"Easy",   baseSpeed: 220, accel: 9,  spawnRate: 0.85, maxTraffic: 6,  wiggle: 26,
               trafficRelMin:0.58, trafficRelMax:0.98,
@@ -677,14 +699,13 @@
   }
 
   // ===== Missions (3 daily, random) =====
-  // Types: passCars, collectCoins, closeCalls
   function newMission(){
     const types = ["passCars","collectCoins","closeCalls"];
     const type = types[randInt(0, types.length-1)];
 
     if (type === "passCars"){
       const target = [10, 15, 20, 25][randInt(0,3)];
-      const reward = Math.round(target * 1.1); // e.g. 11..28 coins
+      const reward = Math.round(target * 1.1);
       return { type, target, progress:0, reward, claimed:false };
     }
     if (type === "collectCoins"){
@@ -692,7 +713,6 @@
       const reward = Math.round(target * 0.9);
       return { type, target, progress:0, reward, claimed:false };
     }
-    // closeCalls
     const target = [4, 6, 8][randInt(0,2)];
     const reward = target * 8;
     return { type, target, progress:0, reward, claimed:false };
@@ -702,12 +722,11 @@
     const t = todayISO();
     if (profile.missionsDate === t && Array.isArray(profile.missions) && profile.missions.length === 3) return;
 
-    // generate 3 missions; avoid duplicates when possible
     const ms = [];
     while (ms.length < 3){
       const m = newMission();
       if (!ms.some(x => x.type === m.type)) ms.push(m);
-      else if (Math.random() < 0.35) ms.push(m); // allow duplicate sometimes
+      else if (Math.random() < 0.35) ms.push(m);
     }
     profile.missionsDate = t;
     profile.missions = ms.slice(0,3);
@@ -760,10 +779,9 @@
   // ===== Shop =====
   const cart = { shield:0, slowmo:0, magnet:0, nitro:0 };
 
-  // price scaling: mild (coins become more valuable later)
   function priceMultiplier(){
     const d = clamp(profile.streakDaysClaimed, 0, 7);
-    return 1 + d * 0.06; // up to +42%
+    return 1 + d * 0.06;
   }
   function getPrices(){
     const mult = priceMultiplier();
@@ -814,7 +832,6 @@
   });
 
   // ===== Instagram DM feedback link (best-effort) =====
-  // ig.me is commonly used as an official DM shortcut, but behavior can vary by device/browser. :contentReference[oaicite:1]{index=1}
   function openInstagramDM(username){
     const deep = `instagram://direct/new?username=${encodeURIComponent(username)}`;
     const web1 = `https://ig.me/m/${encodeURIComponent(username)}`;
@@ -856,8 +873,8 @@
 
   function createEnergeticSong(ctx, out){
     const tempo = 136;
-    const beat = 60/tempo;   // quarter
-    const step = beat/2;     // eighth
+    const beat = 60/tempo;
+    const step = beat/2;
     const state = { t: ctx.currentTime, timer:null, on:true };
 
     const bus = ctx.createGain(); bus.gain.value = 0.95;
@@ -1191,14 +1208,11 @@
     modeEl.textContent = MODES[modeKey].name;
     runCoinsEl.textContent = runCoins;
     bankCoinsEl.textContent = profile.bankCoins;
-
-    // show bar (0..1)
     nitroFill.style.width = Math.round(clamp(nitro,0,1)*100)+"%";
   }
 
   // ===== Missions update =====
   function updateMissionsProgress(){
-    // update mission progress from counters
     for (const m of profile.missions){
       if (m.type === "passCars") m.progress = Math.max(m.progress, passedCarsThisRun);
       if (m.type === "collectCoins") m.progress = Math.max(m.progress, runCoins);
@@ -1303,36 +1317,6 @@
     alert(r.msg);
   });
 
-  // ===== Economy/Prices =====
-  function priceMultiplier(){
-    const d = clamp(profile.streakDaysClaimed, 0, 7);
-    return 1 + d*0.06;
-  }
-  function getPrices(){
-    const mult = priceMultiplier();
-    return {
-      shield: Math.round(20*mult),
-      slowmo: Math.round(25*mult),
-      magnet: Math.round(25*mult),
-      nitro:  Math.round(15*mult)
-    };
-  }
-  function syncShopUI(){
-    const pr = getPrices();
-    pShield.textContent = pr.shield;
-    pSlowmo.textContent = pr.slowmo;
-    pMagnet.textContent = pr.magnet;
-    pNitro.textContent  = pr.nitro;
-
-    qShield.textContent = cart.shield;
-    qSlowmo.textContent = cart.slowmo;
-    qMagnet.textContent = cart.magnet;
-    qNitro.textContent  = cart.nitro;
-
-    menuBank.textContent = profile.bankCoins;
-    bonusText.textContent = (profile.streakDaysClaimed >= 7) ? "Completed" : `Next +${dailyBonusForDay(profile.streakDaysClaimed+1)}`;
-  }
-
   // ===== Drawing helpers (stylish cars) =====
   function roundRect(x,y,w,h,r){
     const rr=Math.min(r,w/2,h/2);
@@ -1391,12 +1375,19 @@
     roundRect(x-w*0.30, y-h*0.22, w*0.60, h*0.28, 10);
     ctx.fill();
 
-    // wheels
+    // wheels (fallback if roundRect is missing)
     ctx.fillStyle="rgba(0,0,0,.55)";
-    ctx.beginPath(); ctx.roundRect?.(x-w*0.55, y-h*0.28, w*0.22, h*0.26, 8); ctx.fill();
-    ctx.beginPath(); ctx.roundRect?.(x+w*0.33, y-h*0.28, w*0.22, h*0.26, 8); ctx.fill();
-    ctx.beginPath(); ctx.roundRect?.(x-w*0.55, y+h*0.02, w*0.22, h*0.26, 8); ctx.fill();
-    ctx.beginPath(); ctx.roundRect?.(x+w*0.33, y+h*0.02, w*0.22, h*0.26, 8); ctx.fill();
+    if (ctx.roundRect){
+      ctx.beginPath(); ctx.roundRect(x-w*0.55, y-h*0.28, w*0.22, h*0.26, 8); ctx.fill();
+      ctx.beginPath(); ctx.roundRect(x+w*0.33, y-h*0.28, w*0.22, h*0.26, 8); ctx.fill();
+      ctx.beginPath(); ctx.roundRect(x-w*0.55, y+h*0.02, w*0.22, h*0.26, 8); ctx.fill();
+      ctx.beginPath(); ctx.roundRect(x+w*0.33, y+h*0.02, w*0.22, h*0.26, 8); ctx.fill();
+    } else {
+      ctx.fillRect(x-w*0.55, y-h*0.28, w*0.22, h*0.26);
+      ctx.fillRect(x+w*0.33,  y-h*0.28, w*0.22, h*0.26);
+      ctx.fillRect(x-w*0.55, y+h*0.02, w*0.22, h*0.26);
+      ctx.fillRect(x+w*0.33,  y+h*0.02, w*0.22, h*0.26);
+    }
 
     // lights
     ctx.globalAlpha = 1;
@@ -1459,7 +1450,6 @@
 
   // ===== Road rendering =====
   function drawRoad(){
-    // bg
     ctx.fillStyle="#050814";
     ctx.fillRect(0,0,W,H);
 
@@ -1574,16 +1564,13 @@
       const t = traffic[i];
       t.y += effectiveSpeed*dt*t.rel;
 
-      // count pass
       if(!t.countedPass && t.y > player.y + player.h*0.6){
         t.countedPass = true;
         passedCarsThisRun += 1;
       }
 
-      // weave
       t.x += Math.sin((t.y/120)+t.seed*10)*dt*mode.wiggle*0.35;
 
-      // lane change decision (frequency)
       t.laneChangeCooldown -= dt;
       if(t.laneChangeCooldown <= 0 && Math.random() < mode.laneChangeRate){
         const dir = Math.random()<0.5 ? -1 : 1;
@@ -1595,7 +1582,6 @@
         t.laneChangeCooldown = lerp(mode.laneChangeCooldown[0], mode.laneChangeCooldown[1], Math.random());
       }
 
-      // lane change SPEED (this is what you asked to tune)
       const targetX = laneCenter(t.targetLane);
       t.x += (targetX - t.x) * dt * mode.laneChangeSpeed;
 
@@ -1672,10 +1658,8 @@
       if(s.life<=0) sparks.splice(i,1);
     }
 
-    // mission progress update
     updateMissionsProgress();
 
-    // best score stored
     const sc = Math.floor(score);
     if(sc > (profile.bestScore || 0)){
       profile.bestScore = sc;
@@ -1706,10 +1690,10 @@
     runCoins = 0;
     saveProfile(profile);
 
-    // send online leaderboard update (best score)
+    // ✅ send leaderboard update using RPC function (safe)
     try{
       if (SB.enabled() && profile.name && profile.name !== "Guest"){
-        await SB.upsertScore(profile.name, profile.bestScore);
+        await SB.submitScore(profile.name, profile.bestScore);
       }
     } catch {}
 
@@ -1721,16 +1705,10 @@
   function draw(){
     drawRoad();
 
-    // coins
     for(const c of coins) drawCoin(c);
-
-    // traffic
     for(const t of traffic) drawStylishCar(t.x, t.y, t.w, t.h, false, t.seed);
-
-    // player
     drawStylishCar(player.x, player.y, player.w, player.h, true, 0.3);
 
-    // shield ring
     if(power.shield > 0){
       ctx.save();
       ctx.globalAlpha=0.72;
@@ -1742,7 +1720,6 @@
       ctx.restore();
     }
 
-    // slowmo tint
     if(power.slowmoT > 0){
       ctx.save();
       ctx.globalAlpha=0.12;
@@ -1751,7 +1728,6 @@
       ctx.restore();
     }
 
-    // sparks
     for(const s of sparks){
       ctx.globalAlpha = Math.max(0, Math.min(1, s.life/0.35));
       ctx.fillStyle = s.c;
@@ -1810,39 +1786,11 @@
   }
 
   // ===== init =====
-  function updateHeaderUI(){
-    playerNameEl.textContent = profile.name || "Guest";
-    bestEl.textContent = profile.bestScore || 0;
-    bankCoinsEl.textContent = profile.bankCoins || 0;
-  }
-
-  function applyCartToRun(){
-    power.shield = cart.shield;
-    power.slowmoT = cart.slowmo*4.5;
-    power.magnetT = cart.magnet*6.0;
-    nitro = clamp(1.0 + cart.nitro*0.25, 0, 1.75);
-    cart.shield=cart.slowmo=cart.magnet=cart.nitro=0;
-    syncShopUI();
-  }
-
-  function showMenu(isGameOver=false){
-    menu.style.display="grid";
-    shareBtn.style.display = isGameOver ? "inline-block" : "none";
-    syncShopUI();
-    renderMissions();
-    syncLeaderboard();
-    if(isGameOver) showCrying();
-  }
-
-  // ensure missions
   ensureDailyMissions();
   updateHeaderUI();
   syncShopUI();
   renderMissions();
   syncLeaderboard();
-
-  // mode select default
-  document.querySelector(`.choice[data-mode="${pendingMode}"]`)?.click();
 
   // auto-fill name input
   nameInput.value = (profile.name && profile.name !== "Guest") ? profile.name : "";
@@ -1850,17 +1798,7 @@
   // Start with menu
   showMenu(false);
   requestAnimationFrame(loop);
-
-  // ===== render missions first time =====
-  renderMissions();
 })();
-</script>
-
-<script>
-  // keep these tiny helpers separate from the main IIFE to avoid clutter
-  function ensureDailyMissions(){ /* overwritten in main IIFE */ }
-  function renderMissions(){ /* overwritten in main IIFE */ }
 </script>
 </body>
 </html>
-
