@@ -3,7 +3,13 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-  <title>Neon Highway Racer — Home + Fullscreen Play</title>
+  <title>Neon Highway Racer</title>
+
+  <!-- Racing-style font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
+
   <style>
     :root{
       --bg:#050814;
@@ -24,7 +30,10 @@
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       color:var(--text);
-      background: radial-gradient(1200px 700px at 50% 10%, #1a2a7a 0%, var(--bg) 60%);
+      background:
+        radial-gradient(1200px 700px at 50% 10%, #1a2a7a 0%, var(--bg) 60%),
+        radial-gradient(900px 500px at 15% 80%, rgba(255,106,223,.12) 0%, rgba(0,0,0,0) 60%),
+        radial-gradient(900px 500px at 85% 80%, rgba(124,255,234,.10) 0%, rgba(0,0,0,0) 60%);
       overflow-x:hidden;
       overscroll-behavior: none;
       -webkit-tap-highlight-color: transparent;
@@ -43,18 +52,43 @@
     header{
       background:rgba(11,18,48,.82);
       border:1px solid var(--line);
-      border-radius:16px;
-      padding:12px 14px;
+      border-radius:18px;
+      padding:14px 14px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       flex-wrap:wrap;
       gap:10px;
-      box-shadow:0 12px 30px rgba(0,0,0,.35);
+      box-shadow:0 18px 44px rgba(0,0,0,.45);
       backdrop-filter: blur(10px);
+      position:relative;
+      overflow:hidden;
     }
-    .brand{display:flex; flex-direction:column; gap:2px; min-width:260px}
-    h1{margin:0; font-size:16px; letter-spacing:.3px}
+    header:before{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      background:
+        linear-gradient(120deg, rgba(124,255,234,.14), rgba(255,106,223,.12), rgba(255,210,77,.10));
+      filter: blur(18px);
+      opacity:.75;
+      pointer-events:none;
+    }
+    header > *{position:relative}
+
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:260px
+    }
+    h1{
+      margin:0;
+      font-family:"Orbitron", system-ui, sans-serif;
+      font-size:18px;
+      letter-spacing:.8px;
+      text-transform:uppercase;
+    }
     .sub{font-size:12px; color:var(--muted)}
 
     .stats{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
@@ -68,6 +102,7 @@
       gap:6px;
       align-items:center;
       white-space:nowrap;
+      box-shadow:0 10px 18px rgba(0,0,0,.20);
     }
     .pill b{font-weight:950}
 
@@ -87,8 +122,12 @@
     button:hover, .tabBtn:hover{background:rgba(255,255,255,.12)}
     button:active, .tabBtn:active{transform:translateY(1px)}
     button.primary{
-      background: linear-gradient(135deg, rgba(124,255,234,.22), rgba(255,106,223,.18));
-      border-color: rgba(124,255,234,.35);
+      background: linear-gradient(135deg, rgba(124,255,234,.26), rgba(255,106,223,.18));
+      border-color: rgba(124,255,234,.40);
+      box-shadow:0 14px 26px rgba(0,0,0,.25);
+      font-family:"Orbitron", system-ui, sans-serif;
+      letter-spacing:.6px;
+      text-transform:uppercase;
     }
     button.danger{
       background: rgba(255,77,109,.14);
@@ -108,13 +147,12 @@
       border:1px solid var(--line);
       border-radius:18px;
       padding:12px;
-      box-shadow:0 12px 30px rgba(0,0,0,.25);
+      box-shadow:0 14px 34px rgba(0,0,0,.30);
       backdrop-filter: blur(10px);
       display:grid;
       gap:10px;
     }
 
-    /* Tabs scroll nicely on mobile */
     .tabs{
       display:flex;
       gap:8px;
@@ -135,6 +173,9 @@
       border:1px solid rgba(255,255,255,.12);
       flex:0 0 auto;
       white-space:nowrap;
+      font-family:"Orbitron", system-ui, sans-serif;
+      letter-spacing:.4px;
+      text-transform:uppercase;
     }
     .tabBtn.active{
       background:rgba(124,255,234,.12);
@@ -148,7 +189,13 @@
       border-radius:16px;
       padding:12px;
     }
-    .card h3{margin:0 0 6px; font-size:14px}
+    .card h3{
+      margin:0 0 6px;
+      font-size:14px;
+      font-family:"Orbitron", system-ui, sans-serif;
+      letter-spacing:.4px;
+      text-transform:uppercase;
+    }
     .card p{margin:0; color:var(--muted); font-size:13px; line-height:1.5}
     .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
     .small{font-size:12px; color:var(--muted)}
@@ -284,6 +331,8 @@
       font-size:13px;
       font-weight:950;
       white-space:nowrap;
+      font-family:"Orbitron", system-ui, sans-serif;
+      letter-spacing:.3px;
     }
     .hudPill b{font-weight:950}
     .bar{
@@ -313,7 +362,7 @@
       box-shadow:0 24px 70px rgba(0,0,0,.65);
     }
     @media (max-width:900px){
-      canvas#game{aspect-ratio:auto; height:68vh;}
+      canvas#game{aspect-ratio:auto; height:70vh;}
     }
 
     .mobileHUD{
@@ -341,10 +390,12 @@
       min-width:74px;
       text-align:center;
       font-weight:950;
+      font-family:"Orbitron", system-ui, sans-serif;
+      letter-spacing:.3px;
     }
     .mBtn.primary{
-      background: linear-gradient(135deg, rgba(124,255,234,.22), rgba(255,106,223,.18));
-      border-color: rgba(124,255,234,.35);
+      background: linear-gradient(135deg, rgba(124,255,234,.26), rgba(255,106,223,.18));
+      border-color: rgba(124,255,234,.40);
     }
     @media (max-width:760px){
       .mobileHUD{display:flex}
@@ -378,7 +429,13 @@
       padding:14px;
       box-shadow:0 24px 70px rgba(0,0,0,.7);
     }
-    .modal h2{margin:0 0 8px; font-size:18px}
+    .modal h2{
+      margin:0 0 8px;
+      font-size:18px;
+      font-family:"Orbitron", system-ui, sans-serif;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+    }
     .modal p{margin:0 0 12px; color:var(--muted); line-height:1.5}
     .modal .row{justify-content:space-between}
   </style>
@@ -396,7 +453,6 @@
         <div class="pill">Player: <b id="playerName">Gamer</b></div>
         <div class="pill">Best: <b id="bestHome">0</b></div>
         <div class="pill">Bank 🪙: <b id="bankHome">0</b></div>
-        <div class="pill">Perspective: <b id="persHome">Third-person</b></div>
       </div>
 
       <div class="row">
@@ -436,22 +492,15 @@
               </select>
             </span>
 
-            <span class="chip">Perspective:
-              <select id="perspective" style="background:transparent;color:var(--text);border:none;font-weight:950;outline:none">
-                <option value="third">Third-person</option>
-                <option value="first">First-person</option>
-              </select>
-            </span>
-
             <label class="chip">Music <input id="musicToggle" type="checkbox" checked></label>
             <label class="chip">SFX <input id="sfxToggle" type="checkbox" checked></label>
           </div>
 
           <div class="card" style="margin-top:10px">
-            <h3 style="margin-bottom:8px">Important note about music</h3>
+            <h3 style="margin-bottom:8px">Music note</h3>
             <p class="small">
-              I can’t embed AC/DC’s “Back in Black” directly (copyright), but the game includes an energetic,
-              rock-like procedural soundtrack that feels similar in intensity.
+              I can’t embed copyrighted songs like AC/DC directly, but the game now has a much more engaging
+              arcade/synthwave racer soundtrack (strong beat + driving bass).
             </p>
           </div>
         </div>
@@ -480,7 +529,7 @@
           <p id="lbStatus">Loading…</p>
           <div class="lbList" id="lbList"></div>
           <div class="small" style="margin-top:10px">
-            If it’s empty: play at least once and lose (or exit) so the score submits.
+            If it’s empty: play at least once and finish a run so the score submits.
           </div>
         </div>
 
@@ -585,11 +634,9 @@
         <span class="hudPill">Run 🪙: <b id="hudRunCoins">0</b></span>
         <span class="hudPill">Bank 🪙: <b id="hudBank">0</b></span>
         <span class="hudPill">Mode: <b id="hudMode">Easy</b></span>
-        <span class="hudPill">View: <b id="hudView">Third-person</b></span>
         <span class="hudPill" title="Nitro"><span>Nitro</span><span class="bar"><i id="nitroFill"></i></span></span>
       </div>
       <div class="hudGroup">
-        <button id="toggleViewBtn">Switch View</button>
         <button id="pauseBtn">Pause</button>
         <button id="exitBtn" class="danger">Exit</button>
       </div>
@@ -632,10 +679,9 @@
 <script>
 (() => {
   // =========================
-  // SUPABASE CONFIG (YOU PROVIDED URL)
+  // SUPABASE CONFIG
   // =========================
   const SUPABASE_URL = "https://dnyibstgahnjbkjokuxs.supabase.co";
-  // Publishable key (from your earlier message)
   const SUPABASE_ANON_KEY = "sb_publishable_1PLhDg4aoFucc0-7qWH0KA_unYKueat";
 
   const SB = {
@@ -682,7 +728,6 @@
   const playerNameEl = $("playerName");
   const bestHomeEl = $("bestHome");
   const bankHomeEl = $("bankHome");
-  const persHomeEl = $("persHome");
 
   const playHome = $("playHome");
   const tabs = $("tabs");
@@ -693,7 +738,6 @@
   const signOutBtn = $("signOutBtn");
 
   const difficultySel = $("difficulty");
-  const perspectiveSel = $("perspective");
 
   const musicToggle = $("musicToggle");
   const sfxToggle = $("sfxToggle");
@@ -739,14 +783,11 @@
   const hudRunCoins = $("hudRunCoins");
   const hudBank = $("hudBank");
   const hudMode = $("hudMode");
-  const hudView = $("hudView");
   const nitroFill = $("nitroFill");
 
-  const toggleViewBtn = $("toggleViewBtn");
   const pauseBtn = $("pauseBtn");
   const exitBtn = $("exitBtn");
 
-  const mobileHUD = $("mobileHUD");
   const mLeft = $("mLeft");
   const mRight = $("mRight");
   const mNitro = $("mNitro");
@@ -790,6 +831,13 @@
     return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
   }
 
+  function isTypingTarget(){
+    const el = document.activeElement;
+    if(!el) return false;
+    const tag = (el.tagName||"").toLowerCase();
+    return tag === "input" || tag === "textarea" || tag === "select" || el.isContentEditable;
+  }
+
   // ===== Tabs =====
   function setTab(key){
     Array.from(tabs.querySelectorAll(".tabBtn")).forEach(b => {
@@ -810,7 +858,7 @@
   });
 
   // ===== Local profile/account =====
-  const PROFILE_KEY = "neon_racer_profile_final_v3";
+  const PROFILE_KEY = "neon_racer_profile_final_v4";
 
   function loadProfile(){
     try{ return JSON.parse(localStorage.getItem(PROFILE_KEY) || "null"); } catch { return null; }
@@ -821,26 +869,16 @@
     name:"Gamer",
     bestScore:0,
     bankCoins:0,
-
-    // inventory (persistent)
     inv: { shield:0, slowmo:0, magnet:0, nitro:0, life:0 },
-
-    // 7-day bonus
     streakDaysClaimed:0,
     lastBonusDate:null,
-
-    // missions
     missionsDate:null,
     missions:[],
-
-    // preferences
     modeKey:"easy",
-    perspective:"third",
     music:true,
     sfx:true
   };
 
-  // ensure defaults
   if(!profile.name) profile.name="Gamer";
   if(!profile.inv) profile.inv={shield:0, slowmo:0, magnet:0, nitro:0, life:0};
 
@@ -937,7 +975,7 @@
   }
 
   // ===== Shop =====
-  const cart={shield:0,slowmo:0,magnet:0,nitro:0,life:0}; // cart for next run purchase, but we store directly into inventory
+  const cart={shield:0,slowmo:0,magnet:0,nitro:0,life:0};
 
   function priceMultiplier(){ return 1 + clamp(profile.streakDaysClaimed,0,7)*0.06; }
   function getPrices(){
@@ -972,13 +1010,11 @@
     invNitro.textContent=profile.inv.nitro||0;
     invLife.textContent=profile.inv.life||0;
   }
-
   function buy(item){
     const pr=getPrices();
     const cost=pr[item];
     if((profile.bankCoins||0)<cost) return;
 
-    // Inventory limits (keep it fun, not infinite spam)
     const limits = { shield:10, slowmo:10, magnet:10, nitro:10, life:10 };
     if((profile.inv[item]||0) >= limits[item]) return;
 
@@ -990,7 +1026,6 @@
     syncShopUI();
     sfx("pickup");
   }
-
   document.querySelectorAll("button[data-buy]").forEach(btn=>{
     btn.addEventListener("click",()=>buy(btn.getAttribute("data-buy")));
   });
@@ -1012,130 +1047,165 @@
   }
   feedbackBtn.addEventListener("click",()=>openInstagramDM("daily__discipline.01"));
 
-  // ===== Audio (energetic rock-like procedural loop) =====
+  // ===== Audio (improved engaging synthwave racer) =====
   let audioCtx=null, master=null, musicGain=null, musicState=null;
 
   function ensureAudio(){
     if(audioCtx) return;
     audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    master=audioCtx.createGain(); master.gain.value=0.48;
+
+    master=audioCtx.createGain();
+    master.gain.value=0.52;
     master.connect(audioCtx.destination);
 
     musicGain=audioCtx.createGain();
-    musicGain.gain.value = profile.music ? 0.23 : 0.0;
+    musicGain.gain.value = profile.music ? 0.26 : 0.0;
     musicGain.connect(master);
 
-    musicState=createRockLoop(audioCtx, musicGain);
+    musicState=createEngagingRacerMusic(audioCtx, musicGain);
     musicState.start();
   }
 
-  function createRockLoop(ctx,out){
-    const tempo=132;
+  // Better than the previous loop: tight drums + bass + arps + pad, “racing” feel
+  function createEngagingRacerMusic(ctx,out){
+    const tempo=140;
     const beat=60/tempo;
-    const step=beat/2;
+    const step=beat/2; // 8ths
     const state={t:ctx.currentTime,timer:null,on:true};
 
     const bus=ctx.createGain(); bus.gain.value=1.0;
+
     const comp=ctx.createDynamicsCompressor();
-    comp.threshold.value=-18; comp.knee.value=22; comp.ratio.value=7;
-    comp.attack.value=0.004; comp.release.value=0.11;
-    const lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=1800;
+    comp.threshold.value=-16; comp.knee.value=22; comp.ratio.value=8;
+    comp.attack.value=0.003; comp.release.value=0.12;
+
+    const lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=2200;
+
     bus.connect(comp); comp.connect(lp); lp.connect(out);
 
-    function noiseBurst(t,dur,hpFreq,gainVal){
+    function noise(t,dur,hpFreq,gainVal){
       const buffer=ctx.createBuffer(1,ctx.sampleRate*dur,ctx.sampleRate);
       const data=buffer.getChannelData(0);
       for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*Math.exp(-i/(data.length/2.5));
       const src=ctx.createBufferSource(); src.buffer=buffer;
+
       const hp=ctx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=hpFreq;
+
       const g=ctx.createGain();
       g.gain.setValueAtTime(0.0001,t);
-      g.gain.exponentialRampToValueAtTime(gainVal,t+0.008);
+      g.gain.exponentialRampToValueAtTime(gainVal,t+0.006);
       g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+
       src.connect(hp); hp.connect(g); g.connect(bus);
       src.start(t); src.stop(t+dur);
     }
     function kick(t){
       const o=ctx.createOscillator(); const g=ctx.createGain();
       o.type="sine";
-      o.frequency.setValueAtTime(165,t);
-      o.frequency.exponentialRampToValueAtTime(48,t+0.10);
+      o.frequency.setValueAtTime(170,t);
+      o.frequency.exponentialRampToValueAtTime(52,t+0.11);
       g.gain.setValueAtTime(0.0001,t);
-      g.gain.exponentialRampToValueAtTime(0.85,t+0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001,t+0.14);
+      g.gain.exponentialRampToValueAtTime(0.95,t+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+0.15);
       o.connect(g); g.connect(bus);
-      o.start(t); o.stop(t+0.16);
+      o.start(t); o.stop(t+0.17);
     }
     function snare(t){
-      noiseBurst(t,0.11,1200,0.45);
+      noise(t,0.12,1400,0.42);
       const o=ctx.createOscillator(); const g=ctx.createGain();
-      o.type="triangle"; o.frequency.setValueAtTime(190,t);
+      o.type="triangle"; o.frequency.setValueAtTime(210,t);
       g.gain.setValueAtTime(0.0001,t);
       g.gain.exponentialRampToValueAtTime(0.22,t+0.01);
       g.gain.exponentialRampToValueAtTime(0.0001,t+0.09);
       o.connect(g); g.connect(bus);
-      o.start(t); o.stop(t+0.10);
+      o.start(t); o.stop(t+0.11);
     }
-    function hat(t){ noiseBurst(t,0.03,6500,0.18); }
-    function makeDistortionCurve(amount=45){
-      const n=1024, curve=new Float32Array(n);
-      for(let i=0;i<n;i++){
-        const x=i*2/n-1;
-        curve[i]=(3+amount)*x*20*(Math.PI/180)/(Math.PI+amount*Math.abs(x));
-      }
-      return curve;
-    }
-    function riff(t,freq,dur){
-      const o=ctx.createOscillator();
-      const sh=ctx.createWaveShaper(); sh.curve=makeDistortionCurve(70); sh.oversample="4x";
-      const bp=ctx.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=900; bp.Q.value=0.7;
-      const g=ctx.createGain();
-      o.type="sawtooth"; o.frequency.setValueAtTime(freq,t);
-      g.gain.setValueAtTime(0.0001,t);
-      g.gain.exponentialRampToValueAtTime(0.16,t+0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-      o.connect(sh); sh.connect(bp); bp.connect(g); g.connect(bus);
-      o.start(t); o.stop(t+dur+0.02);
-    }
-    function bass(t,freq,dur){
-      const o=ctx.createOscillator();
-      const f=ctx.createBiquadFilter(); f.type="lowpass"; f.frequency.value=240; f.Q.value=0.8;
-      const g=ctx.createGain();
-      o.type="square"; o.frequency.setValueAtTime(freq,t);
-      g.gain.setValueAtTime(0.0001,t);
-      g.gain.exponentialRampToValueAtTime(0.20,t+0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-      o.connect(f); f.connect(g); g.connect(bus);
-      o.start(t); o.stop(t+dur+0.02);
-    }
-    const base=110;
-    const notes=[0,0,3,5,3,0,7,5];
+    function hat(t){ noise(t,0.03,7000,0.18); }
+
+    const base=110; // A2-ish
+    const scale=[0,2,3,5,7,10,12]; // minor-ish
+    const chordProg=[0, -2, -5, -2]; // movement
     const freq=(semi)=>base*Math.pow(2,semi/12);
+
+    function bass(t, root){
+      const o=ctx.createOscillator();
+      const f=ctx.createBiquadFilter(); f.type="lowpass"; f.frequency.value=260; f.Q.value=0.7;
+      const g=ctx.createGain();
+      o.type="square";
+      o.frequency.setValueAtTime(freq(root-12),t);
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.22,t+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+step*1.8);
+      o.connect(f); f.connect(g); g.connect(bus);
+      o.start(t); o.stop(t+step*2);
+    }
+
+    function arp(t, semi){
+      const o=ctx.createOscillator();
+      const g=ctx.createGain();
+      const bp=ctx.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=1400; bp.Q.value=0.9;
+
+      o.type="sawtooth";
+      o.frequency.setValueAtTime(freq(semi+12),t);
+
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.11,t+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+step*1.3);
+
+      o.connect(bp); bp.connect(g); g.connect(bus);
+      o.start(t); o.stop(t+step*1.4);
+    }
+
+    function pad(t, root){
+      const o=ctx.createOscillator();
+      const g=ctx.createGain();
+      const lp2=ctx.createBiquadFilter(); lp2.type="lowpass"; lp2.frequency.value=900;
+      o.type="triangle";
+      o.frequency.setValueAtTime(freq(root),t);
+
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.05,t+0.20);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+beat*2.0);
+
+      o.connect(lp2); lp2.connect(g); g.connect(bus);
+      o.start(t); o.stop(t+beat*2.1);
+    }
 
     function schedule(){
       if(!state.on) return;
       const now=ctx.currentTime;
-      while(state.t < now+0.16){
+      while(state.t < now+0.18){
         const n=Math.round(state.t/step);
-        const barStep=n%16;
-        if(barStep===0||barStep===4||barStep===8||barStep===12) kick(state.t);
-        if(barStep===4||barStep===12) snare(state.t);
+        const bar16=n%16;
+        const bar=Math.floor(n/16);
+        const progRoot=chordProg[bar%chordProg.length];
+
+        // drums
+        if(bar16===0||bar16===4||bar16===8||bar16===12) kick(state.t);
+        if(bar16===4||bar16===12) snare(state.t);
         if(n%2===1) hat(state.t);
 
-        if(barStep===2||barStep===6||barStep===10||barStep===14){
-          const idx=Math.floor(n/2)%notes.length;
-          riff(state.t,freq(notes[idx])*2.0,step*1.3);
+        // bass every 2 steps
+        if(n%2===0) bass(state.t, progRoot);
+
+        // arps: create motion
+        if(bar16===2||bar16===6||bar16===10||bar16===14){
+          const idx=(bar + bar16)%scale.length;
+          arp(state.t, progRoot + scale[idx]);
         }
-        if(barStep===0||barStep===8){
-          const idx=Math.floor(n/2)%notes.length;
-          bass(state.t,freq(notes[idx])*0.5,step*4.0);
-        }
+
+        // pad on downbeat
+        if(bar16===0) pad(state.t, progRoot);
+
         state.t += step;
       }
       state.timer=setTimeout(schedule,50);
     }
-    return { start(){ state.on=true; state.t=ctx.currentTime; schedule(); },
-             stop(){ state.on=false; if(state.timer) clearTimeout(state.timer); } };
+
+    return {
+      start(){ state.on=true; state.t=ctx.currentTime; schedule(); },
+      stop(){ state.on=false; if(state.timer) clearTimeout(state.timer); }
+    };
   }
 
   function sfx(type){
@@ -1185,7 +1255,7 @@
   musicToggle.addEventListener("change",()=>{
     profile.music = musicToggle.checked;
     saveProfile(profile);
-    if(audioCtx && musicGain) musicGain.gain.value = profile.music ? 0.23 : 0.0;
+    if(audioCtx && musicGain) musicGain.gain.value = profile.music ? 0.26 : 0.0;
   });
   sfxToggle.addEventListener("change",()=>{
     profile.sfx = sfxToggle.checked;
@@ -1197,9 +1267,7 @@
     playerNameEl.textContent = profile.name || "Gamer";
     bestHomeEl.textContent = profile.bestScore || 0;
     bankHomeEl.textContent = profile.bankCoins || 0;
-    persHomeEl.textContent = profile.perspective === "first" ? "First-person" : "Third-person";
     difficultySel.value = profile.modeKey || "easy";
-    perspectiveSel.value = profile.perspective || "third";
     musicToggle.checked = !!profile.music;
     sfxToggle.checked = !!profile.sfx;
   }
@@ -1222,11 +1290,6 @@
 
   difficultySel.addEventListener("change",()=>{
     profile.modeKey = difficultySel.value;
-    saveProfile(profile);
-    syncHomeUI();
-  });
-  perspectiveSel.addEventListener("change",()=>{
-    profile.perspective = perspectiveSel.value;
     saveProfile(profile);
     syncHomeUI();
   });
@@ -1286,20 +1349,17 @@
               laneChangeRate: 0.140, laneChangeSpeed: 6.8, laneChangeCooldown:[0.55, 1.25] },
   };
 
-  // Road coordinates for third-person
-  const road3 = { x: W*0.18, w: W*0.64, y: 0, h: H };
+  const road = { x: W*0.18, w: W*0.64, y: 0, h: H };
   const laneCount = 3;
-  const laneW = road3.w / laneCount;
-  const laneCenter = (lane)=> road3.x + laneW*(lane + 0.5);
+  const laneW = road.w / laneCount;
+  const laneCenter = (lane)=> road.x + laneW*(lane + 0.5);
 
-  // Stars
   const stars = Array.from({length: 95}, ()=>({ x:Math.random()*W, y:Math.random()*H, s:0.6+Math.random()*1.6 }));
 
-  // Objects
-  const player = { x: laneCenter(1), y: H*0.78, w: 56, h: 108, vx:0, targetX:null };
-  const traffic=[], coins=[], sparks=[];
+  // FIX: car looked stretched -> adjust proportions here
+  const player = { x: laneCenter(1), y: H*0.78, w: 52, h: 96, vx:0, targetX:null };
+  const traffic=[], coins=[];
 
-  // Run state
   let running=false, paused=false, last=performance.now();
   let score=0, speed=0, roadY=0;
   let runCoins=0;
@@ -1308,36 +1368,44 @@
   let passedCarsThisRun=0;
   let closeCallsThisRun=0;
 
-  // power (from inventory used at run start)
   const power = { shield:0, slowmoT:0, magnetT:0 };
   let reviveUsedThisRun=false;
 
   // ===== Inputs =====
   const keys=new Set();
+
+  // FIX: Don’t capture A/D/W when typing name on homepage
   window.addEventListener("keydown",(e)=>{
-    if(!gameOverlayShown()) return; // only in game
+    if(isTypingTarget()) return;
+    if(!gameOverlayShown()) return;
+
     const k=e.key.toLowerCase();
     keys.add(k);
+
     if(k===" "){ e.preventDefault(); togglePause(); }
     if(k==="r"){ e.preventDefault(); restartRun(); }
     if(k==="arrowleft"||k==="a") e.preventDefault();
     if(k==="arrowright"||k==="d") e.preventDefault();
     if(k==="arrowup"||k==="w") e.preventDefault();
   });
-  window.addEventListener("keyup",(e)=>keys.delete(e.key.toLowerCase()));
 
-  function holdButton(btn, downKey, upKey){
+  window.addEventListener("keyup",(e)=>{
+    if(isTypingTarget()) return;
+    keys.delete(e.key.toLowerCase());
+  });
+
+  function holdButton(btn, downKey){
     const down=(e)=>{ e.preventDefault(); keys.add(downKey); };
-    const up=(e)=>{ e.preventDefault(); keys.delete(upKey); };
+    const up=(e)=>{ e.preventDefault(); keys.delete(downKey); };
     btn.addEventListener("pointerdown", down);
     btn.addEventListener("pointerup", up);
     btn.addEventListener("pointercancel", up);
     btn.addEventListener("pointerleave", up);
   }
-  holdButton(mLeft, "arrowleft", "arrowleft");
-  holdButton(mRight,"arrowright","arrowright");
-  holdButton(mNitro,"arrowup","arrowup");
-  holdButton(mDrift,"shift","shift");
+  holdButton(mLeft, "arrowleft");
+  holdButton(mRight,"arrowright");
+  holdButton(mNitro,"arrowup");
+  holdButton(mDrift,"shift");
   mPause.addEventListener("click",(e)=>{ e.preventDefault(); togglePause(); });
 
   // Drag-to-steer
@@ -1345,7 +1413,7 @@
   function laneFromClientX(clientX){
     const rect=canvas.getBoundingClientRect();
     const x = (clientX - rect.left) * (W / rect.width);
-    const lane = clamp(Math.floor((x - road3.x)/laneW), 0, laneCount-1);
+    const lane = clamp(Math.floor((x - road.x)/laneW), 0, laneCount-1);
     return lane;
   }
   canvas.addEventListener("pointerdown",(e)=>{
@@ -1363,7 +1431,6 @@
   canvas.addEventListener("pointerup",()=>{ dragActive=false; });
   canvas.addEventListener("pointercancel",()=>{ dragActive=false; });
 
-  // Prevent page scrolling in game
   canvas.addEventListener("touchstart",(e)=>{ e.preventDefault(); },{passive:false});
   canvas.addEventListener("touchmove",(e)=>{ e.preventDefault(); },{passive:false});
 
@@ -1389,7 +1456,7 @@
     requestAnimationFrame(anim);
   }
 
-  // ===== Car rendering (opaque, more realistic, no see-through) =====
+  // ===== Drawing =====
   function roundRect(x,y,w,h,r){
     const rr=Math.min(r,w/2,h/2);
     ctx.beginPath();
@@ -1401,13 +1468,17 @@
     ctx.closePath();
   }
 
-  function drawCarThird(x,y,w,h,isPlayer,seed){
+  // More “solid” + normal proportions (no see-through)
+  function drawCar(x,y,w,h,isPlayer,seed){
     ctx.save();
-    // Shadow
-    ctx.fillStyle="rgba(0,0,0,.55)";
-    ctx.beginPath(); ctx.ellipse(x, y+h*0.38, w*0.70, 16, 0, 0, Math.PI*2); ctx.fill();
 
-    // Body (opaque)
+    // ground shadow
+    ctx.fillStyle="rgba(0,0,0,.55)";
+    ctx.beginPath();
+    ctx.ellipse(x, y+h*0.38, w*0.70, 15, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // body
     const bodyGrad = ctx.createLinearGradient(x-w/2,y-h/2,x+w/2,y+h/2);
     if(isPlayer){
       bodyGrad.addColorStop(0,"#2c7df6");
@@ -1419,25 +1490,25 @@
       bodyGrad.addColorStop(1, `hsl(${(hue+40)%360} 90% 55%)`);
     }
     ctx.fillStyle=bodyGrad;
-    roundRect(x-w/2,y-h/2,w,h,18);
+    roundRect(x-w/2,y-h/2,w,h,16);
     ctx.fill();
 
-    // Roof
-    ctx.fillStyle="rgba(0,0,0,.45)";
-    roundRect(x-w*0.26, y-h*0.20, w*0.52, h*0.28, 12);
+    // roof / window (solid dark)
+    ctx.fillStyle="rgba(0,0,0,.50)";
+    roundRect(x-w*0.26, y-h*0.20, w*0.52, h*0.28, 10);
     ctx.fill();
 
-    // Hood highlight
-    ctx.fillStyle="rgba(255,255,255,.16)";
-    roundRect(x-w*0.30, y-h*0.30, w*0.60, h*0.18, 12);
+    // hood highlight
+    ctx.fillStyle="rgba(255,255,255,.14)";
+    roundRect(x-w*0.30, y-h*0.32, w*0.60, h*0.18, 10);
     ctx.fill();
 
-    // Lights
+    // headlights
     ctx.fillStyle="rgba(255,255,255,.95)";
     ctx.fillRect(x-w*0.34,y-h*0.46,w*0.18,6);
     ctx.fillRect(x+w*0.16,y-h*0.46,w*0.18,6);
 
-    // Tail lights
+    // tail lights
     ctx.fillStyle="rgba(255,70,110,.92)";
     ctx.fillRect(x-w*0.34,y+h*0.40,w*0.18,6);
     ctx.fillRect(x+w*0.16,y+h*0.40,w*0.18,6);
@@ -1445,85 +1516,6 @@
     ctx.restore();
   }
 
-  // First-person: draw obstacles as “billboards” in perspective
-  function fpScale(y){
-    // y from 0..H -> far..near
-    const t = clamp(y/H, 0, 1);
-    return 0.25 + t*1.35; // near bigger
-  }
-
-  function fpRoadX(t){ // t in [0..1] across road
-    // perspective: road converges to center
-    const center=W/2;
-    const topW=W*0.22;
-    const botW=W*0.82;
-    // choose y by caller; this helper expects computed width externally
-    return center + (t-0.5);
-  }
-
-  function roadWidthAtY(y){
-    const t=clamp(y/H,0,1);
-    const topW=W*0.22;
-    const botW=W*0.82;
-    return lerp(topW, botW, Math.pow(t,0.95));
-  }
-  function roadLeftAtY(y){
-    const w=roadWidthAtY(y);
-    return W/2 - w/2;
-  }
-  function laneCenterFP(lane, y){
-    const w=roadWidthAtY(y);
-    const left=W/2 - w/2;
-    return left + w*(lane+0.5)/laneCount;
-  }
-
-  function drawCarFirst(xLane, y, w, h, isPlayer, seed){
-    // In first-person, player car is not drawn (we draw hood)
-    // For traffic, xLane is already an x in screen coords
-    ctx.save();
-    const s = fpScale(y);
-    const ww = w*s;
-    const hh = h*s;
-
-    // Solid body
-    const x=xLane;
-    ctx.fillStyle = isPlayer ? "#38f0d2" : `hsl(${Math.floor(200+seed*90)} 85% 58%)`;
-    roundRect(x-ww/2, y-hh/2, ww, hh, 16*s);
-    ctx.fill();
-
-    // Roof
-    ctx.fillStyle="rgba(0,0,0,.55)";
-    roundRect(x-ww*0.22, y-hh*0.18, ww*0.44, hh*0.26, 12*s);
-    ctx.fill();
-
-    // Lights
-    ctx.fillStyle="rgba(255,255,255,.9)";
-    ctx.fillRect(x-ww*0.30, y-hh*0.46, ww*0.14, 5*s);
-    ctx.fillRect(x+ww*0.16, y-hh*0.46, ww*0.14, 5*s);
-
-    ctx.restore();
-  }
-
-  function drawPlayerHood(){
-    // Big hood at bottom for first-person
-    ctx.save();
-    const hoodW=W*0.72;
-    const hoodH=H*0.30;
-    const x=W/2, y=H*0.88;
-    const grad=ctx.createLinearGradient(x-hoodW/2,y-hoodH/2,x+hoodW/2,y+hoodH/2);
-    grad.addColorStop(0,"#2c7df6");
-    grad.addColorStop(0.55,"#38f0d2");
-    grad.addColorStop(1,"#2150d8");
-    ctx.fillStyle=grad;
-    roundRect(x-hoodW/2,y-hoodH/2,hoodW,hoodH,28);
-    ctx.fill();
-    ctx.fillStyle="rgba(255,255,255,.14)";
-    roundRect(x-hoodW*0.36,y-hoodH*0.34,hoodW*0.72,hoodH*0.18,18);
-    ctx.fill();
-    ctx.restore();
-  }
-
-  // ===== Coins =====
   function drawCoin(c){
     ctx.save();
     const pulse=1+Math.sin(c.spin)*0.12;
@@ -1541,13 +1533,10 @@
     ctx.restore();
   }
 
-  // ===== Road rendering =====
-  function drawRoadThird(){
-    // bg
+  function drawRoad(){
     ctx.fillStyle="#050814";
     ctx.fillRect(0,0,W,H);
 
-    // stars
     ctx.globalAlpha=0.65;
     ctx.fillStyle="rgba(255,255,255,.9)";
     for(const st of stars){
@@ -1557,27 +1546,25 @@
     }
     ctx.globalAlpha=1;
 
-    // road
-    const grad = ctx.createLinearGradient(road3.x,0,road3.x+road3.w,0);
+    const grad = ctx.createLinearGradient(road.x,0,road.x+road.w,0);
     grad.addColorStop(0,"rgba(20,240,255,.10)");
     grad.addColorStop(0.5,"rgba(255,255,255,.05)");
     grad.addColorStop(1,"rgba(255,70,220,.10)");
     ctx.fillStyle=grad;
-    roundRect(road3.x,0,road3.w,H,22);
+    roundRect(road.x,0,road.w,H,22);
     ctx.fill();
 
     ctx.strokeStyle="rgba(255,255,255,.16)";
     ctx.lineWidth=2;
-    roundRect(road3.x,0,road3.w,H,22);
+    roundRect(road.x,0,road.w,H,22);
     ctx.stroke();
 
-    // lane lines
     ctx.save();
-    ctx.beginPath(); ctx.rect(road3.x,0,road3.w,H); ctx.clip();
+    ctx.beginPath(); ctx.rect(road.x,0,road.w,H); ctx.clip();
     ctx.strokeStyle="rgba(255,255,255,.22)";
     ctx.lineWidth=2;
     for(let i=1;i<laneCount;i++){
-      const lx=road3.x+laneW*i;
+      const lx=road.x+laneW*i;
       for(let y=-80;y<H+80;y+=60){
         const yy=y+(roadY%60);
         ctx.beginPath();
@@ -1586,77 +1573,6 @@
         ctx.stroke();
       }
     }
-    ctx.restore();
-  }
-
-  function drawRoadFirst(){
-    ctx.fillStyle="#050814";
-    ctx.fillRect(0,0,W,H);
-
-    // stars
-    ctx.globalAlpha=0.65;
-    ctx.fillStyle="rgba(255,255,255,.9)";
-    for(const st of stars){
-      ctx.fillRect(st.x,st.y,st.s,st.s);
-      st.y += (speed*0.02)*(st.s)*0.03;
-      if(st.y>H){ st.y=-5; st.x=Math.random()*W; }
-    }
-    ctx.globalAlpha=1;
-
-    // road polygon with perspective
-    ctx.save();
-    const topY=H*0.08;
-    const botY=H*1.02;
-
-    const topW=W*0.22;
-    const botW=W*0.82;
-
-    ctx.fillStyle="rgba(255,255,255,.05)";
-    ctx.beginPath();
-    ctx.moveTo(W/2 - topW/2, topY);
-    ctx.lineTo(W/2 + topW/2, topY);
-    ctx.lineTo(W/2 + botW/2, botY);
-    ctx.lineTo(W/2 - botW/2, botY);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.strokeStyle="rgba(255,255,255,.18)";
-    ctx.lineWidth=2;
-    ctx.stroke();
-
-    // lane dividers (perspective)
-    ctx.strokeStyle="rgba(255,255,255,.22)";
-    for(let i=1;i<laneCount;i++){
-      const t=i/laneCount;
-      const xTop = (W/2 - topW/2) + topW*t;
-      const xBot = (W/2 - botW/2) + botW*t;
-      ctx.beginPath();
-      ctx.moveTo(xTop, topY);
-      ctx.lineTo(xBot, botY);
-      ctx.stroke();
-    }
-
-    // moving dashed center lines (simulate forward motion)
-    ctx.save();
-    ctx.strokeStyle="rgba(255,255,255,.22)";
-    ctx.lineWidth=2;
-    const dashCount=22;
-    for(let i=0;i<dashCount;i++){
-      const yy = (i/dashCount)*H;
-      const y = (yy + (roadY%60)*1.6) % H;
-      const t = clamp(y/H,0,1);
-      const w = roadWidthAtY(y);
-      const left = roadLeftAtY(y);
-      const segW = w*0.06;
-      const cx = left + w*0.5;
-      const segH = 10 + t*18;
-      ctx.beginPath();
-      ctx.moveTo(cx - segW/2, y);
-      ctx.lineTo(cx + segW/2, y);
-      ctx.stroke();
-    }
-    ctx.restore();
-
     ctx.restore();
   }
 
@@ -1670,10 +1586,9 @@
     if(traffic.some(t=>t.targetLane===lane && t.y<170)) return;
 
     traffic.push({
-      lane,
       x: laneCenter(lane),
       y: -150,
-      w: 56, h: 108,
+      w: 52, h: 96,
       rel: lerp(mode.trafficRelMin, mode.trafficRelMax, Math.random()),
       seed: Math.random(),
       targetLane: lane,
@@ -1690,19 +1605,16 @@
 
   // ===== Apply inventory to run =====
   function consumeInventoryForRun(){
-    // Pull up to caps into active power for the run
     power.shield = Math.min(profile.inv.shield||0, 2);
     power.slowmoT = Math.min(profile.inv.slowmo||0, 3) * 4.5;
     power.magnetT = Math.min(profile.inv.magnet||0, 3) * 6.0;
     nitro = clamp(1.0 + Math.min(profile.inv.nitro||0, 3)*0.25, 0, 1.75);
 
-    // Consume the used items from inventory
     profile.inv.shield = (profile.inv.shield||0) - power.shield;
     profile.inv.slowmo = (profile.inv.slowmo||0) - Math.min(profile.inv.slowmo||0, 3);
     profile.inv.magnet = (profile.inv.magnet||0) - Math.min(profile.inv.magnet||0, 3);
     profile.inv.nitro  = (profile.inv.nitro||0)  - Math.min(profile.inv.nitro||0, 3);
 
-    // clamp to >= 0
     for(const k of ["shield","slowmo","magnet","nitro","life"]){
       profile.inv[k]=Math.max(0, profile.inv[k]||0);
     }
@@ -1727,7 +1639,6 @@
     hudRunCoins.textContent = runCoins;
     hudBank.textContent = profile.bankCoins || 0;
     hudMode.textContent = mode.name;
-    hudView.textContent = profile.perspective==="first" ? "First-person" : "Third-person";
     nitroFill.style.width = Math.round(clamp(nitro,0,1)*100)+"%";
   }
 
@@ -1738,7 +1649,6 @@
     last=performance.now();
   }
   pauseBtn.addEventListener("click",togglePause);
-  mPause.addEventListener("click",(e)=>{ e.preventDefault(); togglePause(); });
 
   function gameOverlayShown(){ return gameOverlay.style.display==="block"; }
 
@@ -1752,7 +1662,6 @@
   function hideGame(){
     gameOverlay.style.display="none";
     gameOverlay.setAttribute("aria-hidden","true");
-    // stop running but keep on home
     running=false;
     paused=false;
     closeRevive();
@@ -1767,26 +1676,9 @@
     hideGame();
   });
 
-  // ===== View toggle =====
-  toggleViewBtn.addEventListener("click",()=>{
-    profile.perspective = (profile.perspective==="first") ? "third" : "first";
-    saveProfile(profile);
-    syncHomeUI();
-    syncGameHUD();
-  });
-
-  // ===== Start game (Play) =====
-  playHome.addEventListener("click",()=>{
-    // MUST NOT start on homepage: only on click -> now start
-    showGame();
-    startRun();
-  });
-
   // ===== Run start/reset =====
   function startRun(){
     const mode = MODES[profile.modeKey] || MODES.easy;
-
-    // reset
     score=0;
     speed=mode.baseSpeed;
     roadY=0;
@@ -1797,7 +1689,6 @@
 
     passedCarsThisRun=0;
     closeCallsThisRun=0;
-
     reviveUsedThisRun=false;
 
     player.x=laneCenter(1);
@@ -1806,9 +1697,7 @@
 
     traffic.length=0;
     coins.length=0;
-    sparks.length=0;
 
-    // consume inventory to activate buffs for this run
     consumeInventoryForRun();
 
     running=true;
@@ -1827,7 +1716,6 @@
 
   // ===== Revive modal =====
   function openRevive(opts){
-    // opts: { canUseToken:boolean, canBuy:boolean, buyCost:number }
     reviveOverlay.style.display="grid";
     const tokens = profile.inv.life||0;
     reviveTitle.textContent = "Game Over";
@@ -1882,11 +1770,9 @@
   });
 
   function doRevive(){
-    // bring player back, clear nearby obstacles, give short shield
     power.shield = Math.max(power.shield, 1);
     score = Math.max(0, score - 80);
 
-    // clear traffic close to player
     for(let i=traffic.length-1;i>=0;i--){
       if(Math.abs(traffic[i].y - player.y) < 220) traffic.splice(i,1);
     }
@@ -1897,7 +1783,10 @@
     sfx("pickup");
   }
 
-  // ===== Main update =====
+  // ===== Spawns =====
+  let spawnTimer=0, coinTimer=0;
+
+  // ===== Update =====
   function update(dtRaw){
     const mode = MODES[profile.modeKey] || MODES.easy;
 
@@ -1920,7 +1809,6 @@
     roadY += effectiveSpeed*dt;
     if(roadY>60) roadY-=60;
 
-    // steering (third-person lanes)
     const steerPower = driftActive ? 3400 : 2400;
     if(steerLeft) player.vx -= steerPower*dt;
     if(steerRight)player.vx += steerPower*dt;
@@ -1935,11 +1823,10 @@
     player.vx *= Math.pow(friction, dt);
     player.x += player.vx*dt;
 
-    const minX = road3.x + player.w*0.55;
-    const maxX = road3.x + road3.w - player.w*0.55;
+    const minX = road.x + player.w*0.55;
+    const maxX = road.x + road.w - player.w*0.55;
     player.x = clamp(player.x, minX, maxX);
 
-    // spawns
     spawnTimer += dt * mode.spawnRate * (0.85 + effectiveSpeed/560);
     if(spawnTimer>=1){
       spawnTimer=0;
@@ -1955,7 +1842,6 @@
       if(profile.modeKey!=="easy" && Math.random()<0.25) spawnCoin();
     }
 
-    // traffic
     for(let i=traffic.length-1;i>=0;i--){
       const t=traffic[i];
       t.y += effectiveSpeed*dt*t.rel;
@@ -1975,14 +1861,12 @@
         if(safe) t.targetLane=next;
         t.laneChangeCooldown = lerp(mode.laneChangeCooldown[0], mode.laneChangeCooldown[1], Math.random());
       }
-
       const tx=laneCenter(t.targetLane);
       t.x += (tx - t.x) * dt * mode.laneChangeSpeed;
 
       if(t.y>H+170) traffic.splice(i,1);
     }
 
-    // coins
     for(let i=coins.length-1;i>=0;i--){
       const c=coins[i];
       c.y += effectiveSpeed*dt*0.90;
@@ -1998,12 +1882,10 @@
       if(c.y>H+60) coins.splice(i,1);
     }
 
-    // score
     score += dt*(effectiveSpeed*0.055);
     if(nitroActive) score += dt*22;
     if(driftActive && (steerLeft||steerRight)) score += dt*10;
 
-    // close calls
     for(const t of traffic){
       const d = distRect(player.x, player.y, player.w, player.h, t.x, t.y, t.w, t.h);
       if(d < 10 && d > 0){
@@ -2016,7 +1898,6 @@
       }
     }
 
-    // collect coins
     for(let i=coins.length-1;i>=0;i--){
       const c=coins[i];
       if(rectHit(player.x, player.y, player.w*0.9, player.h*0.9, c.x, c.y, c.r*2, c.r*2)){
@@ -2027,7 +1908,6 @@
       }
     }
 
-    // collision
     for(const t of traffic){
       if(rectHit(player.x, player.y, player.w, player.h, t.x, t.y, t.w, t.h)){
         handleCrash();
@@ -2035,14 +1915,11 @@
       }
     }
 
-    // timers
     power.slowmoT = Math.max(0, power.slowmoT - dtRaw);
     power.magnetT = Math.max(0, power.magnetT - dtRaw);
 
-    // missions update
     updateMissionsProgress();
 
-    // best
     const sc=Math.floor(score);
     if(sc > (profile.bestScore||0)){
       profile.bestScore=sc;
@@ -2067,12 +1944,10 @@
     paused=false;
     sfx("crash");
 
-    // Offer revive (once per run)
     if(!reviveUsedThisRun){
       const tokens = profile.inv.life||0;
       const canUseToken = tokens > 0;
       const canBuy = (profile.bankCoins||0) >= 100;
-
       openRevive({ canUseToken, canBuy, buyCost:100 });
       return;
     }
@@ -2081,15 +1956,11 @@
     hideGame();
   }
 
-  async function endRunAndSubmit(isExit){
-    // bank run coins
+  async function endRunAndSubmit(){
     profile.bankCoins += runCoins;
     runCoins = 0;
-
-    // commit best (already tracked)
     saveProfile(profile);
 
-    // submit online leaderboard
     try{
       if (SB.enabled() && profile.name && profile.name !== "Gamer"){
         await SB.saveBest(profile.name, profile.bestScore || 0);
@@ -2104,89 +1975,32 @@
   }
 
   // ===== Draw =====
-  function drawThird(){
-    drawRoadThird();
-
-    // coins
-    for(const c of coins) drawCoin(c);
-
-    // traffic
-    for(const t of traffic) drawCarThird(t.x,t.y,t.w,t.h,false,t.seed);
-
-    // player
-    drawCarThird(player.x,player.y,player.w,player.h,true,0.3);
-
-    // pause overlay
-    if(paused && running){
-      ctx.fillStyle="rgba(0,0,0,.45)";
-      ctx.fillRect(0,0,W,H);
-      ctx.fillStyle="rgba(255,255,255,.92)";
-      ctx.font="950 44px system-ui, sans-serif";
-      ctx.textAlign="center";
-      ctx.fillText("PAUSED", W/2, H/2);
-    }
-  }
-
-  function drawFirst(){
-    drawRoadFirst();
-
-    // Convert world y into screen y (still using same y positions)
-    // For first-person illusion, we map object y to a closer range
-    const mapY = (y)=> clamp( (y / H) * (H*0.98), 0, H*0.98 );
-
-    // coins
-    for(const c of coins){
-      const y = mapY(c.y);
-      const x = laneCenterFP(c.lane, y);
-      ctx.save();
-      const s = fpScale(y);
-      const cc = { x, y, r: c.r*s, spin:c.spin };
-      drawCoin(cc);
-      ctx.restore();
-    }
-
-    // traffic
-    for(const t of traffic){
-      const y = mapY(t.y);
-      const x = laneCenterFP(t.targetLane, y);
-      drawCarFirst(x, y, t.w, t.h, false, t.seed);
-    }
-
-    // player hood
-    drawPlayerHood();
-
-    if(paused && running){
-      ctx.fillStyle="rgba(0,0,0,.45)";
-      ctx.fillRect(0,0,W,H);
-      ctx.fillStyle="rgba(255,255,255,.92)";
-      ctx.font="950 44px system-ui, sans-serif";
-      ctx.textAlign="center";
-      ctx.fillText("PAUSED", W/2, H/2);
-    }
-  }
-
   function draw(){
-    if(profile.perspective==="first") drawFirst();
-    else drawThird();
+    drawRoad();
 
-    // If not running (between runs), show hint
-    if(!running && !reviveOverlayVisible()){
+    for(const c of coins) drawCoin(c);
+    for(const t of traffic) drawCar(t.x,t.y,t.w,t.h,false,t.seed);
+    drawCar(player.x,player.y,player.w,player.h,true,0.3);
+
+    if(power.shield>0){
       ctx.save();
-      ctx.fillStyle="rgba(0,0,0,.34)";
-      ctx.fillRect(0,0,W,H);
-      ctx.fillStyle="rgba(255,255,255,.92)";
-      ctx.font="950 36px system-ui, sans-serif";
-      ctx.textAlign="center";
-      ctx.fillText("Tap PLAY on Home", W/2, H/2 - 10);
-      ctx.font="700 14px system-ui, sans-serif";
-      ctx.fillStyle="rgba(234,240,255,.85)";
-      ctx.fillText("Exit button returns to homepage anytime.", W/2, H/2 + 20);
+      ctx.globalAlpha=0.7;
+      ctx.strokeStyle="rgba(124,255,234,.9)";
+      ctx.lineWidth=3;
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, 58, 0, Math.PI*2);
+      ctx.stroke();
       ctx.restore();
     }
-  }
 
-  function reviveOverlayVisible(){
-    return reviveOverlay.style.display==="grid";
+    if(paused && running){
+      ctx.fillStyle="rgba(0,0,0,.45)";
+      ctx.fillRect(0,0,W,H);
+      ctx.fillStyle="rgba(255,255,255,.92)";
+      ctx.font="950 44px system-ui, sans-serif";
+      ctx.textAlign="center";
+      ctx.fillText("PAUSED", W/2, H/2);
+    }
   }
 
   // ===== Loop =====
@@ -2201,9 +2015,19 @@
   }
 
   // ===== Play should not autostart =====
-  // So: we never show game overlay until Play is clicked.
+  playHome.addEventListener("click",()=>{
+    showGame();
+    startRun();
+  });
 
-  // ===== Policies / init =====
+  // ===== Pause/Exit =====
+  function togglePause(){
+    if(!running) return;
+    paused=!paused;
+    last=performance.now();
+  }
+
+  // ===== init =====
   ensureDailyMissions();
   syncHomeUI();
   syncShopUI();
@@ -2213,17 +2037,87 @@
 
   nameInput.value = profile.name && profile.name !== "Gamer" ? profile.name : "Gamer";
 
-  // First load: show Account tab by default
   setTab("account");
 
-  // Keep audio “user gesture” friendly
   window.addEventListener("pointerdown",()=>{ ensureAudio(); audioCtx?.resume?.(); },{once:false});
-
-  // Revive overlay close safety
-  function closeRevive(){ reviveOverlay.style.display="none"; }
-  endBtn.addEventListener("click", closeRevive);
-
   requestAnimationFrame(loop);
+
+  // ===== Leaders =====
+  async function syncLeaderboard(){
+    if(!SB.enabled()){
+      lbStatusEl.innerHTML = `<span class="statusBad">Leaderboard not configured.</span>`;
+      lbListEl.innerHTML = "";
+      return;
+    }
+    try{
+      lbStatusEl.innerHTML = `<span class="statusOk">Loading live leaderboard…</span>`;
+      const top = await SB.top10();
+      lbStatusEl.innerHTML = `<span class="statusOk">Live leaderboard:</span>`;
+      lbListEl.innerHTML="";
+      if(!top || !top.length){
+        lbListEl.innerHTML = `<div class="small">No scores yet. Play once and finish a run to submit.</div>`;
+        return;
+      }
+      for(let i=0;i<top.length;i++){
+        const row=document.createElement("div");
+        row.className="lbRow";
+        row.innerHTML=`<span>#${i+1} <b>${escapeHtml(top[i].name)}</b></span><span><b>${top[i].score}</b></span>`;
+        lbListEl.appendChild(row);
+      }
+    } catch {
+      lbStatusEl.innerHTML = `<span class="statusBad">Couldn’t load leaderboard.</span>`;
+      lbListEl.innerHTML = `<div class="small">Check Supabase RLS SELECT policy for leaderboard table.</div>`;
+    }
+  }
+
+  // ===== close helper =====
+  function closeRevive(){ reviveOverlay.style.display="none"; }
+
+  // ===== tiny SFX wrapper =====
+  function sfx(type){
+    if(!profile.sfx) return;
+    ensureAudio();
+    const t0=audioCtx.currentTime;
+    const g=audioCtx.createGain(); g.connect(master);
+
+    if(type==="coin"){
+      const o=audioCtx.createOscillator();
+      o.type="square";
+      o.frequency.setValueAtTime(980,t0);
+      o.frequency.exponentialRampToValueAtTime(1560,t0+0.06);
+      g.gain.setValueAtTime(0.0001,t0);
+      g.gain.exponentialRampToValueAtTime(0.22,t0+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+0.12);
+      o.connect(g); o.start(t0); o.stop(t0+0.13);
+      return;
+    }
+    if(type==="pickup"){
+      const o=audioCtx.createOscillator();
+      o.type="triangle";
+      o.frequency.setValueAtTime(540,t0);
+      o.frequency.exponentialRampToValueAtTime(860,t0+0.08);
+      g.gain.setValueAtTime(0.0001,t0);
+      g.gain.exponentialRampToValueAtTime(0.20,t0+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+0.16);
+      o.connect(g); o.start(t0); o.stop(t0+0.17);
+      return;
+    }
+    if(type==="crash"){
+      const dur=0.35;
+      const buffer=audioCtx.createBuffer(1,audioCtx.sampleRate*dur,audioCtx.sampleRate);
+      const data=buffer.getChannelData(0);
+      for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*Math.exp(-i/(data.length/4));
+      const src=audioCtx.createBufferSource(); src.buffer=buffer;
+      const f=audioCtx.createBiquadFilter(); f.type="lowpass"; f.frequency.value=900;
+      g.gain.setValueAtTime(0.0001,t0);
+      g.gain.exponentialRampToValueAtTime(0.50,t0+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+      src.connect(f); f.connect(g);
+      src.start(t0); src.stop(t0+dur);
+      return;
+    }
+  }
+
 })();
 </script>
 </body>
