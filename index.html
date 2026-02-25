@@ -247,7 +247,6 @@
       height:46px;
       border-radius:12px;
       border:1px solid rgba(255,255,255,.12);
-      background:linear-gradient(135deg, rgba(124,255,234,.35), rgba(255,106,223,.18));
       position:relative;
       overflow:hidden;
     }
@@ -286,6 +285,8 @@
       border-radius:18px;
       padding:16px;
       box-shadow:0 24px 70px rgba(0,0,0,.6);
+      position:relative;
+      overflow:hidden;
     }
     .modal h2{
       margin:0 0 8px;
@@ -313,6 +314,94 @@
     body.playing canvas{aspect-ratio:auto; height:100%; width:100%; border-radius:0}
     @media (max-width:760px){
       body.playing .board{height:calc(100vh - 110px)}
+    }
+
+    /* ===== Crate Animation ===== */
+    .crateStage{
+      display:grid;
+      place-items:center;
+      padding:22px 10px 8px;
+    }
+    .crateBox{
+      width:min(420px, 86vw);
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(700px 250px at 50% 20%, rgba(255,210,77,.20), transparent 60%),
+        radial-gradient(700px 250px at 50% 85%, rgba(255,106,223,.18), transparent 60%),
+        rgba(0,0,0,.22);
+      box-shadow: 0 20px 70px rgba(0,0,0,.55);
+      padding:16px;
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .crateBox::before{
+      content:"";
+      position:absolute; inset:-40%;
+      background: conic-gradient(from 90deg, rgba(255,210,77,.35), rgba(124,255,234,.25), rgba(255,106,223,.25), rgba(255,210,77,.35));
+      filter: blur(10px);
+      animation: spin 1.7s linear infinite;
+      opacity:.55;
+    }
+    .crateBox > *{position:relative}
+    @keyframes spin{ to{ transform: rotate(360deg);} }
+
+    .jackpot{
+      font-family:Orbitron,system-ui,sans-serif;
+      font-weight:900;
+      letter-spacing:.8px;
+      margin:8px 0 6px;
+      font-size:18px;
+      text-transform:uppercase;
+    }
+    .sparkleLine{color:rgba(255,255,255,.75); font-weight:800; margin:0 0 14px}
+    .revealCard{
+      margin:12px auto 8px;
+      width:min(320px, 80vw);
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.18);
+      padding:12px;
+      display:none;
+      transform: translateY(10px) scale(.98);
+      opacity:0;
+      animation: popin .55s ease forwards;
+    }
+    @keyframes popin{
+      to{ opacity:1; transform: translateY(0) scale(1); }
+    }
+    .revealSwatch{
+      height:56px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.16);
+      margin-top:10px;
+      position:relative;
+      overflow:hidden;
+    }
+    .burst{
+      position:absolute;
+      left:50%; top:50%;
+      width:8px; height:8px;
+      border-radius:999px;
+      background:rgba(255,255,255,.85);
+      box-shadow:
+        0 -120px 0 rgba(255,210,77,.85),
+        90px -90px 0 rgba(124,255,234,.75),
+        120px 0 0 rgba(255,106,223,.75),
+        90px 90px 0 rgba(255,210,77,.75),
+        0 120px 0 rgba(124,255,234,.75),
+        -90px 90px 0 rgba(255,106,223,.70),
+        -120px 0 0 rgba(255,210,77,.75),
+        -90px -90px 0 rgba(124,255,234,.70);
+      transform: translate(-50%,-50%) scale(.1);
+      opacity:0;
+      animation: burst 0.7s ease forwards;
+      display:none;
+    }
+    @keyframes burst{
+      40%{opacity:1}
+      to{transform: translate(-50%,-50%) scale(1.15); opacity:0}
     }
   </style>
 </head>
@@ -413,8 +502,8 @@
           <div class="card" style="margin-top:10px">
             <h3>How to Play</h3>
             <p>
-              Dodge cars, grab coins & buffs. You have <b>2 lives</b> each run.
-              Bonus Level is <b>10 seconds</b> and starts at <b>500 points</b> (then +1000 after bonus ends).
+              Dodge cars, avoid lane obstacles, grab coins & buffs. You have <b>2 lives</b> each run.
+              Bonus Level is <b>12 seconds</b> and starts at <b>500 points</b> (then +1000 after bonus ends).
               🎁 Gift car gives 500–600 coins.
             </p>
           </div>
@@ -463,7 +552,7 @@
 
       <div class="card" id="garageCard">
         <h3>Garage</h3>
-        <p>Buy skins with coins (from 600). Rarity affects underglow style. Daily crate gives a random skin.</p>
+        <p>Buy skins with coins (legendary = 5000). Daily crate gives a random skin (no legendary).</p>
         <div class="row" style="margin-top:10px">
           <button id="crateBtn">OPEN DAILY CRATE</button>
           <span class="pill">Crate: <b id="crateStatus">—</b></span>
@@ -520,6 +609,33 @@
         <button id="reviveBtn">REVIVE (100 🪙)</button>
         <button id="shareBtn">SHARE</button>
         <button id="backHomeBtn">BACK TO HOME</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Crate Animation Modal -->
+  <div class="overlay" id="crateModal">
+    <div class="modal">
+      <h2>Daily Crate</h2>
+      <p id="crateLine">Spinning…</p>
+      <div class="crateStage">
+        <div class="crateBox">
+          <div class="jackpot" id="crateTitle">🎰 JACKPOT SPIN</div>
+          <p class="sparkleLine" id="crateSub">Good luck, racer…</p>
+          <div class="burst" id="crateBurst"></div>
+
+          <div class="revealCard" id="crateReveal">
+            <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+              <div style="font-family:Orbitron,system-ui,sans-serif;font-weight:900" id="revealName">—</div>
+              <div style="font-weight:900;color:var(--muted)" id="revealRarity">—</div>
+            </div>
+            <div class="revealSwatch" id="revealSwatch"></div>
+            <div style="margin-top:10px;color:var(--muted);font-weight:900" id="revealMsg">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button id="crateCloseBtn">CLOSE</button>
       </div>
     </div>
   </div>
@@ -630,6 +746,18 @@
   const musicToggle = document.getElementById("musicToggle");
   const sfxToggle = document.getElementById("sfxToggle");
 
+  const crateModal = document.getElementById("crateModal");
+  const crateCloseBtn = document.getElementById("crateCloseBtn");
+  const crateLine = document.getElementById("crateLine");
+  const crateTitle = document.getElementById("crateTitle");
+  const crateSub = document.getElementById("crateSub");
+  const crateBurst = document.getElementById("crateBurst");
+  const crateReveal = document.getElementById("crateReveal");
+  const revealName = document.getElementById("revealName");
+  const revealRarity = document.getElementById("revealRarity");
+  const revealSwatch = document.getElementById("revealSwatch");
+  const revealMsg = document.getElementById("revealMsg");
+
   const emojiLayer = document.getElementById("emojiLayer");
 
   const mLeft = document.getElementById("mLeft");
@@ -669,12 +797,12 @@
 
   // ===== Difficulty =====
   const MODES = {
-    easy:   { name:"Easy",   baseSpeed: 210, accel: 8.5, spawnRate: 0.78, maxTraffic: 6,  wiggle: 22,
-              trafficRelMin:0.58, trafficRelMax:0.98, laneChangeRate: 0.045, laneChangeSpeed: 2.6, laneChangeCooldown:[1.4, 2.4] },
-    medium: { name:"Medium", baseSpeed: 270, accel: 11.5,spawnRate: 1.05, maxTraffic: 10, wiggle: 50,
-              trafficRelMin:0.62, trafficRelMax:1.12, laneChangeRate: 0.090, laneChangeSpeed: 5.0, laneChangeCooldown:[0.85, 1.6] },
-    hard:   { name:"Hard",   baseSpeed: 325, accel: 15.0,spawnRate: 1.30, maxTraffic: 13, wiggle: 70,
-              trafficRelMin:0.66, trafficRelMax:1.22, laneChangeRate: 0.140, laneChangeSpeed: 7.0, laneChangeCooldown:[0.55, 1.2] },
+    easy:   { name:"Easy",   baseSpeed: 220, accel: 9.0, spawnRate: 0.85, maxTraffic: 7,  wiggle: 26,
+              trafficRelMin:0.62, trafficRelMax:1.02, laneChangeRate: 0.055, laneChangeSpeed: 3.4, laneChangeCooldown:[1.2, 2.2] },
+    medium: { name:"Medium", baseSpeed: 285, accel: 12.0,spawnRate: 1.10, maxTraffic: 11, wiggle: 54,
+              trafficRelMin:0.66, trafficRelMax:1.18, laneChangeRate: 0.105, laneChangeSpeed: 5.6, laneChangeCooldown:[0.75, 1.45] },
+    hard:   { name:"Hard",   baseSpeed: 340, accel: 15.2,spawnRate: 1.40, maxTraffic: 15, wiggle: 78,
+              trafficRelMin:0.70, trafficRelMax:1.28, laneChangeRate: 0.165, laneChangeSpeed: 7.4, laneChangeCooldown:[0.50, 1.10] },
   };
 
   // ===== Road/Lanes =====
@@ -685,7 +813,7 @@
   const WALL_MARGIN = 18;
 
   // ===== Profile =====
-  const PROFILE_KEY = "neon_racer_profile_v5";
+  const PROFILE_KEY = "neon_racer_profile_v6";
   function loadProfile(){
     try{ return JSON.parse(localStorage.getItem(PROFILE_KEY) || "null"); } catch { return null; }
   }
@@ -699,16 +827,27 @@
     legendary:{ name:"Legendary",glow:"rgba(255,210,77,.68)",  chip:"rgba(255,210,77,.22)" },
   };
 
-  // Skins (costs start from 600)
+  // ✅ more skins + legendary price = 5000
   const SKINS = [
     { id:"stock",    name:"Stock Neon",  cost:0,    rarity:"common",   grad:["#46c8ff","#7cffea"] },
+
     { id:"midnight", name:"Midnight",    cost:600,  rarity:"common",   grad:["#2b2f52","#6a7cff"] },
-    { id:"inferno",  name:"Inferno",     cost:800,  rarity:"rare",     grad:["#ff5a84","#ffd24d"] },
-    { id:"toxic",    name:"Toxic Lime",  cost:950,  rarity:"rare",     grad:["#a6ff4d","#7cffea"] },
-    { id:"royal",    name:"Royal Pulse", cost:1200, rarity:"epic",     grad:["#7a5cff","#46c8ff"] },
-    { id:"sakura",   name:"Sakura Rush", cost:1350, rarity:"epic",     grad:["#ff6adf","#7cffea"] },
-    { id:"carbon",   name:"Carbon",      cost:1700, rarity:"legendary",grad:["#2a2f3a","#8899aa"] },
-    { id:"aurum",    name:"Aurum",       cost:1900, rarity:"legendary",grad:["#ffd24d","#ff5a84"] },
+    { id:"storm",    name:"Storm Runner",cost:650,  rarity:"common",   grad:["#3a465e","#46c8ff"] },
+    { id:"ember",    name:"Ember",       cost:700,  rarity:"common",   grad:["#ff7a3a","#ffd24d"] },
+    { id:"aqua",     name:"Aqua Blade",  cost:800,  rarity:"common",   grad:["#7cffea","#2f6cff"] },
+
+    { id:"inferno",  name:"Inferno",     cost:900,  rarity:"rare",     grad:["#ff5a84","#ffd24d"] },
+    { id:"toxic",    name:"Toxic Lime",  cost:1050, rarity:"rare",     grad:["#a6ff4d","#7cffea"] },
+    { id:"ice",      name:"Ice Pulse",   cost:1200, rarity:"rare",     grad:["#c7f2ff","#46c8ff"] },
+    { id:"violet",   name:"Violet Viper",cost:1350, rarity:"rare",     grad:["#b06cff","#ff6adf"] },
+
+    { id:"royal",    name:"Royal Pulse", cost:1700, rarity:"epic",     grad:["#7a5cff","#46c8ff"] },
+    { id:"sakura",   name:"Sakura Rush", cost:1900, rarity:"epic",     grad:["#ff6adf","#7cffea"] },
+    { id:"neonburn", name:"Neon Burn",   cost:2200, rarity:"epic",     grad:["#ff5a84","#46c8ff"] },
+    { id:"holo",     name:"Holo Shift",  cost:2600, rarity:"epic",     grad:["#7cffea","#ff6adf"] },
+
+    { id:"carbon",   name:"Carbon",      cost:5000, rarity:"legendary",grad:["#2a2f3a","#8899aa"] },
+    { id:"aurum",    name:"Aurum",       cost:5000, rarity:"legendary",grad:["#ffd24d","#ff5a84"] },
   ];
 
   let profile = loadProfile() || {
@@ -1047,7 +1186,7 @@
     const k=e.key.toLowerCase();
     keys.add(k);
     if(k===" "){ e.preventDefault(); togglePause(); }
-    if(k==="r"){ e.preventDefault(); if(running) reset(); }
+    if(k==="r"){ e.preventDefault(); if(running) resetAndCountdown(); }
     if(k==="arrowleft"||k==="a") e.preventDefault();
     if(k==="arrowright"||k==="d") e.preventDefault();
     if(k==="arrowup"||k==="w") e.preventDefault();
@@ -1112,14 +1251,17 @@
   function crateLabel(){
     return canOpenCrate() ? "AVAILABLE" : "CLAIMED TODAY";
   }
+
   function rarityWeight(r){
-    if(r==="legendary") return 6;
-    if(r==="epic") return 14;
-    if(r==="rare") return 30;
-    return 50;
+    // crate is more generous but still: no legendary
+    if(r==="epic") return 18;
+    if(r==="rare") return 34;
+    return 48; // common
   }
+
+  // ✅ crate cannot roll legendary
   function rollCrateSkin(){
-    const pool = SKINS.filter(s=>s.id!=="stock");
+    const pool = SKINS.filter(s=>s.id!=="stock" && s.rarity!=="legendary");
     const total = pool.reduce((sum,s)=> sum + rarityWeight(s.rarity), 0);
     let r = Math.random()*total;
     for(const s of pool){
@@ -1140,6 +1282,7 @@
 
       const div = document.createElement("div");
       div.className = "skin";
+
       const sw = document.createElement("div");
       sw.className = "swatch";
       sw.style.background = `linear-gradient(135deg, ${s.grad[0]}, ${s.grad[1]})`;
@@ -1192,19 +1335,62 @@
     }
   }
 
-  crateBtn.addEventListener("click", ()=>{
+  function openCrateModal(){
+    crateModal.style.display="grid";
+    crateReveal.style.display="none";
+    crateBurst.style.display="none";
+    crateLine.textContent="Spinning…";
+    crateTitle.textContent="🎰 JACKPOT SPIN";
+    crateSub.textContent="Good luck, racer…";
+  }
+  function closeCrateModal(){ crateModal.style.display="none"; }
+  crateCloseBtn.addEventListener("click", closeCrateModal);
+  crateModal.addEventListener("click",(e)=>{ if(e.target===crateModal) closeCrateModal(); });
+
+  function crateJackpotReveal({ skin, msg, rarityName }){
+    crateLine.textContent="REVEAL!";
+    crateTitle.textContent="💥 YOU HIT THE JACKPOT!";
+    crateSub.textContent="Neon gods smiled on you.";
+    crateBurst.style.display="block";
+    crateBurst.style.animation="none";
+    // restart animation
+    void crateBurst.offsetWidth;
+    crateBurst.style.animation="burst 0.7s ease forwards";
+
+    revealName.textContent = skin ? skin.name : "—";
+    revealRarity.textContent = rarityName || "—";
+    revealSwatch.style.background = skin ? `linear-gradient(135deg, ${skin.grad[0]}, ${skin.grad[1]})` : "rgba(255,255,255,.08)";
+    revealMsg.textContent = msg || "—";
+    crateReveal.style.display="block";
+  }
+
+  crateBtn.addEventListener("click", async ()=>{
     if(!canOpenCrate()) return alert("Crate already claimed today.");
-    const skin = rollCrateSkin();
+
+    // show jackpot animation
+    openCrateModal();
     profile.lastCrateDate = todayISO();
+    saveProfile(profile);
+    renderGarage();
+
+    // suspense spin
+    const spinMs = 1300 + Math.random()*800;
+    await new Promise(r => setTimeout(r, spinMs));
+
+    const skin = rollCrateSkin();
 
     if(profile.ownedSkins.includes(skin.id)){
-      const coins = randInt(180, 320);
+      const coins = randInt(220, 360);
       profile.bankCoins += coins;
       saveProfile(profile);
       updateHeaderUI();
       renderGarage();
       renderShop();
-      alert(`Duplicate ${skin.name}! You received +${coins} 🪙`);
+      crateJackpotReveal({
+        skin,
+        rarityName:(RARITY[skin.rarity]||RARITY.common).name,
+        msg:`Duplicate! Converted into +${coins} 🪙`,
+      });
       return;
     }
 
@@ -1212,7 +1398,11 @@
     profile.selectedSkin = skin.id;
     saveProfile(profile);
     renderGarage();
-    alert(`You got: ${skin.name} (${(RARITY[skin.rarity]||RARITY.common).name})!`);
+    crateJackpotReveal({
+      skin,
+      rarityName:(RARITY[skin.rarity]||RARITY.common).name,
+      msg:`New skin unlocked! Equipped automatically.`,
+    });
   });
 
   // ===== Shop =====
@@ -1323,7 +1513,7 @@
 
   // ===== Game state =====
   const player = { x: laneCenter(1), y: H*0.78, w: 52, h: 92, vx:0, targetX:null };
-  const traffic=[], coins=[], pickups=[];
+  const traffic=[], coins=[], pickups=[], hazards=[];
   const stars = Array.from({length: 90}, ()=>({ x:Math.random()*W, y:Math.random()*H, s:0.5+Math.random()*1.6 }));
 
   let running=false, paused=false, last=performance.now();
@@ -1334,19 +1524,23 @@
   let runLives=2;
   let invulnT=0;
 
+  // Countdown
+  let countdownActive=false;
+  let countdownT=0;
+  let countdownVal=3; // 3,2,1,GO
+
   // Bonus rules:
-  // - duration 10s
+  // - duration 12s
   // - first at 500
   // - next is (score at end of bonus + 1000)
   const BONUS_FIRST = 500;
-  const BONUS_LEN = 10;
+  const BONUS_LEN = 12;
 
   let bonusActive=false, bonusT=0, nextBonusAt=BONUS_FIRST;
 
   const pending = { shield:0, slowmoT:0, magnetT:0, invisT:0, nitro:0, coinMultT:0, coinMult:1 };
   const power   = { shield:0, slowmoT:0, magnetT:0, invisT:0, coinMultT:0, coinMult:1 };
 
-  // buffs paused during bonus
   let savedPower = null;
 
   let passedCarsThisRun=0, closeCallsThisRun=0;
@@ -1360,14 +1554,22 @@
     player.targetX = laneCenter(next);
   }
 
-  let spawnTimer=0, coinTimer=0, pickupTimer=0;
+  let spawnTimer=0, coinTimer=0, pickupTimer=0, hazardTimer=0;
+
+  function difficultyFactor(){
+    // increases with score -> harder (spawns + lane change)
+    const s = Math.floor(score);
+    return clamp(1 + (s/700)*0.28, 1, 2.2);
+  }
 
   function spawnCar(){
     if(bonusActive) return;
     if(traffic.length >= mode.maxTraffic) return;
-    const isGift = Math.random() < 0.035;
+
+    const isGift = Math.random() < 0.030; // slightly rarer now (harder)
     const lane=randInt(0,laneCount-1);
     if(traffic.some(t=>t.targetLane===lane && t.y<170)) return;
+
     traffic.push({
       kind: isGift ? "gift" : "car",
       x: laneCenter(lane),
@@ -1380,22 +1582,42 @@
       countedPass: false
     });
   }
+
+  function spawnHazard(){
+    if(bonusActive) return;
+    if(hazards.length >= 4) return;
+    const lane = randInt(0,laneCount-1);
+    const kind = Math.random() < 0.55 ? "stone" : "stop";
+    // avoid stacking near top
+    if(hazards.some(h=>h.lane===lane && h.y<220)) return;
+
+    hazards.push({
+      kind,
+      lane,
+      x: laneCenter(lane),
+      y: -90,
+      w: kind==="stone" ? 54 : 44,
+      h: kind==="stone" ? 38 : 58
+    });
+  }
+
   function spawnCoin(extra=false){
-    if(coins.length >= (extra ? 22 : 14)) return;
+    if(coins.length >= (extra ? 18 : 12)) return; // reduced a bit (harder)
     const lane=randInt(0,laneCount-1);
-    const value = (Math.random()<0.10) ? 10 : (Math.random()<0.24 ? 5 : 1);
+    const value = (Math.random()<0.08) ? 10 : (Math.random()<0.18 ? 5 : 1);
     coins.push({ lane, x: laneCenter(lane), y:-60, r:12, spin:Math.random()*10, value });
   }
+
   function spawnPickup(extra=false){
-    if(pickups.length >= (extra ? 8 : 6)) return;
+    if(pickups.length >= (extra ? 6 : 5)) return;
     const lane=randInt(0,laneCount-1);
     const roll = Math.random();
     let type="shield";
-    if(roll < 0.22) type="shield";
-    else if(roll < 0.42) type="magnet";
-    else if(roll < 0.60) type="slowmo";
-    else if(roll < 0.76) type="invis";
-    else if(roll < 0.88) type="nitro";
+    if(roll < 0.18) type="shield";
+    else if(roll < 0.34) type="magnet";
+    else if(roll < 0.48) type="slowmo";
+    else if(roll < 0.62) type="invis";
+    else if(roll < 0.75) type="nitro";
     else type = (Math.random()<0.55) ? "coinx5" : "coinx10";
     pickups.push({ type, lane, x: laneCenter(lane), y:-70, w: 34, h: 34, spin:Math.random()*10 });
   }
@@ -1403,10 +1625,9 @@
   function applyCartToRun(){
     power.shield += cart.shield;
     power.slowmoT += cart.slowmo * 6.0;
-    power.magnetT += cart.magnet * 7.0;   // ✅ magnet 7 seconds
+    power.magnetT += cart.magnet * 7.0;
     power.invisT  += cart.invis  * 6.0;
 
-    // ✅ base lives 2
     runLives = 2 + cart.life;
     runLives = clamp(runLives, 2, 4);
 
@@ -1425,23 +1646,24 @@
   }
 
   function togglePause(){
-    if(!running) return;
+    if(!running || countdownActive) return;
     paused = !paused;
     last = performance.now();
   }
   pauseBtn.addEventListener("click", togglePause);
-  restartBtn.addEventListener("click", ()=>{ if(running){ reset(); } });
+  restartBtn.addEventListener("click", ()=>{ if(running){ resetAndCountdown(); } });
 
   function startBonus(){
     bonusActive = true;
     bonusT = BONUS_LEN;
 
-    // ✅ no buffs active during bonus: snapshot then disable
     savedPower = { ...power };
+    // NO BUFFS ACTIVE in bonus
     power.shield = 0; power.slowmoT = 0; power.magnetT = 0; power.invisT = 0; power.coinMultT = 0; power.coinMult = 1;
 
     traffic.length = 0;
-    spawnTimer = coinTimer = pickupTimer = 0;
+    hazards.length = 0;
+    spawnTimer = coinTimer = pickupTimer = hazardTimer = 0;
     pending.shield=0; pending.slowmoT=0; pending.magnetT=0; pending.invisT=0; pending.nitro=0; pending.coinMultT=0; pending.coinMult=1;
 
     popEmoji("✨", window.innerWidth/2, 120);
@@ -1450,7 +1672,6 @@
   function endBonus(){
     bonusActive = false;
 
-    // restore old buffs
     if(savedPower){
       power.shield = savedPower.shield || 0;
       power.slowmoT = savedPower.slowmoT || 0;
@@ -1461,7 +1682,7 @@
       savedPower = null;
     }
 
-    // apply bonus pending buffs AFTER bonus ends
+    // activate pending AFTER bonus ends
     power.shield += pending.shield;
     power.slowmoT += pending.slowmoT;
     power.magnetT = Math.max(power.magnetT, pending.magnetT);
@@ -1472,27 +1693,31 @@
       power.coinMult = Math.max(power.coinMult, pending.coinMult);
     }
 
-    // ✅ next bonus = score at end + 1000
     nextBonusAt = Math.floor(score) + 1000;
-
     popEmoji("🏁", window.innerWidth/2, 140);
   }
 
-  function loseLife(){
-    if(invulnT > 0) return;
+  // ✅ FIXED SHIELD LOGIC:
+  // - If shield>0 and collision happens => shield breaks, obstacle removed, no life lost
+  function breakShield(){
+    if(power.shield <= 0) return false;
+    power.shield -= 1;
+    invulnT = Math.max(invulnT, 1.1); // brief safety after break
+    sfx("pickup");
+    popEmoji("🛡", window.innerWidth*0.5, window.innerHeight*0.22);
+    return true;
+  }
 
-    if(power.shield > 0){
-      power.shield -= 1;
-      popEmoji("🛡", window.innerWidth/2, window.innerHeight*0.22);
-      return;
-    }
+  function loseLife(){
+    // invuln means you can't lose another life yet
+    if(invulnT > 0) return;
 
     runLives -= 1;
     invulnT = 2.0;
     sfx("crash");
 
     if(runLives <= 0) gameOver();
-    else popEmoji("💥", window.innerWidth/2, window.innerHeight*0.22);
+    else popEmoji("💥", window.innerWidth*0.5, window.innerHeight*0.22);
   }
 
   function canRevive(){ return profile.bankCoins >= 100; }
@@ -1507,6 +1732,8 @@
     paused = false;
     gameOverModal.style.display = "none";
     document.body.classList.add("playing");
+    // continue with no countdown on revive
+    countdownActive = false;
   }
 
   async function gameOver(){
@@ -1581,7 +1808,6 @@
       grad.addColorStop(1, `rgba(${Math.floor(200+seed*55)},${Math.floor(80+seed*120)},${Math.floor(120+seed*90)},.98)`);
     }
 
-    // ✅ animated underglow by rarity (player only)
     if(isPlayer){
       const s = skinObj();
       const r = RARITY[s.rarity] || RARITY.common;
@@ -1597,7 +1823,7 @@
     roundRect(x-w/2, y-h/2, w, h, 14);
     ctx.fill();
 
-    // windshield (solid, not transparent-looking)
+    // windshield (solid)
     ctx.shadowBlur = 0;
     ctx.fillStyle="rgba(12,14,20,.92)";
     roundRect(x-w*0.30, y-h*0.26, w*0.60, h*0.30, 10);
@@ -1667,6 +1893,46 @@
     ctx.restore();
   }
 
+  function drawHazard(h){
+    ctx.save();
+    ctx.translate(h.x, h.y);
+    if(h.kind==="stone"){
+      ctx.shadowBlur=18;
+      ctx.shadowColor="rgba(255,210,77,.25)";
+      ctx.fillStyle="rgba(80,90,110,.95)";
+      roundRect(-h.w/2, -h.h/2, h.w, h.h, 10); ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.fillStyle="rgba(0,0,0,.25)";
+      roundRect(-h.w*0.35, -h.h*0.12, h.w*0.7, h.h*0.24, 10); ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,.85)";
+      ctx.font="900 16px system-ui,sans-serif";
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText("🪨", 0, 1);
+    } else {
+      // stop sign
+      ctx.shadowBlur=18;
+      ctx.shadowColor="rgba(255,90,132,.28)";
+      ctx.fillStyle="rgba(255,90,132,.92)";
+      const s = h.w*0.58;
+      ctx.beginPath();
+      for(let i=0;i<8;i++){
+        const a = (Math.PI*2)*(i/8) + Math.PI/8;
+        const rr = s;
+        ctx.lineTo(Math.cos(a)*rr, Math.sin(a)*rr);
+      }
+      ctx.closePath(); ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.fillStyle="rgba(255,255,255,.92)";
+      ctx.font="900 12px Orbitron, sans-serif";
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText("STOP", 0, 0);
+      // pole
+      ctx.fillStyle="rgba(220,220,230,.85)";
+      roundRect(-4, s*0.9, 8, h.h*0.6, 6); ctx.fill();
+    }
+    ctx.restore();
+  }
+
   function drawRoad(){
     ctx.fillStyle="#050814";
     ctx.fillRect(0,0,W,H);
@@ -1727,7 +1993,7 @@
     }
   }
 
-  function reset(){
+  function resetBase(){
     score=0; speed=mode.baseSpeed; roadY=0;
     runCoins=0; nitro=1.0; nitroActive=false; driftActive=false;
     invulnT=0;
@@ -1740,7 +2006,7 @@
 
     player.x=laneCenter(1); player.vx=0; player.targetX=null;
 
-    traffic.length=0; coins.length=0; pickups.length=0;
+    traffic.length=0; coins.length=0; pickups.length=0; hazards.length=0;
 
     passedCarsThisRun=0; closeCallsThisRun=0;
 
@@ -1748,6 +2014,17 @@
 
     running=true; paused=false; last=performance.now();
     syncUI();
+  }
+
+  function startCountdown(){
+    countdownActive=true;
+    countdownVal=3;
+    countdownT=1.0;
+  }
+
+  function resetAndCountdown(){
+    resetBase();
+    startCountdown();
   }
 
   function updateMissionsProgress(){
@@ -1760,20 +2037,22 @@
   }
 
   function update(dt){
-    // ✅ cap speed ramp so score/bonus doesn't get too easy later
-    const SPEED_CAP = mode.baseSpeed + 260;
-    speed = Math.min(speed + mode.accel * dt, SPEED_CAP);
+    const df = difficultyFactor();
+
+    // speed ramp + cap (harder over time but controlled)
+    const SPEED_CAP = mode.baseSpeed + 310;
+    speed = Math.min(speed + (mode.accel*df) * dt, SPEED_CAP);
 
     const nitroKey = keys.has("arrowup") || keys.has("w");
     nitroActive = nitroKey && nitro > 0.02 && running && !paused;
-    if(nitroActive) nitro = Math.max(0, nitro - dt*0.35);
-    else nitro = Math.min(1.75, nitro + dt*0.18);
+    if(nitroActive) nitro = Math.max(0, nitro - dt*0.34);
+    else nitro = Math.min(1.65, nitro + dt*0.17);
 
     driftActive = keys.has("shift");
     const steerLeft = keys.has("arrowleft") || keys.has("a");
     const steerRight= keys.has("arrowright") || keys.has("d");
 
-    const nitroBoost = nitroActive ? 170 : 0;
+    const nitroBoost = nitroActive ? 160 : 0;
     const playerSpeed = speed + nitroBoost;
 
     const obstacleFactor = (power.slowmoT > 0) ? 0.20 : 1.0;
@@ -1799,40 +2078,48 @@
     const maxX = roadClampMax();
     player.x = clamp(player.x, minX, maxX);
 
+    // wall punish
     const leftWallX = road.x + WALL_MARGIN;
     const rightWallX = road.x + road.w - WALL_MARGIN;
     const playerLeft = player.x - player.w*0.5;
     const playerRight= player.x + player.w*0.5;
     if(playerLeft <= leftWallX + 1 || playerRight >= rightWallX - 1){
-      if(power.invisT <= 0) loseLife();
+      if(power.invisT <= 0){
+        // shield can break from wall too
+        if(!breakShield()) loseLife();
+      }
       player.x = clamp(player.x, minX+2, maxX-2);
       player.vx *= -0.25;
     }
 
     // spawns
     if(!bonusActive){
-      spawnTimer += dt * mode.spawnRate * (0.85 + playerSpeed/650);
+      spawnTimer += dt * mode.spawnRate * df * (0.95 + playerSpeed/720);
       if(spawnTimer>=1){
         spawnTimer=0;
         spawnCar();
-        if(modeKey!=="easy" && Math.random()<0.26) spawnCar();
-        if(modeKey==="hard" && Math.random()<0.32) spawnCar();
+        if(df>1.25 && Math.random()<0.22) spawnCar();
+        if(df>1.75 && Math.random()<0.30) spawnCar();
+      }
+
+      hazardTimer += dt * (0.28 * df);
+      if(hazardTimer >= 1){
+        hazardTimer = 0;
+        if(Math.random() < 0.85) spawnHazard();
       }
     }
 
-    // In bonus: more coins & pickups, but buffs not active
-    coinTimer += dt * (0.85 + playerSpeed/1000) * (bonusActive ? 2.0 : 1.0);
+    coinTimer += dt * (0.72 + playerSpeed/1100) * (bonusActive ? 1.25 : 1.0);
     if(coinTimer>=1){
       coinTimer=0;
       spawnCoin(bonusActive);
-      if(Math.random()<0.55) spawnCoin(bonusActive);
-      if(bonusActive && Math.random()<0.65) spawnCoin(true);
+      if(Math.random()<0.35) spawnCoin(bonusActive);
     }
 
-    pickupTimer += dt * (bonusActive ? 1.4 : 0.50);
+    pickupTimer += dt * (bonusActive ? 1.0 : 0.42);
     if(pickupTimer>=1){
       pickupTimer=0;
-      if(Math.random() < (bonusActive ? 0.75 : 0.20)) spawnPickup(bonusActive);
+      if(Math.random() < (bonusActive ? 0.55 : 0.18)) spawnPickup(bonusActive);
     }
 
     // bonus trigger
@@ -1844,7 +2131,8 @@
       if(bonusT <= 0) endBonus();
     }
 
-    // move traffic
+    // move traffic with stronger lane changes as score rises
+    const laneChangeBoost = 1 + (df-1)*0.85;
     for(let i=traffic.length-1;i>=0;i--){
       const t = traffic[i];
       t.y += playerSpeed*dt*t.rel*obstacleFactor;
@@ -1857,19 +2145,28 @@
       t.x += Math.sin((t.y/120)+t.seed*10)*dt*mode.wiggle*0.35;
 
       t.laneChangeCooldown -= dt;
-      if(t.laneChangeCooldown <= 0 && Math.random() < mode.laneChangeRate){
+      const laneChangeChance = mode.laneChangeRate * laneChangeBoost;
+      if(t.laneChangeCooldown <= 0 && Math.random() < laneChangeChance){
         const dir = Math.random()<0.5 ? -1 : 1;
         const next = clamp(t.targetLane + dir, 0, laneCount-1);
-        const safe = !traffic.some(o => o!==t && o.targetLane===next && Math.abs(o.y - t.y) < 120);
-        if(safe) t.targetLane = next;
+        const safe = !traffic.some(o => o!==t && o.targetLane===next && Math.abs(o.y - t.y) < 118);
+        const safeHaz = !hazards.some(h => h.lane===next && Math.abs(h.y - t.y) < 120);
+        if(safe && safeHaz) t.targetLane = next;
         t.laneChangeCooldown = lerp(mode.laneChangeCooldown[0], mode.laneChangeCooldown[1], Math.random());
       }
 
       const targetX = laneCenter(t.targetLane);
-      t.x += (targetX - t.x) * dt * mode.laneChangeSpeed;
+      t.x += (targetX - t.x) * dt * (mode.laneChangeSpeed * laneChangeBoost);
       t.x = clamp(t.x, road.x + WALL_MARGIN + t.w*0.55, road.x + road.w - WALL_MARGIN - t.w*0.55);
 
       if(t.y > H+160) traffic.splice(i,1);
+    }
+
+    // hazards
+    for(let i=hazards.length-1;i>=0;i--){
+      const h = hazards[i];
+      h.y += playerSpeed*dt*0.82*obstacleFactor;
+      if(h.y > H+120) hazards.splice(i,1);
     }
 
     // coins
@@ -1877,12 +2174,11 @@
       const c = coins[i];
       c.y += playerSpeed*dt*0.90*obstacleFactor;
 
-      // ✅ magnet doesn't work in bonus because power.magnetT is forced to 0
       if(power.magnetT > 0){
         const dx = player.x - c.x;
         const dy = player.y - c.y;
-        c.x += dx*dt*7.5;
-        c.y += dy*dt*7.5;
+        c.x += dx*dt*7.2;
+        c.y += dy*dt*7.2;
       } else {
         c.x += (laneCenter(c.lane)-c.x)*dt*2.0;
       }
@@ -1894,18 +2190,17 @@
       const p = pickups[i];
       p.y += playerSpeed*dt*0.85*obstacleFactor;
 
-      // magnet doesn't work during bonus (power.magnetT = 0)
       if(power.magnetT > 0){
-        p.x += (player.x - p.x)*dt*3.2;
-        p.y += (player.y - p.y)*dt*3.2;
+        p.x += (player.x - p.x)*dt*3.0;
+        p.y += (player.y - p.y)*dt*3.0;
       }
       if(p.y > H+80) pickups.splice(i,1);
     }
 
-    // ✅ slower scoring curve (prevents later "too fast" bonus)
-    score += dt*(58 + playerSpeed*0.020);
-    if(nitroActive) score += dt*10; // reduced
-    if(driftActive && (steerLeft||steerRight)) score += dt*4;
+    // ✅ SLOWER scoring speed (harder)
+    score += dt*(42 + playerSpeed*0.014);
+    if(nitroActive) score += dt*6;
+    if(driftActive && (steerLeft||steerRight)) score += dt*2.8;
 
     // close calls
     if(power.invisT <= 0){
@@ -1913,9 +2208,9 @@
         if(t.kind==="gift") continue;
         const d = distRect(player.x, player.y, player.w, player.h, t.x, t.y, t.w, t.h);
         if(d < 10 && d > 0){
-          score += dt*18; // reduced
-          if(Math.random()<0.04) popEmoji("😲", window.innerWidth*0.5, window.innerHeight*0.18);
-          if(Math.random()<0.20) closeCallsThisRun += 1;
+          score += dt*12;
+          if(Math.random()<0.03) popEmoji("😲", window.innerWidth*0.5, window.innerHeight*0.18);
+          if(Math.random()<0.16) closeCallsThisRun += 1;
         }
       }
     }
@@ -1928,7 +2223,7 @@
         const multActive = (power.coinMultT > 0) ? power.coinMult : 1;
         const gained = c.value * multActive;
         runCoins += gained;
-        score += 6 + gained;
+        score += 4 + gained; // reduced
         sfx("coin");
       }
     }
@@ -1940,7 +2235,6 @@
         pickups.splice(i,1);
         sfx("pickup");
 
-        // during bonus, store to pending only; buffs won't be active until after bonus
         const applyTo = bonusActive ? pending : power;
 
         if(p.type==="shield") applyTo.shield = (applyTo.shield||0) + 1;
@@ -1948,8 +2242,8 @@
         else if(p.type==="slowmo") applyTo.slowmoT = (applyTo.slowmoT||0) + 6.0;
         else if(p.type==="invis") applyTo.invisT  = (applyTo.invisT||0) + 6.0;
         else if(p.type==="nitro"){
-          if(bonusActive) pending.nitro += 0.35;
-          else nitro = clamp(nitro + 0.35, 0, 1.75);
+          if(bonusActive) pending.nitro += 0.32;
+          else nitro = clamp(nitro + 0.32, 0, 1.65);
         }
         else if(p.type==="coinx5"){
           if(bonusActive){ pending.coinMult= Math.max(pending.coinMult,5); pending.coinMultT = Math.max(pending.coinMultT, 10); }
@@ -1963,11 +2257,14 @@
       }
     }
 
-    // collisions
+    // invuln tick
     if(invulnT > 0) invulnT = Math.max(0, invulnT - dt);
 
+    // ===== collisions =====
+    // traffic
     for(let i=traffic.length-1;i>=0;i--){
       const t = traffic[i];
+
       if(t.kind==="gift" && rectHit(player.x, player.y, player.w, player.h, t.x, t.y, t.w, t.h)){
         traffic.splice(i,1);
         const gift = randInt(500,600);
@@ -1983,13 +2280,35 @@
         if(power.invisT > 0){
           // phase
         } else {
-          loseLife();
+          // ✅ shield consumes first and removes obstacle
+          if(breakShield()){
+            traffic.splice(i,1);
+          } else {
+            loseLife();
+          }
         }
         break;
       }
     }
 
-    // timers (bonus forces them to 0 already)
+    // hazards collision
+    for(let i=hazards.length-1;i>=0;i--){
+      const h = hazards[i];
+      if(rectHit(player.x, player.y, player.w, player.h, h.x, h.y, h.w, h.h)){
+        if(power.invisT > 0){
+          // phase through
+        } else {
+          if(breakShield()){
+            hazards.splice(i,1);
+          } else {
+            loseLife();
+          }
+        }
+        break;
+      }
+    }
+
+    // timers
     power.slowmoT = Math.max(0, power.slowmoT - dt);
     power.magnetT = Math.max(0, power.magnetT - dt);
     power.invisT  = Math.max(0, power.invisT  - dt);
@@ -2014,6 +2333,7 @@
 
     for(const c of coins) drawCoin(c);
     for(const p of pickups) drawPickup(p);
+    for(const h of hazards) drawHazard(h);
     for(const t of traffic) drawCar(t.x, t.y, t.w, t.h, false, t.seed, t.kind, tNow);
     drawCar(player.x, player.y, player.w, player.h, true, 0.3, "player", tNow);
 
@@ -2028,7 +2348,27 @@
       ctx.restore();
     }
 
-    if(paused && running){
+    // Countdown overlay
+    if(countdownActive){
+      ctx.save();
+      ctx.fillStyle="rgba(0,0,0,.40)";
+      ctx.fillRect(0,0,W,H);
+
+      ctx.textAlign="center";
+      ctx.textBaseline="middle";
+
+      const big = countdownVal >= 1 ? String(countdownVal) : "LET'S GO!";
+      ctx.fillStyle="rgba(255,255,255,.95)";
+      ctx.font = countdownVal >= 1 ? "900 92px Orbitron, sans-serif" : "900 62px Orbitron, sans-serif";
+      ctx.fillText(big, W/2, H/2);
+
+      ctx.fillStyle="rgba(255,255,255,.72)";
+      ctx.font="800 16px Orbitron, sans-serif";
+      ctx.fillText("Stay sharp. Dodge lane obstacles.", W/2, H/2 + 74);
+      ctx.restore();
+    }
+
+    if(paused && running && !countdownActive){
       ctx.fillStyle="rgba(0,0,0,.45)";
       ctx.fillRect(0,0,W,H);
       ctx.fillStyle="rgba(255,255,255,.92)";
@@ -2041,7 +2381,24 @@
   function loop(now){
     const dt = Math.min(0.033, (now-last)/1000);
     last = now;
-    if(running && !paused) update(dt);
+
+    if(running && !paused){
+      if(countdownActive){
+        countdownT -= dt;
+        if(countdownT <= 0){
+          countdownVal -= 1;
+          if(countdownVal <= 0){
+            countdownActive = false;
+            popEmoji("🏎️", window.innerWidth*0.5, window.innerHeight*0.18);
+          } else {
+            countdownT = 1.0;
+          }
+        }
+      } else {
+        update(dt);
+      }
+    }
+
     draw();
     requestAnimationFrame(loop);
   }
@@ -2088,7 +2445,7 @@
 
   function startGame(){
     document.body.classList.add("playing");
-    reset();
+    resetAndCountdown();
   }
   homePlay.addEventListener("click", startGame);
 
