@@ -1,273 +1,201 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-  <title>Neon Highway Racer</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Neon Highway Racer — Ultimate</title>
 
-  <!-- Racing-style font -->
+  <!-- Racing font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg:#050814;
-      --panel:#0b1230;
-      --text:#eaf0ff;
-      --muted:#9fb0e6;
-      --a:#7cffea;
-      --p:#ff6adf;
-      --g:#ffd24d;
-      --danger:#ff4d6d;
-      --ok:#66ff99;
-      --line:rgba(255,255,255,.12);
-      --glass:rgba(11,18,48,.72);
+      --bg:#050814; --panel:#0b1230; --panel2:#0c1536;
+      --text:#eaf0ff; --muted:#9fb0e6;
+      --a:#7cffea; --p:#ff6adf; --g:#ffd24d; --r:#ff5a84;
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
     body{
-      margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--text);
+      margin:0; min-height:100vh;
+      font-family:Rajdhani,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       background:
-        radial-gradient(1200px 700px at 50% 10%, #1a2a7a 0%, var(--bg) 60%),
-        radial-gradient(900px 500px at 15% 80%, rgba(255,106,223,.12) 0%, rgba(0,0,0,0) 60%),
-        radial-gradient(900px 500px at 85% 80%, rgba(124,255,234,.10) 0%, rgba(0,0,0,0) 60%);
+        radial-gradient(1200px 700px at 50% 15%, #1a2a7a 0%, var(--bg) 60%),
+        radial-gradient(900px 500px at 10% 90%, rgba(255,106,223,.12), transparent 60%),
+        radial-gradient(900px 500px at 90% 85%, rgba(124,255,234,.10), transparent 60%);
+      color:var(--text);
       overflow-x:hidden;
-      overscroll-behavior: none;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-    }
-    a{color:var(--a); text-decoration:none}
-    a:hover{text-decoration:underline}
-
-    .wrap{
-      width:min(1240px, 96vw);
-      margin:14px auto 18px;
-      display:grid;
-      gap:12px;
     }
 
-    header{
-      background:rgba(11,18,48,.82);
-      border:1px solid var(--line);
+    /* Shell */
+    .wrap{width:min(1140px, 95vw); margin:18px auto; display:grid; gap:14px;}
+
+    /* Hero Home */
+    .hero{
       border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background:
+        linear-gradient(135deg, rgba(255,106,223,.18), rgba(124,255,234,.12)),
+        rgba(11,18,48,.75);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 50px rgba(0,0,0,.45);
       padding:14px 14px;
       display:flex;
       align-items:center;
       justify-content:space-between;
+      gap:12px;
       flex-wrap:wrap;
-      gap:10px;
-      box-shadow:0 18px 44px rgba(0,0,0,.45);
-      backdrop-filter: blur(10px);
-      position:relative;
-      overflow:hidden;
     }
-    header:before{
-      content:"";
-      position:absolute;
-      inset:-1px;
-      background:
-        linear-gradient(120deg, rgba(124,255,234,.14), rgba(255,106,223,.12), rgba(255,210,77,.10));
-      filter: blur(18px);
-      opacity:.75;
-      pointer-events:none;
-    }
-    header > *{position:relative}
-
+    .heroLeft{display:flex; flex-direction:column; gap:6px}
     .brand{
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-      min-width:260px
-    }
-    h1{
-      margin:0;
-      font-family:"Orbitron", system-ui, sans-serif;
-      font-size:18px;
+      font-family:Orbitron,system-ui,sans-serif;
+      font-weight:900;
       letter-spacing:.8px;
+      font-size:18px;
+      margin:0;
       text-transform:uppercase;
     }
-    .sub{font-size:12px; color:var(--muted)}
+    .tagline{color:var(--muted); font-size:14px; margin:0}
+    .heroRight{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .cta{
+      cursor:pointer;
+      border-radius:14px;
+      padding:12px 14px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.08);
+      color:var(--text);
+      font-weight:900;
+      font-size:14px;
+      transition:.15s transform,.15s background;
+      user-select:none;
+    }
+    .cta:hover{background:rgba(255,255,255,.12)}
+    .cta:active{transform:translateY(1px)}
+    .cta.primary{
+      background:linear-gradient(135deg, rgba(124,255,234,.25), rgba(70,200,255,.18));
+      border-color: rgba(124,255,234,.35);
+    }
+    .cta.danger{
+      background:linear-gradient(135deg, rgba(255,90,132,.22), rgba(255,210,77,.12));
+      border-color: rgba(255,90,132,.28);
+    }
 
+    header{
+      background:rgba(11,18,48,.82);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px; padding:12px 14px;
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+      box-shadow:0 12px 30px rgba(0,0,0,.35);
+      backdrop-filter: blur(10px);
+    }
     .stats{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
     .pill{
       background:rgba(255,255,255,.06);
       border:1px solid rgba(255,255,255,.12);
-      padding:8px 12px;
-      border-radius:999px;
-      font-size:13px;
-      display:flex;
-      gap:6px;
-      align-items:center;
-      white-space:nowrap;
-      box-shadow:0 10px 18px rgba(0,0,0,.20);
+      padding:8px 12px; border-radius:999px; font-size:14px;
+      display:flex; gap:6px; align-items:center;
+      font-weight:700;
     }
-    .pill b{font-weight:950}
+    .pill b{font-family:Orbitron,system-ui,sans-serif; font-weight:900}
 
-    button, .tabBtn{
-      cursor:pointer;
-      color:var(--text);
+    .bar{
+      width:120px; height:8px; border-radius:999px;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.10);
+      overflow:hidden;
+    }
+    .bar > i{display:block; height:100%; width:50%; background:rgba(120,255,220,.85)}
+
+    .btns{display:flex; gap:8px; flex-wrap:wrap}
+    button{
+      cursor:pointer; color:var(--text);
       background:rgba(255,255,255,.08);
       border:1px solid rgba(255,255,255,.16);
-      border-radius:12px;
-      padding:10px 12px;
-      font-weight:950;
-      font-size:13px;
-      transition:.15s transform,.15s background,.15s border;
+      border-radius:12px; padding:10px 12px;
+      font-weight:950; font-size:13px;
+      transition:.15s transform,.15s background;
       user-select:none;
-      touch-action: manipulation;
+      font-family:Orbitron,system-ui,sans-serif;
+      letter-spacing:.2px;
     }
-    button:hover, .tabBtn:hover{background:rgba(255,255,255,.12)}
-    button:active, .tabBtn:active{transform:translateY(1px)}
-    button.primary{
-      background: linear-gradient(135deg, rgba(124,255,234,.26), rgba(255,106,223,.18));
-      border-color: rgba(124,255,234,.40);
-      box-shadow:0 14px 26px rgba(0,0,0,.25);
-      font-family:"Orbitron", system-ui, sans-serif;
-      letter-spacing:.6px;
-      text-transform:uppercase;
-    }
-    button.danger{
-      background: rgba(255,77,109,.14);
-      border-color: rgba(255,77,109,.30);
-    }
+    button:hover{background:rgba(255,255,255,.12)}
+    button:active{transform:translateY(1px)}
     button:disabled{opacity:.55; cursor:not-allowed}
 
-    .mainGrid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:12px;
-      align-items:start;
-    }
-
-    .panel{
-      background:rgba(11,18,48,.55);
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:12px;
-      box-shadow:0 14px 34px rgba(0,0,0,.30);
+    .board{
+      background:rgba(11,18,48,.62);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px; padding:12px;
+      box-shadow:0 12px 30px rgba(0,0,0,.35);
       backdrop-filter: blur(10px);
-      display:grid;
-      gap:10px;
     }
+    canvas{
+      width:100%; height:auto; aspect-ratio:16/9;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      display:block; touch-action:none;
+    }
+    .help{
+      margin-top:10px;
+      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
+      color:var(--muted); font-size:14px;
+    }
+    .kbd{font-family: ui-monospace,SFMono-Regular,Menlo,monospace}
 
-    .tabs{
-      display:flex;
-      gap:8px;
-      flex-wrap:nowrap;
-      overflow:auto;
-      padding-bottom:4px;
-      -webkit-overflow-scrolling: touch;
+    /* Home sections */
+    .content{
+      background:rgba(11,18,48,.55);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px; padding:14px;
+      box-shadow:0 12px 30px rgba(0,0,0,.25);
+      backdrop-filter: blur(10px);
+      display:grid; gap:10px;
     }
-    .tabs::-webkit-scrollbar{height:6px}
-    .tabs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.10); border-radius:999px}
-
-    .tabBtn{
-      padding:9px 10px;
-      border-radius:999px;
-      font-size:12px;
-      font-weight:950;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      flex:0 0 auto;
-      white-space:nowrap;
-      font-family:"Orbitron", system-ui, sans-serif;
-      letter-spacing:.4px;
-      text-transform:uppercase;
-    }
-    .tabBtn.active{
-      background:rgba(124,255,234,.12);
-      border-color:rgba(124,255,234,.40);
-      box-shadow:0 10px 18px rgba(0,0,0,.18);
-    }
-
+    .grid2{display:grid; grid-template-columns: 1.2fr 1fr; gap:10px;}
     .card{
       border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.18);
-      border-radius:16px;
-      padding:12px;
+      background:rgba(255,255,255,.06);
+      border-radius:16px; padding:12px;
     }
     .card h3{
-      margin:0 0 6px;
+      margin:0 0 8px;
       font-size:14px;
-      font-family:"Orbitron", system-ui, sans-serif;
+      font-family:Orbitron,system-ui,sans-serif;
       letter-spacing:.4px;
       text-transform:uppercase;
     }
-    .card p{margin:0; color:var(--muted); font-size:13px; line-height:1.5}
-    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-    .small{font-size:12px; color:var(--muted)}
-    .chip{
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
+    .card p{margin:0; color:var(--muted); font-size:14px; line-height:1.5}
+    .lbList{margin-top:8px; display:grid; gap:6px}
+    .lbRow{
+      display:flex; justify-content:space-between; gap:10px; align-items:center;
       padding:8px 10px;
-      border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      font-size:13px;
-      font-weight:950;
-      user-select:none;
-      white-space:nowrap;
-    }
-    .chip input{accent-color:#6ff}
-
-    .input{
-      flex:1; min-width:200px;
-      padding:10px 12px;
       border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(0,0,0,.22);
-      color:var(--text);
-      font-weight:850;
-      outline:none;
-    }
-    .input:focus{border-color: rgba(124,255,234,.65)}
-
-    .shop{
-      display:grid;
-      gap:10px;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    @media (max-width:520px){ .shop{grid-template-columns: 1fr} }
-    .shopItem{
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);
-      border-radius:16px;
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      min-height:136px;
-    }
-    .shopItem .top{display:flex; justify-content:space-between; gap:8px; align-items:center}
-    .shopItem .name{font-weight:950}
-    .shopItem .desc{font-size:12px; color:var(--muted); line-height:1.35}
-    .shopItem .buyRow{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:auto}
-    .price{font-size:12px; color:var(--muted)}
-    .qty{
-      display:inline-flex;
-      min-width:26px;
-      justify-content:center;
-      padding:2px 8px;
-      border-radius:999px;
-      background:rgba(0,0,0,.25);
       border:1px solid rgba(255,255,255,.12);
-      font-size:12px;
-      font-weight:950;
+      background:rgba(0,0,0,.18);
+      font-size:14px;
     }
+    .lbRow b{font-family:Orbitron,system-ui,sans-serif; font-weight:900}
+    @media (max-width:900px){ .grid2{grid-template-columns:1fr} }
 
-    .missions{display:grid; gap:8px}
+    .links{display:flex; gap:10px; flex-wrap:wrap}
+    .links a{color:var(--a); text-decoration:none; font-weight:900; font-size:14px}
+    .links a:hover{text-decoration:underline}
+
+    /* Missions */
+    .missions{
+      margin-top:10px;
+      display:grid; gap:8px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
     .mCard{
       border:1px solid rgba(255,255,255,.12);
       background:rgba(0,0,0,.18);
       border-radius:16px;
       padding:10px;
-      font-size:13px;
+      font-size:14px;
     }
-    .mCard b{font-weight:950}
+    .mCard b{font-family:Orbitron,system-ui,sans-serif; font-weight:900}
     .mBar{
       margin-top:8px;
       height:8px;
@@ -277,404 +205,336 @@
       overflow:hidden;
     }
     .mBar i{display:block; height:100%; width:20%; background:rgba(255,210,77,.9)}
+    @media (max-width:900px){ .missions{grid-template-columns:1fr} }
 
-    .lbList{margin-top:8px; display:grid; gap:6px}
-    .lbRow{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:center;
-      padding:8px 10px;
-      border-radius:12px;
+    /* Streak calendar */
+    .streakGrid{
+      display:grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap:8px;
+      margin-top:10px;
+    }
+    .dayBox{
       border:1px solid rgba(255,255,255,.12);
       background:rgba(0,0,0,.18);
-      font-size:13px;
-    }
-    .lbRow b{font-weight:950}
-    .statusOk{color:var(--ok)}
-    .statusBad{color:rgba(255,90,140,.9)}
-
-    /* ===== Fullscreen Game Mode ===== */
-    .gameOverlay{
-      position:fixed;
-      inset:0;
-      z-index:200;
-      display:none;
-      background:#050814;
-      overscroll-behavior:none;
-      touch-action:none;
-    }
-    .gameTopHud{
-      position:absolute;
-      left:10px; right:10px; top:10px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      padding:10px;
-      border-radius:18px;
-      background:rgba(11,18,48,.78);
-      border:1px solid rgba(255,255,255,.14);
-      backdrop-filter: blur(10px);
-      box-shadow:0 12px 30px rgba(0,0,0,.45);
-    }
-    .hudGroup{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-    .hudPill{
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
-      padding:8px 10px;
-      border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      font-size:13px;
-      font-weight:950;
-      white-space:nowrap;
-      font-family:"Orbitron", system-ui, sans-serif;
-      letter-spacing:.3px;
-    }
-    .hudPill b{font-weight:950}
-    .bar{
-      width:110px; height:8px; border-radius:999px;
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.10);
-      overflow:hidden;
-    }
-    .bar i{display:block; height:100%; width:60%; background:rgba(120,255,220,.85)}
-
-    .gameStage{
-      position:absolute;
-      inset:0;
-      display:grid;
-      place-items:center;
-      padding:66px 10px 90px;
-    }
-    canvas#game{
-      width:min(1200px, 100%);
-      height:auto;
-      aspect-ratio:16/9;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.10);
-      display:block;
-      touch-action:none;
-      background:#050814;
-      box-shadow:0 24px 70px rgba(0,0,0,.65);
-    }
-    @media (max-width:900px){
-      canvas#game{aspect-ratio:auto; height:70vh;}
-    }
-
-    .mobileHUD{
-      position:absolute;
-      left:10px;
-      right:10px;
-      bottom:10px;
-      z-index:210;
-      display:none;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      padding:10px;
-      border-radius:18px;
-      background:rgba(11,18,48,.78);
-      border:1px solid rgba(255,255,255,.14);
-      backdrop-filter: blur(10px);
-      box-shadow:0 12px 30px rgba(0,0,0,.45);
-    }
-    .mobileHUD .group{display:flex; gap:10px; align-items:center}
-    .mBtn{
-      padding:14px 14px;
-      border-radius:16px;
-      font-size:14px;
-      min-width:74px;
+      border-radius:14px;
+      padding:10px 8px;
       text-align:center;
-      font-weight:950;
-      font-family:"Orbitron", system-ui, sans-serif;
-      letter-spacing:.3px;
+      font-size:13px;
     }
-    .mBtn.primary{
-      background: linear-gradient(135deg, rgba(124,255,234,.26), rgba(255,106,223,.18));
-      border-color: rgba(124,255,234,.40);
+    .dayBox .d{font-family:Orbitron,system-ui,sans-serif; font-weight:900; opacity:.9}
+    .dayBox .v{margin-top:4px; color:var(--muted)}
+    .dayBox.claimed{
+      background:linear-gradient(135deg, rgba(124,255,234,.18), rgba(255,210,77,.10));
+      border-color: rgba(124,255,234,.28);
     }
-    @media (max-width:760px){
-      .mobileHUD{display:flex}
+    .dayBox.next{
+      outline:2px solid rgba(255,210,77,.55);
+      outline-offset:2px;
     }
 
-    .emojiLayer{position:fixed; inset:0; pointer-events:none; z-index:250;}
+    /* Garage */
+    .garageGrid{
+      display:grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap:10px;
+      margin-top:10px;
+    }
+    .skin{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.18);
+      border-radius:16px;
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      min-height:120px;
+    }
+    .skinTop{display:flex; justify-content:space-between; align-items:center; gap:8px}
+    .skinName{font-family:Orbitron,system-ui,sans-serif; font-weight:900; font-size:12px}
+    .skinPrice{font-size:12px; color:var(--muted); font-weight:700}
+    .swatch{
+      height:46px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(135deg, rgba(124,255,234,.35), rgba(255,106,223,.18));
+    }
+    .skinActions{display:flex; gap:8px; flex-wrap:wrap; margin-top:auto}
+    .miniBtn{
+      padding:8px 10px;
+      border-radius:12px;
+      font-size:12px;
+    }
+    @media (max-width:980px){ .garageGrid{grid-template-columns:1fr 1fr 1fr} }
+    @media (max-width:520px){ .garageGrid{grid-template-columns:1fr 1fr} }
+
+    /* Mobile controls */
+    .mobileControls{
+      display:none; margin-top:10px; gap:10px; flex-wrap:wrap;
+      justify-content:space-between; align-items:center;
+      user-select:none;
+    }
+    .pad{display:flex; gap:10px; align-items:center}
+    .big{padding:14px 16px; border-radius:16px; font-size:14px; min-width:92px; text-align:center;}
+    @media (max-width:760px){ .mobileControls{display:flex} }
+
+    /* Overlay */
+    .overlay{
+      position:fixed; inset:0;
+      display:none; place-items:center;
+      background:rgba(0,0,0,.58);
+      backdrop-filter: blur(6px);
+      padding:18px;
+      z-index:50;
+    }
+    .modal{
+      width:min(920px, 94vw);
+      background:rgba(11,18,48,.94);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:0 24px 70px rgba(0,0,0,.6);
+    }
+    .modal h2{
+      margin:0 0 8px;
+      font-family:Orbitron,system-ui,sans-serif;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+      font-size:18px;
+    }
+    .modal p{margin:0 0 12px; color:var(--muted); line-height:1.5; font-size:14px}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+
+    /* Emoji layer */
+    .emojiLayer{position:fixed; inset:0; pointer-events:none; z-index:80;}
     .emojiPop{
       position:absolute;
       transform: translate(-50%, -50%) scale(1);
-      font-size:54px;
+      font-size:44px;
       filter: drop-shadow(0 10px 18px rgba(0,0,0,.45));
       will-change: transform, opacity;
     }
 
-    /* ===== Modal (Game Over / Revive) ===== */
-    .modalOverlay{
-      position:fixed;
-      inset:0;
-      z-index:260;
-      display:none;
-      place-items:center;
-      padding:16px;
-      background:rgba(0,0,0,.62);
-      backdrop-filter: blur(8px);
+    /* Fullscreen gameplay mode */
+    body.playing .wrap{width:100vw; height:100vh; max-width:none; margin:0; gap:0}
+    body.playing .hero, body.playing .content{display:none}
+    body.playing header{border-radius:0; border-left:0; border-right:0}
+    body.playing .board{border-radius:0; border-left:0; border-right:0; height:calc(100vh - 76px)}
+    body.playing canvas{aspect-ratio:auto; height:100%; width:100%; border-radius:0}
+    @media (max-width:760px){
+      body.playing .board{height:calc(100vh - 110px)}
     }
-    .modal{
-      width:min(520px, 96vw);
-      background:rgba(11,18,48,.94);
-      border:1px solid rgba(255,255,255,.16);
-      border-radius:18px;
-      padding:14px;
-      box-shadow:0 24px 70px rgba(0,0,0,.7);
-    }
-    .modal h2{
-      margin:0 0 8px;
-      font-size:18px;
-      font-family:"Orbitron", system-ui, sans-serif;
-      letter-spacing:.5px;
-      text-transform:uppercase;
-    }
-    .modal p{margin:0 0 12px; color:var(--muted); line-height:1.5}
-    .modal .row{justify-content:space-between}
   </style>
 </head>
 
 <body>
   <div class="wrap">
-    <header>
-      <div class="brand">
-        <h1>Neon Highway Racer</h1>
-        <div class="sub">Homepage first • Fullscreen Play mode • Leaderboard • Daily rewards + tasks • Shop + revive</div>
-      </div>
 
+    <!-- Fancy Home Hero -->
+    <div class="hero">
+      <div class="heroLeft">
+        <h1 class="brand">NEON HIGHWAY RACER</h1>
+        <p class="tagline">3 Lives • Revive • Bonus Levels • Buff Pickups • Garage Skins • Weekly & All-Time Leaderboards</p>
+      </div>
+      <div class="heroRight">
+        <button class="cta primary" id="homePlay">PLAY</button>
+        <button class="cta" id="homeOpenShop">SHOP</button>
+        <button class="cta" id="homeOpenGarage">GARAGE</button>
+        <button class="cta danger" id="homeOpenBoards">LEADERBOARDS</button>
+      </div>
+    </div>
+
+    <header>
       <div class="stats">
         <div class="pill">Player: <b id="playerName">Gamer</b></div>
-        <div class="pill">Best: <b id="bestHome">0</b></div>
-        <div class="pill">Bank 🪙: <b id="bankHome">0</b></div>
+        <div class="pill">Score: <b id="score">0</b></div>
+        <div class="pill">Best: <b id="best">0</b></div>
+        <div class="pill">Lives: <b id="lives">3</b></div>
+        <div class="pill">Mode: <b id="mode">Easy</b></div>
+        <div class="pill" title="Nitro">
+          Nitro:
+          <span class="bar"><i id="nitroFill"></i></span>
+        </div>
+        <div class="pill">Run 🪙: <b id="runCoins">0</b></div>
+        <div class="pill">Bank 🪙: <b id="bankCoins">0</b></div>
       </div>
 
-      <div class="row">
-        <button id="playHome" class="primary">Play</button>
+      <div class="btns">
+        <button id="pauseBtn" title="Pause/Resume (Space)">PAUSE</button>
+        <button id="restartBtn" title="Restart (R)">RESTART</button>
+        <button id="feedbackBtn" title="Send feedback via Instagram DM">FEEDBACK</button>
       </div>
     </header>
 
-    <div class="mainGrid">
-      <div class="panel">
-        <div class="tabs" id="tabs">
-          <button class="tabBtn active" data-tab="account">Player name</button>
-          <button class="tabBtn" data-tab="rewards">Daily rewards</button>
-          <button class="tabBtn" data-tab="tasks">Daily task</button>
-          <button class="tabBtn" data-tab="leaderboard">Leadership board</button>
-          <button class="tabBtn" data-tab="shop">Shop</button>
-          <button class="tabBtn" data-tab="howto">How to play</button>
-          <button class="tabBtn" data-tab="feedback">Feedback</button>
+    <div class="board">
+      <canvas id="game" width="960" height="540"></canvas>
+
+      <div class="help">
+        <div>
+          Controls: <span class="kbd">← →</span>/<span class="kbd">A D</span> steer •
+          <span class="kbd">↑</span>/<span class="kbd">W</span> nitro •
+          <span class="kbd">Shift</span> drift •
+          <span class="kbd">Space</span> pause • <span class="kbd">R</span> restart
+        </div>
+        <div>Mobile: buttons below (or swipe left/right; swipe up = nitro)</div>
+      </div>
+
+      <div class="mobileControls">
+        <div class="pad">
+          <button class="big" id="mLeft">◀ Left</button>
+          <button class="big" id="mRight">Right ▶</button>
+        </div>
+        <div class="pad">
+          <button class="big" id="mDrift">⚡ Drift</button>
+          <button class="big" id="mNitro">🚀 Nitro</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOME CONTENT (always visible on homepage) -->
+    <div class="content">
+
+      <div class="grid2">
+        <div class="card">
+          <h3>Player</h3>
+          <p style="margin-bottom:10px">Set your name (saved on this browser) and claim daily rewards.</p>
+          <div class="row">
+            <input id="nameInput" maxlength="18" placeholder="e.g., Gamer" autocomplete="off" inputmode="text"
+              style="flex:1; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.22); color:var(--text); font-weight:800;" />
+            <button id="saveNameBtn">SAVE</button>
+            <button id="resetNameBtn">RESET</button>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button id="claimBtn">CLAIM DAILY BONUS</button>
+            <span class="pill">Next: <b id="bonusText">—</b></span>
+            <label class="pill" style="cursor:pointer"><input id="musicToggle" type="checkbox" checked style="accent-color:#6ff;cursor:pointer" /> Music</label>
+            <label class="pill" style="cursor:pointer"><input id="sfxToggle" type="checkbox" checked style="accent-color:#6ff;cursor:pointer" /> SFX</label>
+          </div>
+
+          <div class="card" style="margin-top:10px">
+            <h3>7-Day Streak Calendar</h3>
+            <p>Claim once per day for 7 days. Rewards increase each day.</p>
+            <div class="streakGrid" id="streakGrid"></div>
+          </div>
         </div>
 
-        <!-- ACCOUNT -->
-        <div class="card" data-pane="account">
-          <h3>Player name</h3>
-          <p class="small">Set your name to save coins + best score locally and submit to leaderboard.</p>
+        <div class="card">
+          <h3>Difficulty</h3>
+          <p style="margin-bottom:10px">Choose a mode before you play.</p>
+          <div class="row" id="modeRow"></div>
 
-          <div class="row" style="margin-top:10px">
-            <input id="nameInput" class="input" maxlength="18" placeholder="Gamer"/>
-            <button id="signInBtn">Save</button>
-            <button id="signOutBtn" class="danger">Reset to Gamer</button>
-          </div>
-
-          <div class="row" style="margin-top:12px; justify-content:space-between">
-            <span class="chip">Difficulty:
-              <select id="difficulty" style="background:transparent;color:var(--text);border:none;font-weight:950;outline:none">
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
-            </span>
-
-            <label class="chip">Music <input id="musicToggle" type="checkbox" checked></label>
-            <label class="chip">SFX <input id="sfxToggle" type="checkbox" checked></label>
-          </div>
-
-          </div>
-            <h3 style="margin-bottom:8px">Music note</h3>
-            <p class="small">
-              I can’t embed copyrighted songs like AC/DC directly, but the game now has a much more engaging
-              arcade/synthwave racer soundtrack (strong beat + driving bass).
+          <div class="card" style="margin-top:10px">
+            <h3>How to Play</h3>
+            <p>
+              Dodge cars, grab coins & buffs. You have <b>3 lives</b> each run.
+              Every <b>450 points</b> you enter a <b>30s Bonus Level</b> (no obstacles, tons of loot).
+              🎁 Gift car gives 500–600 coins.
             </p>
           </div>
-        </div>
 
-        <!-- REWARDS -->
-        <div class="card" data-pane="rewards" style="display:none">
-          <h3>Daily rewards (7 days)</h3>
-          <p>Claim once per day. Starts at 50 coins and increases gradually.</p>
-          <div class="row" style="margin-top:10px">
-            <span class="chip">Streak: <b id="streakText" style="margin-left:6px">0</b></span>
-            <span class="chip">Today: <b id="claimedTodayText" style="margin-left:6px">Not claimed</b></span>
-            <button id="claimBtn">Claim</button>
-          </div>
-        </div>
-
-        <!-- TASKS -->
-        <div class="card" data-pane="tasks" style="display:none">
-          <h3>Daily tasks (3)</h3>
-          <p>Complete tasks to earn extra coins. Resets daily.</p>
-          <div class="missions" id="missions" style="margin-top:10px"></div>
-        </div>
-
-        <!-- LEADERBOARD -->
-        <div class="card" data-pane="leaderboard" style="display:none">
-          <h3>Leadership board (Top 10)</h3>
-          <p id="lbStatus">Loading…</p>
-          <div class="lbList" id="lbList"></div>
-          <div class="small" style="margin-top:10px">
-            If it’s empty: play at least once and finish a run so the score submits.
-          </div>
-        </div>
-
-        <!-- SHOP -->
-        <div class="card" data-pane="shop" style="display:none">
-          <h3>Shop</h3>
-          <p>Buy buffs using Bank 🪙. Buffs apply to your next run. Extra Life is stored in inventory.</p>
-
-          <div class="row" style="margin-top:10px; justify-content:space-between">
-            <span class="chip">Bank 🪙 <b id="menuBank" style="margin-left:6px">0</b></span>
-            <span class="chip">Inventory:
-              🛡 <b id="invShield">0</b>
-              ⏱ <b id="invSlowmo">0</b>
-              🧲 <b id="invMagnet">0</b>
-              🚀 <b id="invNitro">0</b>
-              ❤️ <b id="invLife">0</b>
-            </span>
-          </div>
-
-          <div class="shop" style="margin-top:12px">
-            <div class="shopItem">
-              <div class="top"><div class="name">🛡 Shield</div><span class="qty" id="qShield">0</span></div>
-              <div class="desc">Blocks 1 crash. Stack up to 2 per run.</div>
-              <div class="buyRow">
-                <button data-buy="shield">Buy</button>
-                <span class="price">Cost: <b id="pShield">20</b> 🪙</span>
-              </div>
-            </div>
-
-            <div class="shopItem">
-              <div class="top"><div class="name">⏱ Slow-Mo</div><span class="qty" id="qSlowmo">0</span></div>
-              <div class="desc">Slows time for a few seconds.</div>
-              <div class="buyRow">
-                <button data-buy="slowmo">Buy</button>
-                <span class="price">Cost: <b id="pSlowmo">25</b> 🪙</span>
-              </div>
-            </div>
-
-            <div class="shopItem">
-              <div class="top"><div class="name">🧲 Magnet</div><span class="qty" id="qMagnet">0</span></div>
-              <div class="desc">Pulls coins toward you.</div>
-              <div class="buyRow">
-                <button data-buy="magnet">Buy</button>
-                <span class="price">Cost: <b id="pMagnet">25</b> 🪙</span>
-              </div>
-            </div>
-
-            <div class="shopItem">
-              <div class="top"><div class="name">🚀 Nitro+</div><span class="qty" id="qNitro">0</span></div>
-              <div class="desc">Start with extra nitro.</div>
-              <div class="buyRow">
-                <button data-buy="nitro">Buy</button>
-                <span class="price">Cost: <b id="pNitro">15</b> 🪙</span>
-              </div>
-            </div>
-
-            <div class="shopItem">
-              <div class="top"><div class="name">❤️ Extra Life</div><span class="qty" id="qLife">0</span></div>
-              <div class="desc">Adds 1 revive token to your inventory.</div>
-              <div class="buyRow">
-                <button data-buy="life">Buy</button>
-                <span class="price">Cost: <b id="pLife">90</b> 🪙</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="small" style="margin-top:10px">
-            Game Over popup can also offer a revive for <b>100 coins</b> if you have no life token.
-          </div>
-        </div>
-
-        <!-- HOWTO -->
-        <div class="card" data-pane="howto" style="display:none">
-          <h3>How to play</h3>
-          <p>
-            Mobile: drag left/right inside the game to change lanes. Nitro = hold 🚀. Drift = hold ⚡.
-            Desktop: Arrow keys / A D. Nitro: ↑ / W. Drift: Shift. Pause: Space.
-          </p>
-          <p class="small" style="margin-top:10px">
-            Easy mode is relaxed. Medium is normal. Hard is intense.
-          </p>
-        </div>
-
-        <!-- FEEDBACK -->
-        <div class="card" data-pane="feedback" style="display:none">
-          <h3>Feedback</h3>
-          <p>Tap to message <b>@daily__discipline.01</b> via Instagram Direct Message.</p>
-          <div class="row" style="margin-top:10px">
-            <button id="feedbackBtn" class="primary">Open Instagram DM</button>
+          <div class="card" style="margin-top:10px">
+            <h3>Contact</h3>
+            <p>Tap FEEDBACK to message <b>@daily__discipline.01</b> via Instagram DM.</p>
           </div>
         </div>
       </div>
+
+      <div class="card">
+        <h3>Daily Missions (3)</h3>
+        <p>Complete missions to earn extra coins. Missions reset daily.</p>
+        <div class="missions" id="missions"></div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h3>Leaderboards</h3>
+          <p id="lbStatus">Loading…</p>
+
+          <div class="grid2" style="margin-top:10px">
+            <div class="card">
+              <h3>Weekly Top 10</h3>
+              <div class="lbList" id="lbWeekly"></div>
+              <p class="small" style="margin-top:8px;color:var(--muted)">
+                Weekly resets automatically (new week bucket).
+              </p>
+            </div>
+            <div class="card">
+              <h3>All-Time Top 10</h3>
+              <div class="lbList" id="lbAllTime"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="shopCard">
+          <h3>Shop</h3>
+          <p>Buy buffs before a run. Applies to the next run.</p>
+          <div class="row" style="margin-top:10px">
+            <button id="openShopBtn">OPEN SHOP</button>
+            <span class="pill">Bank 🪙: <b id="menuBank">0</b></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="garageCard">
+        <h3>Garage</h3>
+        <p>Buy skins with coins. Select a skin to change your car style.</p>
+        <div class="garageGrid" id="garageGrid"></div>
+      </div>
+
+      <div class="card">
+        <h3>Policy Pages (AdSense-ready)</h3>
+        <div class="links">
+          <a href="#privacy">Privacy</a>
+          <a href="#terms">Terms</a>
+        </div>
+      </div>
+
+      <div class="card" id="privacy">
+        <h3>Privacy Policy</h3>
+        <p>
+          This game stores your player name, best score, coins, skins, and mission progress in your browser (localStorage).
+          If online leaderboards are enabled, your name + best score (and weekly score) are sent to the leaderboard database.
+        </p>
+      </div>
+
+      <div class="card" id="terms">
+        <h3>Terms</h3>
+        <p>This is a browser game for entertainment. Scores may vary across devices/browsers.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SHOP MODAL -->
+  <div class="overlay" id="shopModal">
+    <div class="modal">
+      <h2>Shop</h2>
+      <p>Buy buffs for the next run. Bank coins are deducted instantly.</p>
+      <div class="row">
+        <button id="shopClose">CLOSE</button>
+      </div>
+
+      <div style="margin-top:12px; display:grid; gap:10px; grid-template-columns: repeat(5, minmax(0,1fr));" id="shopGrid"></div>
+      <p style="margin-top:10px; color:var(--muted)">
+        Tip: Shield blocks 1 crash • Magnet 15s • Slow-mo slows obstacles 5× • Invisibility lets you phase • Extra life adds +1 (max +2)
+      </p>
     </div>
   </div>
 
-  <!-- FULLSCREEN GAME -->
-  <div class="gameOverlay" id="gameOverlay" aria-hidden="true">
-    <div class="gameTopHud">
-      <div class="hudGroup">
-        <span class="hudPill">Score: <b id="hudScore">0</b></span>
-        <span class="hudPill">Best: <b id="hudBest">0</b></span>
-        <span class="hudPill">Run 🪙: <b id="hudRunCoins">0</b></span>
-        <span class="hudPill">Bank 🪙: <b id="hudBank">0</b></span>
-        <span class="hudPill">Mode: <b id="hudMode">Easy</b></span>
-        <span class="hudPill" title="Nitro"><span>Nitro</span><span class="bar"><i id="nitroFill"></i></span></span>
-      </div>
-      <div class="hudGroup">
-        <button id="pauseBtn">Pause</button>
-        <button id="exitBtn" class="danger">Exit</button>
-      </div>
-    </div>
-
-    <div class="gameStage">
-      <canvas id="game" width="960" height="540"></canvas>
-    </div>
-
-    <div class="mobileHUD" id="mobileHUD">
-      <div class="group">
-        <button class="mBtn" id="mLeft">◀</button>
-        <button class="mBtn" id="mRight">▶</button>
-      </div>
-      <div class="group">
-        <button class="mBtn" id="mDrift">⚡</button>
-        <button class="mBtn primary" id="mNitro">🚀</button>
-      </div>
-      <div class="group">
-        <button class="mBtn" id="mPause">⏸</button>
+  <!-- GAME OVER / REVIVE MODAL -->
+  <div class="overlay" id="gameOverModal">
+    <div class="modal">
+      <h2>Game Over</h2>
+      <p id="gameOverText">Your run ended.</p>
+      <div class="row" style="margin-top:10px">
+        <button id="reviveBtn">REVIVE (100 🪙)</button>
+        <button id="shareBtn">SHARE</button>
+        <button id="backHomeBtn">BACK TO HOME</button>
       </div>
     </div>
   </div>
 
   <div class="emojiLayer" id="emojiLayer"></div>
-
-  <!-- REVIVE / GAME OVER MODAL -->
-  <div class="modalOverlay" id="reviveOverlay">
-    <div class="modal">
-      <h2 id="reviveTitle">Game Over</h2>
-      <p id="reviveText">You crashed. Want an extra life?</p>
-      <div class="row">
-        <button id="reviveBtn" class="primary">Revive</button>
-        <button id="endBtn" class="danger">End Run</button>
-      </div>
-      <p class="small" style="margin-top:10px" id="reviveHint"></p>
-    </div>
-  </div>
 
 <script>
 (() => {
@@ -684,6 +544,10 @@
   const SUPABASE_URL = "https://dnyibstgahnjbkjokuxs.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_1PLhDg4aoFucc0-7qWH0KA_unYKueat";
 
+  // Tables:
+  // - public.leaderboard (existing): name, score, updated_at
+  // - public.leaderboard_weekly (new): week_start, name, score, updated_at
+
   const SB = {
     enabled: () => Boolean(SUPABASE_URL && SUPABASE_ANON_KEY),
     headers: () => ({
@@ -692,116 +556,99 @@
       "Content-Type": "application/json",
       "Prefer": "return=representation"
     }),
-    async top10(){
-      if (!this.enabled()) return null;
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?select=name,score&order=score.desc&limit=10`, {
-        headers: this.headers()
+    async upsertAllTime(name, score){
+      if (!this.enabled()) return;
+      const body = [{ name, score, updated_at: new Date().toISOString() }];
+      await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?on_conflict=name`, {
+        method: "POST",
+        headers: { ...this.headers(), "Prefer": "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify(body)
       });
-      if (!res.ok) throw new Error("leaderboard_fetch_failed");
+    },
+    async top10AllTime(){
+      if (!this.enabled()) return null;
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?select=name,score&order=score.desc&limit=10`, { headers: this.headers() });
+      if (!res.ok) throw new Error("alltime_fetch_failed");
       return await res.json();
     },
-    async saveBest(name, score){
+    async upsertWeekly(weekStartISO, name, score){
       if (!this.enabled()) return;
-      // Try RPC submit_score, fallback to upsert
-      try{
-        const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/submit_score`, {
-          method:"POST",
-          headers:this.headers(),
-          body: JSON.stringify({ p_name: name, p_score: score })
-        });
-        if(!r.ok) throw new Error("rpc_missing_or_blocked");
-      } catch {
-        const body = [{ name, score, updated_at: new Date().toISOString() }];
-        await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?on_conflict=name`, {
-          method: "POST",
-          headers: { ...this.headers(), "Prefer": "resolution=merge-duplicates,return=minimal" },
-          body: JSON.stringify(body)
-        });
-      }
+      const body = [{ week_start: weekStartISO, name, score, updated_at: new Date().toISOString() }];
+      await fetch(`${SUPABASE_URL}/rest/v1/leaderboard_weekly?on_conflict=week_start,name`, {
+        method: "POST",
+        headers: { ...this.headers(), "Prefer": "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify(body)
+      });
+    },
+    async top10Weekly(weekStartISO){
+      if (!this.enabled()) return null;
+      const q = encodeURIComponent(`week_start=eq.${weekStartISO}`);
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard_weekly?select=name,score&${q}&order=score.desc&limit=10`, { headers: this.headers() });
+      if (!res.ok) throw new Error("weekly_fetch_failed");
+      return await res.json();
     }
   };
 
   // ===== DOM =====
-  const $ = (id)=>document.getElementById(id);
-
-  // Home
-  const playerNameEl = $("playerName");
-  const bestHomeEl = $("bestHome");
-  const bankHomeEl = $("bankHome");
-
-  const playHome = $("playHome");
-  const tabs = $("tabs");
-  const paneEls = Array.from(document.querySelectorAll("[data-pane]"));
-
-  const nameInput = $("nameInput");
-  const signInBtn = $("signInBtn");
-  const signOutBtn = $("signOutBtn");
-
-  const difficultySel = $("difficulty");
-
-  const musicToggle = $("musicToggle");
-  const sfxToggle = $("sfxToggle");
-
-  const claimBtn = $("claimBtn");
-  const streakText = $("streakText");
-  const claimedTodayText = $("claimedTodayText");
-
-  const missionsEl = $("missions");
-  const lbStatusEl = $("lbStatus");
-  const lbListEl = $("lbList");
-
-  const feedbackBtn = $("feedbackBtn");
-
-  // Shop
-  const menuBank = $("menuBank");
-  const invShield = $("invShield");
-  const invSlowmo = $("invSlowmo");
-  const invMagnet = $("invMagnet");
-  const invNitro  = $("invNitro");
-  const invLife   = $("invLife");
-
-  const qShield = $("qShield");
-  const qSlowmo = $("qSlowmo");
-  const qMagnet = $("qMagnet");
-  const qNitro  = $("qNitro");
-  const qLife   = $("qLife");
-
-  const pShield = $("pShield");
-  const pSlowmo = $("pSlowmo");
-  const pMagnet = $("pMagnet");
-  const pNitro  = $("pNitro");
-  const pLife   = $("pLife");
-
-  // Fullscreen game overlay
-  const gameOverlay = $("gameOverlay");
-  const canvas = $("game");
+  const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d");
   const W = canvas.width, H = canvas.height;
 
-  const hudScore = $("hudScore");
-  const hudBest  = $("hudBest");
-  const hudRunCoins = $("hudRunCoins");
-  const hudBank = $("hudBank");
-  const hudMode = $("hudMode");
-  const nitroFill = $("nitroFill");
+  const playerNameEl = document.getElementById("playerName");
+  const scoreEl = document.getElementById("score");
+  const bestEl  = document.getElementById("best");
+  const livesEl = document.getElementById("lives");
+  const modeEl  = document.getElementById("mode");
+  const nitroFill = document.getElementById("nitroFill");
+  const runCoinsEl = document.getElementById("runCoins");
+  const bankCoinsEl = document.getElementById("bankCoins");
 
-  const pauseBtn = $("pauseBtn");
-  const exitBtn = $("exitBtn");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const restartBtn = document.getElementById("restartBtn");
+  const feedbackBtn = document.getElementById("feedbackBtn");
 
-  const mLeft = $("mLeft");
-  const mRight = $("mRight");
-  const mNitro = $("mNitro");
-  const mDrift = $("mDrift");
-  const mPause = $("mPause");
+  const homePlay = document.getElementById("homePlay");
+  const homeOpenShop = document.getElementById("homeOpenShop");
+  const homeOpenGarage = document.getElementById("homeOpenGarage");
+  const homeOpenBoards = document.getElementById("homeOpenBoards");
 
-  // Emoji + revive modal
-  const emojiLayer = $("emojiLayer");
-  const reviveOverlay = $("reviveOverlay");
-  const reviveTitle = $("reviveTitle");
-  const reviveText = $("reviveText");
-  const reviveBtn = $("reviveBtn");
-  const endBtn = $("endBtn");
-  const reviveHint = $("reviveHint");
+  const nameInput = document.getElementById("nameInput");
+  const saveNameBtn = document.getElementById("saveNameBtn");
+  const resetNameBtn = document.getElementById("resetNameBtn");
+
+  const claimBtn = document.getElementById("claimBtn");
+  const bonusText = document.getElementById("bonusText");
+  const streakGrid = document.getElementById("streakGrid");
+
+  const missionsEl = document.getElementById("missions");
+
+  const lbStatusEl = document.getElementById("lbStatus");
+  const lbAllTimeEl = document.getElementById("lbAllTime");
+  const lbWeeklyEl = document.getElementById("lbWeekly");
+
+  const shopModal = document.getElementById("shopModal");
+  const shopClose = document.getElementById("shopClose");
+  const shopGrid  = document.getElementById("shopGrid");
+  const openShopBtn = document.getElementById("openShopBtn");
+  const menuBank = document.getElementById("menuBank");
+
+  const garageGrid = document.getElementById("garageGrid");
+
+  const gameOverModal = document.getElementById("gameOverModal");
+  const gameOverText = document.getElementById("gameOverText");
+  const reviveBtn = document.getElementById("reviveBtn");
+  const shareBtn = document.getElementById("shareBtn");
+  const backHomeBtn = document.getElementById("backHomeBtn");
+
+  const musicToggle = document.getElementById("musicToggle");
+  const sfxToggle = document.getElementById("sfxToggle");
+
+  const emojiLayer = document.getElementById("emojiLayer");
+
+  const mLeft = document.getElementById("mLeft");
+  const mRight = document.getElementById("mRight");
+  const mNitro = document.getElementById("mNitro");
+  const mDrift = document.getElementById("mDrift");
 
   // ===== helpers =====
   const clamp = (v,a,b)=>Math.max(a, Math.min(b, v));
@@ -811,6 +658,16 @@
   function todayISO(){
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+
+  // week_start ISO (Monday)
+  function weekStartISO(d=new Date()){
+    const x = new Date(d);
+    x.setHours(0,0,0,0);
+    const day = x.getDay(); // 0=Sun..6=Sat
+    const diff = (day === 0) ? 6 : (day - 1); // monday start
+    x.setDate(x.getDate() - diff);
+    return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`;
   }
 
   function rectHit(ax,ay,aw,ah, bx,by,bw,bh){
@@ -827,131 +684,145 @@
     return Math.hypot(dx, dy);
   }
 
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
-  }
+  // ===== Difficulty =====
+  const MODES = {
+    easy:   { name:"Easy",   baseSpeed: 220, accel: 9,  spawnRate: 0.78, maxTraffic: 6,  wiggle: 22,
+              trafficRelMin:0.58, trafficRelMax:0.98, laneChangeRate: 0.045, laneChangeSpeed: 2.6, laneChangeCooldown:[1.4, 2.4] },
+    medium: { name:"Medium", baseSpeed: 290, accel: 13, spawnRate: 1.05, maxTraffic: 10, wiggle: 50,
+              trafficRelMin:0.62, trafficRelMax:1.12, laneChangeRate: 0.090, laneChangeSpeed: 5.0, laneChangeCooldown:[0.85, 1.6] },
+    hard:   { name:"Hard",   baseSpeed: 350, accel: 17, spawnRate: 1.30, maxTraffic: 13, wiggle: 70,
+              trafficRelMin:0.66, trafficRelMax:1.22, laneChangeRate: 0.140, laneChangeSpeed: 7.0, laneChangeCooldown:[0.55, 1.2] },
+  };
 
-  function isTypingTarget(){
-    const el = document.activeElement;
-    if(!el) return false;
-    const tag = (el.tagName||"").toLowerCase();
-    return tag === "input" || tag === "textarea" || tag === "select" || el.isContentEditable;
-  }
+  // ===== Road/Lanes =====
+  const road = { x: W*0.18, w: W*0.64, y: 0, h: H };
+  const laneCount = 3;
+  const laneW = road.w / laneCount;
+  const laneCenter = (lane)=> road.x + laneW*(lane + 0.5);
+  const WALL_MARGIN = 18;
 
-  // ===== Tabs =====
-  function setTab(key){
-    Array.from(tabs.querySelectorAll(".tabBtn")).forEach(b => {
-      b.classList.toggle("active", b.getAttribute("data-tab") === key);
-    });
-    paneEls.forEach(p => p.style.display = (p.getAttribute("data-pane") === key ? "block" : "none"));
-
-    if (key === "leaderboard") syncLeaderboard();
-    if (key === "shop") syncShopUI();
-    if (key === "tasks") renderMissions();
-    if (key === "rewards") syncRewardUI();
-  }
-  tabs.addEventListener("click",(e)=>{
-    const btn = e.target.closest(".tabBtn");
-    if(!btn) return;
-    const tab = btn.getAttribute("data-tab");
-    if(tab) setTab(tab);
-  });
-
-  // ===== Local profile/account =====
-  const PROFILE_KEY = "neon_racer_profile_final_v4";
-
+  // ===== Profile =====
+  const PROFILE_KEY = "neon_racer_profile_v4";
   function loadProfile(){
     try{ return JSON.parse(localStorage.getItem(PROFILE_KEY) || "null"); } catch { return null; }
   }
   function saveProfile(p){ localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
 
+  // Garage skins
+  const SKINS = [
+    { id:"stock",  name:"Stock Neon",  cost:0,   grad:["#46c8ff","#7cffea"] },
+    { id:"midnight", name:"Midnight",  cost:120, grad:["#2b2f52","#6a7cff"] },
+    { id:"inferno", name:"Inferno",    cost:200, grad:["#ff5a84","#ffd24d"] },
+    { id:"toxic",   name:"Toxic Lime", cost:260, grad:["#a6ff4d","#7cffea"] },
+    { id:"royal",   name:"Royal",      cost:320, grad:["#7a5cff","#46c8ff"] },
+    { id:"carbon",  name:"Carbon",     cost:420, grad:["#2a2f3a","#8899aa"] },
+  ];
+
   let profile = loadProfile() || {
-    name:"Gamer",
-    bestScore:0,
-    bankCoins:0,
-    inv: { shield:0, slowmo:0, magnet:0, nitro:0, life:0 },
-    streakDaysClaimed:0,
-    lastBonusDate:null,
-    missionsDate:null,
-    missions:[],
-    modeKey:"easy",
-    music:true,
-    sfx:true
+    name: "Gamer",
+    bestScore: 0,
+    bankCoins: 0,
+    streakDaysClaimed: 0,
+    lastBonusDate: null,
+    missionsDate: null,
+    missions: [],
+    ownedSkins: ["stock"],
+    selectedSkin: "stock",
   };
 
-  if(!profile.name) profile.name="Gamer";
-  if(!profile.inv) profile.inv={shield:0, slowmo:0, magnet:0, nitro:0, life:0};
-
-  // ===== Daily Bonus =====
   function dailyBonusForDay(n){ return 40 + n*10; } // 50..110
+  function bonusPreview(){
+    if (profile.streakDaysClaimed >= 7) return "Completed";
+    const day = profile.streakDaysClaimed + 1;
+    return `+${dailyBonusForDay(day)} (Day ${day}/7)`;
+  }
   function claimDailyBonus(){
-    const t=todayISO();
-    if(profile.lastBonusDate===t) return {ok:false,msg:"Already claimed today."};
-    if(profile.streakDaysClaimed>=7){
-      profile.lastBonusDate=t; saveProfile(profile);
-      return {ok:false,msg:"7-day bonus completed."};
+    const t = todayISO();
+    if (profile.lastBonusDate === t) return { ok:false, msg:"Already claimed today." };
+    if (profile.streakDaysClaimed >= 7){
+      profile.lastBonusDate = t;
+      saveProfile(profile);
+      return { ok:false, msg:"7-day bonus completed." };
     }
-    const day=profile.streakDaysClaimed+1;
-    const amt=dailyBonusForDay(day);
-    profile.bankCoins += amt;
+    const day = profile.streakDaysClaimed + 1;
+    const amount = dailyBonusForDay(day);
+    profile.bankCoins += amount;
     profile.streakDaysClaimed += 1;
     profile.lastBonusDate = t;
     saveProfile(profile);
-    return {ok:true,msg:`+${amt} coins (Day ${day}/7)`};
+    return { ok:true, msg:`+${amount} coins (Day ${day}/7)` };
   }
-  function syncRewardUI(){
-    streakText.textContent=String(profile.streakDaysClaimed||0);
-    claimedTodayText.textContent = (profile.lastBonusDate===todayISO()) ? "Claimed" : "Not claimed";
+
+  function updateHeaderUI(){
+    playerNameEl.textContent = profile.name || "Gamer";
+    bestEl.textContent = profile.bestScore || 0;
+    bankCoinsEl.textContent = profile.bankCoins || 0;
+    menuBank.textContent = profile.bankCoins || 0;
+    bonusText.textContent = bonusPreview();
+  }
+
+  // ===== Streak calendar UI =====
+  function renderStreak(){
+    streakGrid.innerHTML = "";
+    const claimed = clamp(profile.streakDaysClaimed, 0, 7);
+    for(let i=1;i<=7;i++){
+      const div = document.createElement("div");
+      div.className = "dayBox" + (i<=claimed ? " claimed" : "") + (i===claimed+1 && claimed<7 ? " next":"");
+      div.innerHTML = `<div class="d">Day ${i}</div><div class="v">+${dailyBonusForDay(i)}🪙</div>`;
+      streakGrid.appendChild(div);
+    }
   }
 
   // ===== Missions =====
   function newMission(){
-    const types=["passCars","collectCoins","closeCalls"];
-    const type=types[randInt(0,types.length-1)];
-    if(type==="passCars"){
-      const target=[10,15,20,25][randInt(0,3)];
-      return {type,target,progress:0,reward:Math.round(target*1.1),claimed:false};
+    const types = ["passCars","collectCoins","closeCalls"];
+    const type = types[randInt(0, types.length-1)];
+    if (type === "passCars"){
+      const target = [10, 15, 20, 25][randInt(0,3)];
+      const reward = Math.round(target * 1.1);
+      return { type, target, progress:0, reward, claimed:false };
     }
-    if(type==="collectCoins"){
-      const target=[20,25,30,40][randInt(0,3)];
-      return {type,target,progress:0,reward:Math.round(target*0.9),claimed:false};
+    if (type === "collectCoins"){
+      const target = [20, 25, 30, 40][randInt(0,3)];
+      const reward = Math.round(target * 0.9);
+      return { type, target, progress:0, reward, claimed:false };
     }
-    const target=[4,6,8][randInt(0,2)];
-    return {type,target,progress:0,reward:target*8,claimed:false};
+    const target = [4, 6, 8][randInt(0,2)];
+    const reward = target * 8;
+    return { type, target, progress:0, reward, claimed:false };
   }
   function ensureDailyMissions(){
-    const t=todayISO();
-    if(profile.missionsDate===t && Array.isArray(profile.missions) && profile.missions.length===3) return;
-    const ms=[];
-    while(ms.length<3){
-      const m=newMission();
-      if(!ms.some(x=>x.type===m.type)) ms.push(m);
-      else if(Math.random()<0.35) ms.push(m);
+    const t = todayISO();
+    if (profile.missionsDate === t && Array.isArray(profile.missions) && profile.missions.length === 3) return;
+    const ms = [];
+    while (ms.length < 3){
+      const m = newMission();
+      if (!ms.some(x => x.type === m.type)) ms.push(m);
+      else if (Math.random() < 0.35) ms.push(m);
     }
-    profile.missionsDate=t;
-    profile.missions=ms.slice(0,3);
+    profile.missionsDate = t;
+    profile.missions = ms.slice(0,3);
     saveProfile(profile);
   }
   function missionTitle(m){
-    if(m.type==="passCars") return `Pass ${m.target} cars`;
-    if(m.type==="collectCoins") return `Collect ${m.target} coins`;
+    if (m.type === "passCars") return `Pass ${m.target} cars`;
+    if (m.type === "collectCoins") return `Collect ${m.target} coins`;
     return `Close calls ${m.target} times`;
   }
   function renderMissions(){
-    missionsEl.innerHTML="";
-    for(let i=0;i<profile.missions.length;i++){
-      const m=profile.missions[i];
-      const pct=Math.round(clamp(m.progress/m.target,0,1)*100);
-      const div=document.createElement("div");
-      div.className="mCard";
-      div.innerHTML=`
+    missionsEl.innerHTML = "";
+    for (let i=0;i<profile.missions.length;i++){
+      const m = profile.missions[i];
+      const pct = Math.round(clamp((m.progress / m.target), 0, 1) * 100);
+      const div = document.createElement("div");
+      div.className = "mCard";
+      div.innerHTML = `
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
-          <div><b>${missionTitle(m)}</b><div class="small">${m.progress}/${m.target}</div></div>
+          <div><b>${missionTitle(m)}</b><div style="color:var(--muted)">${m.progress}/${m.target}</div></div>
           <div style="text-align:right">
             <div><b>+${m.reward} 🪙</b></div>
-            <button data-claim="${i}" style="margin-top:6px; padding:8px 10px; border-radius:12px"
-              ${m.claimed || m.progress < m.target ? "disabled" : ""}>
-              ${m.claimed ? "Claimed" : (m.progress < m.target ? "In progress" : "Claim")}
+            <button data-claim="${i}" class="miniBtn" style="margin-top:6px" ${m.claimed || m.progress < m.target ? "disabled" : ""}>
+              ${m.claimed ? "CLAIMED" : (m.progress < m.target ? "IN PROGRESS" : "CLAIM")}
             </button>
           </div>
         </div>
@@ -959,262 +830,156 @@
       `;
       missionsEl.appendChild(div);
     }
-    missionsEl.querySelectorAll("button[data-claim]").forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        const idx=Number(btn.getAttribute("data-claim"));
-        const m=profile.missions[idx];
-        if(!m || m.claimed || m.progress<m.target) return;
-        m.claimed=true;
+
+    missionsEl.querySelectorAll("button[data-claim]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = Number(btn.getAttribute("data-claim"));
+        const m = profile.missions[idx];
+        if (!m || m.claimed || m.progress < m.target) return;
+        m.claimed = true;
         profile.bankCoins += m.reward;
         saveProfile(profile);
-        syncHomeUI();
-        syncShopUI();
+        updateHeaderUI();
         renderMissions();
+        renderGarage();
+        renderShop();
       });
     });
   }
 
-  // ===== Shop =====
-  const cart={shield:0,slowmo:0,magnet:0,nitro:0,life:0};
-
-  function priceMultiplier(){ return 1 + clamp(profile.streakDaysClaimed,0,7)*0.06; }
-  function getPrices(){
-    const mult=priceMultiplier();
-    return {
-      shield:Math.round(20*mult),
-      slowmo:Math.round(25*mult),
-      magnet:Math.round(25*mult),
-      nitro: Math.round(15*mult),
-      life:  90
-    };
-  }
-  function syncShopUI(){
-    const pr=getPrices();
-    pShield.textContent=pr.shield;
-    pSlowmo.textContent=pr.slowmo;
-    pMagnet.textContent=pr.magnet;
-    pNitro.textContent=pr.nitro;
-    pLife.textContent=pr.life;
-
-    qShield.textContent=cart.shield;
-    qSlowmo.textContent=cart.slowmo;
-    qMagnet.textContent=cart.magnet;
-    qNitro.textContent=cart.nitro;
-    qLife.textContent=cart.life;
-
-    menuBank.textContent=profile.bankCoins||0;
-
-    invShield.textContent=profile.inv.shield||0;
-    invSlowmo.textContent=profile.inv.slowmo||0;
-    invMagnet.textContent=profile.inv.magnet||0;
-    invNitro.textContent=profile.inv.nitro||0;
-    invLife.textContent=profile.inv.life||0;
-  }
-  function buy(item){
-    const pr=getPrices();
-    const cost=pr[item];
-    if((profile.bankCoins||0)<cost) return;
-
-    const limits = { shield:10, slowmo:10, magnet:10, nitro:10, life:10 };
-    if((profile.inv[item]||0) >= limits[item]) return;
-
-    profile.bankCoins -= cost;
-    profile.inv[item] = (profile.inv[item]||0) + 1;
-
-    saveProfile(profile);
-    syncHomeUI();
-    syncShopUI();
-    sfx("pickup");
-  }
-  document.querySelectorAll("button[data-buy]").forEach(btn=>{
-    btn.addEventListener("click",()=>buy(btn.getAttribute("data-buy")));
-  });
-
-  // ===== Instagram DM feedback =====
+  // ===== Feedback DM =====
   function openInstagramDM(username){
     const deep = `instagram://direct/new?username=${encodeURIComponent(username)}`;
     const web1 = `https://ig.me/m/${encodeURIComponent(username)}`;
     const web2 = `https://www.instagram.com/direct/new/?username=${encodeURIComponent(username)}`;
-
-    const a=document.createElement("a");
-    a.href=deep; a.style.display="none";
+    const a = document.createElement("a");
+    a.href = deep; a.style.display = "none";
     document.body.appendChild(a); a.click(); a.remove();
-
-    setTimeout(()=>{
-      const w=window.open(web1,"_blank","noopener,noreferrer");
-      if(!w) window.location.href=web2;
-    },250);
+    setTimeout(() => {
+      const w = window.open(web1, "_blank", "noopener,noreferrer");
+      if (!w) window.location.href = web2;
+    }, 250);
   }
-  feedbackBtn.addEventListener("click",()=>openInstagramDM("daily__discipline.01"));
+  feedbackBtn.addEventListener("click", () => openInstagramDM("daily__discipline.01"));
 
-  // ===== Audio (improved engaging synthwave racer) =====
-  let audioCtx=null, master=null, musicGain=null, musicState=null;
-
+  // ===== Audio (keep current) =====
+  let audioCtx=null, master=null, musicGain=null, song=null;
   function ensureAudio(){
-    if(audioCtx) return;
-    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-
-    master=audioCtx.createGain();
-    master.gain.value=0.52;
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    master = audioCtx.createGain(); master.gain.value = 0.40;
     master.connect(audioCtx.destination);
-
-    musicGain=audioCtx.createGain();
-    musicGain.gain.value = profile.music ? 0.26 : 0.0;
+    musicGain = audioCtx.createGain(); musicGain.gain.value = musicToggle.checked ? 0.25 : 0.0;
     musicGain.connect(master);
-
-    musicState=createEngagingRacerMusic(audioCtx, musicGain);
-    musicState.start();
+    song = createEnergeticSong(audioCtx, musicGain);
+    song.start();
   }
-
-  // Better than the previous loop: tight drums + bass + arps + pad, “racing” feel
-  function createEngagingRacerMusic(ctx,out){
-    const tempo=155;
-    const beat=60/tempo;
-    const step=beat/2; // 8ths
-    const state={t:ctx.currentTime,timer:null,on:true};
-
-    const bus=ctx.createGain(); bus.gain.value=1.0;
-
-    const comp=ctx.createDynamicsCompressor();
-    comp.threshold.value=-16; comp.knee.value=22; comp.ratio.value=8;
-    comp.attack.value=0.003; comp.release.value=0.12;
-
-    const lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=2200;
-
+  function createEnergeticSong(ctx, out){
+    const tempo = 136;
+    const beat = 60/tempo;
+    const step = beat/2;
+    const state = { t: ctx.currentTime, timer:null, on:true };
+    const bus = ctx.createGain(); bus.gain.value = 0.95;
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value=-18; comp.knee.value=20; comp.ratio.value=6;
+    comp.attack.value=0.005; comp.release.value=0.1;
+    const lp = ctx.createBiquadFilter();
+    lp.type="lowpass"; lp.frequency.value=1500;
     bus.connect(comp); comp.connect(lp); lp.connect(out);
 
-    function noise(t,dur,hpFreq,gainVal){
-      const buffer=ctx.createBuffer(1,ctx.sampleRate*dur,ctx.sampleRate);
-      const data=buffer.getChannelData(0);
-      for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*Math.exp(-i/(data.length/2.5));
-      const src=ctx.createBufferSource(); src.buffer=buffer;
+    const base = 220;
+    const scale = [0,2,3,5,7,10];
+    const prog = [0,0,-2,-2,-5,-5,-2,-2];
+    const freq = (semi)=> base * Math.pow(2, semi/12);
 
-      const hp=ctx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=hpFreq;
-
-      const g=ctx.createGain();
-      g.gain.setValueAtTime(0.0001,t);
-      g.gain.exponentialRampToValueAtTime(gainVal,t+0.006);
-      g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-
-      src.connect(hp); hp.connect(g); g.connect(bus);
-      src.start(t); src.stop(t+dur);
-    }
     function kick(t){
       const o=ctx.createOscillator(); const g=ctx.createGain();
       o.type="sine";
-      o.frequency.setValueAtTime(170,t);
-      o.frequency.exponentialRampToValueAtTime(52,t+0.11);
+      o.frequency.setValueAtTime(155,t);
+      o.frequency.exponentialRampToValueAtTime(50,t+0.09);
       g.gain.setValueAtTime(0.0001,t);
-      g.gain.exponentialRampToValueAtTime(0.95,t+0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001,t+0.15);
+      g.gain.exponentialRampToValueAtTime(0.75,t+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
       o.connect(g); g.connect(bus);
-      o.start(t); o.stop(t+0.17);
+      o.start(t); o.stop(t+0.14);
     }
     function snare(t){
-      noise(t,0.12,1400,0.42);
-      const o=ctx.createOscillator(); const g=ctx.createGain();
-      o.type="triangle"; o.frequency.setValueAtTime(210,t);
-      g.gain.setValueAtTime(0.0001,t);
-      g.gain.exponentialRampToValueAtTime(0.22,t+0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001,t+0.09);
-      o.connect(g); g.connect(bus);
-      o.start(t); o.stop(t+0.11);
-    }
-    function hat(t){ noise(t,0.03,7000,0.18); }
-
-    const base=110; // A2-ish
-    const scale=[0,2,3,5,7,10,12]; // minor-ish
-    const chordProg=[0, -2, -5, -2]; // movement
-    const freq=(semi)=>base*Math.pow(2,semi/12);
-
-    function bass(t, root){
-      const o=ctx.createOscillator();
-      const f=ctx.createBiquadFilter(); f.type="lowpass"; f.frequency.value=260; f.Q.value=0.7;
+      const dur=0.09;
+      const buffer=ctx.createBuffer(1, ctx.sampleRate*dur, ctx.sampleRate);
+      const data=buffer.getChannelData(0);
+      for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*Math.exp(-i/(data.length/3));
+      const src=ctx.createBufferSource(); src.buffer=buffer;
+      const bp=ctx.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=1800; bp.Q.value=0.9;
       const g=ctx.createGain();
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.35,t+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      src.connect(bp); bp.connect(g); g.connect(bus);
+      src.start(t); src.stop(t+dur);
+    }
+    function hat(t){
+      const dur=0.03;
+      const buffer=ctx.createBuffer(1, ctx.sampleRate*dur, ctx.sampleRate);
+      const data=buffer.getChannelData(0);
+      for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*Math.exp(-i/(data.length/2));
+      const src=ctx.createBufferSource(); src.buffer=buffer;
+      const hp=ctx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=6500;
+      const g=ctx.createGain();
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.16,t+0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      src.connect(hp); hp.connect(g); g.connect(bus);
+      src.start(t); src.stop(t+dur);
+    }
+    function bass(t, semi){
+      const o=ctx.createOscillator(); const g=ctx.createGain();
+      const f=ctx.createBiquadFilter();
       o.type="square";
-      o.frequency.setValueAtTime(freq(root-12),t);
+      o.frequency.setValueAtTime(freq(semi-12),t);
+      f.type="lowpass"; f.frequency.value=300;
       g.gain.setValueAtTime(0.0001,t);
       g.gain.exponentialRampToValueAtTime(0.22,t+0.01);
       g.gain.exponentialRampToValueAtTime(0.0001,t+step*1.8);
       o.connect(f); f.connect(g); g.connect(bus);
       o.start(t); o.stop(t+step*2);
     }
-
-    function arp(t, semi){
-      const o=ctx.createOscillator();
-      const g=ctx.createGain();
-      const bp=ctx.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=1400; bp.Q.value=0.9;
-
+    function lead(t, semi){
+      const o=ctx.createOscillator(); const g=ctx.createGain();
       o.type="sawtooth";
       o.frequency.setValueAtTime(freq(semi+12),t);
-
       g.gain.setValueAtTime(0.0001,t);
-      g.gain.exponentialRampToValueAtTime(0.11,t+0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001,t+step*1.3);
-
-      o.connect(bp); bp.connect(g); g.connect(bus);
-      o.start(t); o.stop(t+step*1.4);
+      g.gain.exponentialRampToValueAtTime(0.10,t+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+step*1.6);
+      o.connect(g); g.connect(bus);
+      o.start(t); o.stop(t+step*1.7);
     }
-
-    function pad(t, root){
-      const o=ctx.createOscillator();
-      const g=ctx.createGain();
-      const lp2=ctx.createBiquadFilter(); lp2.type="lowpass"; lp2.frequency.value=900;
-      o.type="triangle";
-      o.frequency.setValueAtTime(freq(root),t);
-
-      g.gain.setValueAtTime(0.0001,t);
-      g.gain.exponentialRampToValueAtTime(0.05,t+0.20);
-      g.gain.exponentialRampToValueAtTime(0.0001,t+beat*2.0);
-
-      o.connect(lp2); lp2.connect(g); g.connect(bus);
-      o.start(t); o.stop(t+beat*2.1);
-    }
-
     function schedule(){
-      if(!state.on) return;
+      if (!state.on) return;
       const now=ctx.currentTime;
-      while(state.t < now+0.18){
-        const n=Math.round(state.t/step);
-        const bar16=n%16;
-        const bar=Math.floor(n/16);
-        const progRoot=chordProg[bar%chordProg.length];
-
-        // drums
-        if(bar16===0||bar16===4||bar16===8||bar16===12) kick(state.t);
-        if(bar16===4||bar16===12) snare(state.t);
-        if(n%2===1) hat(state.t);
-
-        // bass every 2 steps
-        if(n%2===0) bass(state.t, progRoot);
-
-        // arps: create motion
-        if(bar16===2||bar16===6||bar16===10||bar16===14){
-          const idx=(bar + bar16)%scale.length;
-          arp(state.t, progRoot + scale[idx]);
+      while(state.t < now + 0.14){
+        const n = Math.round(state.t / step);
+        const barPos = Math.floor(n/2) % prog.length;
+        if (n % 4 === 0) kick(state.t);
+        if (n % 8 === 4) snare(state.t);
+        if (n % 2 === 1) hat(state.t);
+        if (n % 2 === 0) bass(state.t, prog[barPos]);
+        if (n % 4 === 2){
+          const idx=(barPos+2)%scale.length;
+          lead(state.t, scale[idx] + prog[barPos]);
         }
-
-        // pad on downbeat
-        if(bar16===0) pad(state.t, progRoot);
-
         state.t += step;
       }
-      state.timer=setTimeout(schedule,50);
+      state.timer = setTimeout(schedule, 50);
     }
-
-    return {
-      start(){ state.on=true; state.t=ctx.currentTime; schedule(); },
-      stop(){ state.on=false; if(state.timer) clearTimeout(state.timer); }
-    };
+    return { start(){ state.on=true; state.t=ctx.currentTime; schedule(); },
+             stop(){ state.on=false; if(state.timer) clearTimeout(state.timer); } };
   }
-
   function sfx(type){
-    if(!profile.sfx) return;
+    if (!sfxToggle.checked) return;
     ensureAudio();
-    const t0=audioCtx.currentTime;
-    const g=audioCtx.createGain(); g.connect(master);
-
-    if(type==="coin"){
+    const t0 = audioCtx.currentTime;
+    const g = audioCtx.createGain(); g.connect(master);
+    if (type==="coin"){
       const o=audioCtx.createOscillator();
       o.type="square";
       o.frequency.setValueAtTime(980,t0);
@@ -1225,7 +990,7 @@
       o.connect(g); o.start(t0); o.stop(t0+0.13);
       return;
     }
-    if(type==="pickup"){
+    if (type==="pickup"){
       const o=audioCtx.createOscillator();
       o.type="triangle";
       o.frequency.setValueAtTime(540,t0);
@@ -1236,225 +1001,467 @@
       o.connect(g); o.start(t0); o.stop(t0+0.17);
       return;
     }
-    if(type==="crash"){
+    if (type==="crash"){
       const dur=0.35;
-      const buffer=audioCtx.createBuffer(1,audioCtx.sampleRate*dur,audioCtx.sampleRate);
+      const buffer=audioCtx.createBuffer(1, audioCtx.sampleRate*dur, audioCtx.sampleRate);
       const data=buffer.getChannelData(0);
       for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*Math.exp(-i/(data.length/4));
       const src=audioCtx.createBufferSource(); src.buffer=buffer;
-      const f=audioCtx.createBiquadFilter(); f.type="lowpass"; f.frequency.value=900;
+      const f=audioCtx.createBiquadFilter(); f.type="lowpass"; f.frequency.value=1000;
       g.gain.setValueAtTime(0.0001,t0);
-      g.gain.exponentialRampToValueAtTime(0.50,t0+0.01);
+      g.gain.exponentialRampToValueAtTime(0.45,t0+0.01);
       g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
       src.connect(f); f.connect(g);
       src.start(t0); src.stop(t0+dur);
       return;
     }
   }
-
-  musicToggle.addEventListener("change",()=>{
-    profile.music = musicToggle.checked;
-    saveProfile(profile);
-    if(audioCtx && musicGain) musicGain.gain.value = profile.music ? 0.26 : 0.0;
+  musicToggle.addEventListener("change", () => {
+    ensureAudio();
+    musicGain.gain.value = musicToggle.checked ? 0.25 : 0.0;
   });
-  sfxToggle.addEventListener("change",()=>{
-    profile.sfx = sfxToggle.checked;
-    saveProfile(profile);
-  });
+  window.addEventListener("pointerdown", () => { ensureAudio(); audioCtx.resume?.(); }, { once:false });
 
-  // ===== Home UI sync =====
-  function syncHomeUI(){
-    playerNameEl.textContent = profile.name || "Gamer";
-    bestHomeEl.textContent = profile.bestScore || 0;
-    bankHomeEl.textContent = profile.bankCoins || 0;
-    difficultySel.value = profile.modeKey || "easy";
-    musicToggle.checked = !!profile.music;
-    sfxToggle.checked = !!profile.sfx;
+  // ===== Emoji =====
+  function popEmoji(emoji, x, y, duration=650){
+    const el=document.createElement("div");
+    el.className="emojiPop";
+    el.textContent=emoji;
+    el.style.left=x+"px"; el.style.top=y+"px";
+    el.style.opacity="0";
+    emojiLayer.appendChild(el);
+    const start=performance.now();
+    function anim(now){
+      const t=(now-start)/duration;
+      if(t>=1){ el.remove(); return; }
+      const ease=t<0.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2;
+      const scale=0.75 + 0.95*ease;
+      const floatY=-22*ease;
+      el.style.opacity=String(1 - t*0.85);
+      el.style.transform=`translate(-50%,-50%) translateY(${floatY}px) scale(${scale})`;
+      requestAnimationFrame(anim);
+    }
+    requestAnimationFrame(anim);
   }
 
-  // ===== Sign in/out =====
-  signInBtn.addEventListener("click",()=>{
-    const nm = (nameInput.value || "").trim().slice(0,18) || "Gamer";
-    profile.name = nm;
-    saveProfile(profile);
-    syncHomeUI();
-    syncLeaderboard();
-    alert("Saved name: " + nm);
-  });
-  signOutBtn.addEventListener("click",()=>{
-    profile.name = "Gamer";
-    saveProfile(profile);
-    syncHomeUI();
-    syncLeaderboard();
-  });
+  // ===== Input (don’t steal keys when typing) =====
+  const keys = new Set();
+  window.addEventListener("keydown",(e)=>{
+    const active = document.activeElement;
+    const typing = active && active.tagName === "INPUT";
+    if(typing) return;
 
-  difficultySel.addEventListener("change",()=>{
-    profile.modeKey = difficultySel.value;
-    saveProfile(profile);
-    syncHomeUI();
+    const k=e.key.toLowerCase();
+    keys.add(k);
+    if(k===" "){ e.preventDefault(); togglePause(); }
+    if(k==="r"){ e.preventDefault(); reset(); }
+    if(k==="arrowleft"||k==="a") e.preventDefault();
+    if(k==="arrowright"||k==="d") e.preventDefault();
+    if(k==="arrowup"||k==="w") e.preventDefault();
   });
+  window.addEventListener("keyup",(e)=>keys.delete(e.key.toLowerCase()));
 
-  claimBtn.addEventListener("click",()=>{
-    const r = claimDailyBonus();
-    saveProfile(profile);
-    syncHomeUI();
-    syncShopUI();
-    syncRewardUI();
-    renderMissions();
-    alert(r.msg);
-  });
+  function holdButton(btn, downFn, upFn){
+    const down=(e)=>{ e.preventDefault(); downFn(); };
+    const up=(e)=>{ e.preventDefault(); upFn(); };
+    btn.addEventListener("pointerdown", down);
+    btn.addEventListener("pointerup", up);
+    btn.addEventListener("pointercancel", up);
+    btn.addEventListener("pointerleave", up);
+  }
+  holdButton(mLeft,  ()=>keys.add("arrowleft"), ()=>keys.delete("arrowleft"));
+  holdButton(mRight, ()=>keys.add("arrowright"),()=>keys.delete("arrowright"));
+  holdButton(mNitro, ()=>keys.add("arrowup"),   ()=>keys.delete("arrowup"));
+  holdButton(mDrift, ()=>keys.add("shift"),     ()=>keys.delete("shift"));
 
-  // ===== Leaderboard =====
-  function renderLeaderboard(list){
-    lbListEl.innerHTML="";
-    if(!list || !list.length){
-      lbListEl.innerHTML = `<div class="small">No scores yet. Play once and finish a run to submit.</div>`;
-      return;
+  // swipe
+  let touchStart=null;
+  canvas.addEventListener("pointerdown",(e)=>touchStart={x:e.clientX,y:e.clientY});
+  canvas.addEventListener("pointerup",(e)=>{
+    if(!touchStart) return;
+    const dx=e.clientX-touchStart.x;
+    const dy=e.clientY-touchStart.y;
+    touchStart=null;
+    const ax=Math.abs(dx), ay=Math.abs(dy);
+    if(Math.max(ax,ay)<18) return;
+    if(ax>ay){
+      if(dx>0) steer(1); else steer(-1);
+    } else if(dy<0){
+      keys.add("arrowup");
+      setTimeout(()=>keys.delete("arrowup"),140);
     }
-    for(let i=0;i<list.length;i++){
-      const row=document.createElement("div");
+  });
+
+  // ===== Mode selection UI =====
+  let modeKey="easy";
+  let mode = MODES[modeKey];
+  function renderModeButtons(){
+    const row = document.getElementById("modeRow");
+    row.innerHTML = "";
+    for(const k of ["easy","medium","hard"]){
+      const b = document.createElement("button");
+      b.textContent = k.toUpperCase();
+      b.style.borderColor = (k===modeKey) ? "rgba(124,255,234,.45)" : "rgba(255,255,255,.16)";
+      b.addEventListener("click", ()=>{
+        modeKey = k;
+        mode = MODES[modeKey];
+        modeEl.textContent = mode.name;
+        renderModeButtons();
+      });
+      row.appendChild(b);
+    }
+  }
+
+  // ===== Garage =====
+  function renderGarage(){
+    garageGrid.innerHTML = "";
+    for(const s of SKINS){
+      const owned = profile.ownedSkins.includes(s.id);
+      const selected = profile.selectedSkin === s.id;
+
+      const div = document.createElement("div");
+      div.className = "skin";
+      const sw = document.createElement("div");
+      sw.className = "swatch";
+      sw.style.background = `linear-gradient(135deg, ${s.grad[0]}, ${s.grad[1]})`;
+
+      div.innerHTML = `
+        <div class="skinTop">
+          <div class="skinName">${s.name}</div>
+          <div class="skinPrice">${s.cost===0 ? "FREE" : (s.cost+" 🪙")}</div>
+        </div>
+      `;
+      div.appendChild(sw);
+
+      const actions = document.createElement("div");
+      actions.className = "skinActions";
+
+      const btn = document.createElement("button");
+      btn.className = "miniBtn";
+      if(selected){
+        btn.textContent = "SELECTED";
+        btn.disabled = true;
+      } else if(owned){
+        btn.textContent = "SELECT";
+        btn.addEventListener("click", ()=>{
+          profile.selectedSkin = s.id;
+          saveProfile(profile);
+          renderGarage();
+        });
+      } else {
+        btn.textContent = "BUY";
+        btn.addEventListener("click", ()=>{
+          if(profile.bankCoins < s.cost) return alert("Not enough coins.");
+          profile.bankCoins -= s.cost;
+          profile.ownedSkins.push(s.id);
+          profile.selectedSkin = s.id;
+          saveProfile(profile);
+          updateHeaderUI();
+          renderGarage();
+          renderShop();
+        });
+      }
+      actions.appendChild(btn);
+      div.appendChild(actions);
+
+      garageGrid.appendChild(div);
+    }
+  }
+
+  // ===== Shop =====
+  const cart = { shield:0, slowmo:0, magnet:0, invis:0, life:0 };
+  function priceMultiplier(){
+    const d = clamp(profile.streakDaysClaimed, 0, 7);
+    return 1 + d*0.06;
+  }
+  function getPrices(){
+    const mult = priceMultiplier();
+    return {
+      shield: Math.round(20*mult),
+      slowmo: Math.round(25*mult),
+      magnet: Math.round(30*mult),
+      invis:  Math.round(35*mult),
+      life:   Math.round(60*mult),
+    };
+  }
+  function renderShop(){
+    shopGrid.innerHTML = "";
+    const pr = getPrices();
+
+    const items = [
+      { id:"shield", name:"🛡 Shield", desc:"Blocks 1 crash (stack 2).", cost:pr.shield, max:2 },
+      { id:"magnet", name:"🧲 Magnet", desc:"Pulls coins 15s (stack 3).", cost:pr.magnet, max:3 },
+      { id:"slowmo", name:"⏱ Slow-Mo", desc:"Slows obstacles 5× (stack 3).", cost:pr.slowmo, max:3 },
+      { id:"invis",  name:"👻 Invisibility", desc:"Phase through cars 6s.", cost:pr.invis, max:3 },
+      { id:"life",   name:"❤️ Extra Life", desc:"+1 life next run (max +2).", cost:pr.life, max:2 },
+    ];
+
+    for(const it of items){
+      const owned = cart[it.id];
+      const div = document.createElement("div");
+      div.style.border = "1px solid rgba(255,255,255,.12)";
+      div.style.background = "rgba(0,0,0,.18)";
+      div.style.borderRadius = "16px";
+      div.style.padding = "12px";
+      div.style.display = "flex";
+      div.style.flexDirection = "column";
+      div.style.gap = "8px";
+      div.innerHTML = `
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+          <div style="font-family:Orbitron,system-ui,sans-serif;font-weight:900;font-size:12px">${it.name}</div>
+          <div style="font-size:12px;color:var(--muted)">${owned}/${it.max}</div>
+        </div>
+        <div style="color:var(--muted);font-size:13px;line-height:1.35">${it.desc}</div>
+        <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="font-size:12px;color:var(--muted)">Cost: <b style="color:var(--text)">${it.cost}</b> 🪙</div>
+          <button class="miniBtn">BUY</button>
+        </div>
+      `;
+      const buyBtn = div.querySelector("button");
+      buyBtn.disabled = (owned >= it.max) || (profile.bankCoins < it.cost);
+      buyBtn.addEventListener("click", ()=>{
+        if(profile.bankCoins < it.cost) return;
+        if(cart[it.id] >= it.max) return;
+        profile.bankCoins -= it.cost;
+        cart[it.id] += 1;
+        saveProfile(profile);
+        updateHeaderUI();
+        renderShop();
+        sfx("pickup");
+      });
+      shopGrid.appendChild(div);
+    }
+  }
+
+  // ===== Leaderboards =====
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+  }
+  function renderLB(el, list){
+    el.innerHTML = "";
+    (list||[]).forEach((r, i)=>{
+      const row = document.createElement("div");
       row.className="lbRow";
-      row.innerHTML=`<span>#${i+1} <b>${escapeHtml(list[i].name)}</b></span><span><b>${list[i].score}</b></span>`;
-      lbListEl.appendChild(row);
+      row.innerHTML = `<span>#${i+1} <b>${escapeHtml(r.name)}</b></span><span><b>${r.score}</b></span>`;
+      el.appendChild(row);
+    });
+    if(!list || list.length===0){
+      const row = document.createElement("div");
+      row.className="lbRow";
+      row.innerHTML = `<span style="color:var(--muted)">No scores yet</span><span></span>`;
+      el.appendChild(row);
     }
   }
 
-  async function syncLeaderboard(){
+  async function syncLeaderboards(){
     if(!SB.enabled()){
-      lbStatusEl.innerHTML = `<span class="statusBad">Leaderboard not configured.</span>`;
-      lbListEl.innerHTML = "";
+      lbStatusEl.textContent = "Leaderboards not configured (missing Supabase keys).";
+      renderLB(lbWeeklyEl, []);
+      renderLB(lbAllTimeEl, []);
       return;
     }
     try{
-      lbStatusEl.innerHTML = `<span class="statusOk">Loading live leaderboard…</span>`;
-      const top = await SB.top10();
-      lbStatusEl.innerHTML = `<span class="statusOk">Live leaderboard:</span>`;
-      renderLeaderboard(top || []);
+      lbStatusEl.textContent = "Loading live leaderboards…";
+      const ws = weekStartISO();
+      const [weekly, allTime] = await Promise.all([
+        SB.top10Weekly(ws).catch(()=>null),
+        SB.top10AllTime().catch(()=>null),
+      ]);
+      lbStatusEl.textContent = `Live leaderboards (Week starts ${ws})`;
+      renderLB(lbWeeklyEl, weekly || []);
+      renderLB(lbAllTimeEl, allTime || []);
     } catch {
-      lbStatusEl.innerHTML = `<span class="statusBad">Couldn’t load leaderboard.</span>`;
-      lbListEl.innerHTML = `<div class="small">Check Supabase RLS SELECT policy for leaderboard table.</div>`;
+      lbStatusEl.textContent = "Couldn’t load leaderboards right now.";
     }
   }
 
-  // ===== Game core =====
-  const MODES = {
-    easy:   { name:"Easy",   baseSpeed: 220, accel: 9,  spawnRate: 0.80, maxTraffic: 6,  wiggle: 14,
-              trafficRelMin:0.58, trafficRelMax:0.98,
-              laneChangeRate: 0.040, laneChangeSpeed: 2.1, laneChangeCooldown:[1.6, 2.7] },
-    medium: { name:"Medium", baseSpeed: 290, accel: 13, spawnRate: 1.06, maxTraffic: 10, wiggle: 30,
-              trafficRelMin:0.62, trafficRelMax:1.12,
-              laneChangeRate: 0.090, laneChangeSpeed: 4.8, laneChangeCooldown:[0.9, 1.7] },
-    hard:   { name:"Hard",   baseSpeed: 350, accel: 17, spawnRate: 1.30, maxTraffic: 13, wiggle: 55,
-              trafficRelMin:0.66, trafficRelMax:1.22,
-              laneChangeRate: 0.140, laneChangeSpeed: 6.8, laneChangeCooldown:[0.55, 1.25] },
-  };
-
-  const road = { x: W*0.18, w: W*0.64, y: 0, h: H };
-  const laneCount = 3;
-  const laneW = road.w / laneCount;
-  const laneCenter = (lane)=> road.x + laneW*(lane + 0.5);
-
-  const stars = Array.from({length: 95}, ()=>({ x:Math.random()*W, y:Math.random()*H, s:0.6+Math.random()*1.6 }));
-
-  // FIX: car looked stretched -> adjust proportions here
-  const player = { x: laneCenter(1), y: H*0.78, w: 52, h: 96, vx:0, targetX:null };
-  const traffic=[], coins=[];
+  // ===== Game objects/state (same gameplay as previous stable version) =====
+  const player = { x: laneCenter(1), y: H*0.78, w: 52, h: 92, vx:0, targetX:null };
+  const traffic=[], coins=[], sparks=[], pickups=[];
+  const stars = Array.from({length: 90}, ()=>({ x:Math.random()*W, y:Math.random()*H, s:0.5+Math.random()*1.6 }));
 
   let running=false, paused=false, last=performance.now();
   let score=0, speed=0, roadY=0;
   let runCoins=0;
   let nitro=1.0, nitroActive=false;
   let driftActive=false;
-  let passedCarsThisRun=0;
-  let closeCallsThisRun=0;
+  let runLives=3;
+  let invulnT=0;
 
-  const power = { shield:0, slowmoT:0, magnetT:0 };
-  let reviveUsedThisRun=false;
+  let bonusActive=false, bonusT=0, nextBonusAt=450;
+  const BONUS_EVERY=450, BONUS_LEN=30;
 
-  // ===== Inputs =====
-  const keys=new Set();
+  const pending = { shield:0, slowmoT:0, magnetT:0, invisT:0, nitro:0, coinMultT:0, coinMult:1 };
+  const power = { shield:0, slowmoT:0, magnetT:0, invisT:0, coinMultT:0, coinMult:1 };
 
-  // FIX: Don’t capture A/D/W when typing name on homepage
-  window.addEventListener("keydown",(e)=>{
-    if(isTypingTarget()) return;
-    if(!gameOverlayShown()) return;
+  let passedCarsThisRun=0, closeCallsThisRun=0;
 
-    const k=e.key.toLowerCase();
-    keys.add(k);
-
-    if(k===" "){ e.preventDefault(); togglePause(); }
-    if(k==="r"){ e.preventDefault(); restartRun(); }
-    if(k==="arrowleft"||k==="a") e.preventDefault();
-    if(k==="arrowright"||k==="d") e.preventDefault();
-    if(k==="arrowup"||k==="w") e.preventDefault();
-  });
-
-  window.addEventListener("keyup",(e)=>{
-    if(isTypingTarget()) return;
-    keys.delete(e.key.toLowerCase());
-  });
-
-  function holdButton(btn, downKey){
-    const down=(e)=>{ e.preventDefault(); keys.add(downKey); };
-    const up=(e)=>{ e.preventDefault(); keys.delete(downKey); };
-    btn.addEventListener("pointerdown", down);
-    btn.addEventListener("pointerup", up);
-    btn.addEventListener("pointercancel", up);
-    btn.addEventListener("pointerleave", up);
+  function steer(dir){
+    const lane = clamp(Math.floor((player.x - road.x)/laneW), 0, laneCount-1);
+    const next = clamp(lane+dir, 0, laneCount-1);
+    player.targetX = laneCenter(next);
   }
-  holdButton(mLeft, "arrowleft");
-  holdButton(mRight,"arrowright");
-  holdButton(mNitro,"arrowup");
-  holdButton(mDrift,"shift");
-  mPause.addEventListener("click",(e)=>{ e.preventDefault(); togglePause(); });
 
-  // Drag-to-steer
-  let dragActive=false;
-  function laneFromClientX(clientX){
-    const rect=canvas.getBoundingClientRect();
-    const x = (clientX - rect.left) * (W / rect.width);
-    const lane = clamp(Math.floor((x - road.x)/laneW), 0, laneCount-1);
-    return lane;
+  let spawnTimer=0, coinTimer=0, pickupTimer=0;
+
+  function spawnCar(){
+    if(bonusActive) return;
+    if(traffic.length >= mode.maxTraffic) return;
+    const isGift = Math.random() < 0.035;
+    const lane=randInt(0,laneCount-1);
+    if(traffic.some(t=>t.targetLane===lane && t.y<170)) return;
+    traffic.push({
+      kind: isGift ? "gift" : "car",
+      x: laneCenter(lane),
+      y: -130,
+      w: 50, h: 92,
+      rel: lerp(mode.trafficRelMin, mode.trafficRelMax, Math.random()),
+      seed: Math.random(),
+      targetLane: lane,
+      laneChangeCooldown: lerp(mode.laneChangeCooldown[0], mode.laneChangeCooldown[1], Math.random()),
+      countedPass: false
+    });
   }
-  canvas.addEventListener("pointerdown",(e)=>{
+  function spawnCoin(extra=false){
+    if(coins.length >= (extra ? 26 : 14)) return;
+    const lane=randInt(0,laneCount-1);
+    const value = (Math.random()<0.12) ? 10 : (Math.random()<0.28 ? 5 : 1);
+    coins.push({ lane, x: laneCenter(lane), y:-60, r:12, spin:Math.random()*10, value });
+  }
+  function spawnPickup(extra=false){
+    if(pickups.length >= (extra ? 10 : 6)) return;
+    const lane=randInt(0,laneCount-1);
+    const roll = Math.random();
+    let type="shield";
+    if(roll < 0.22) type="shield";
+    else if(roll < 0.44) type="magnet";
+    else if(roll < 0.62) type="slowmo";
+    else if(roll < 0.78) type="invis";
+    else if(roll < 0.90) type="nitro";
+    else type = (Math.random()<0.55) ? "coinx5" : "coinx10";
+    pickups.push({ type, lane, x: laneCenter(lane), y:-70, w: 34, h: 34, spin:Math.random()*10 });
+  }
+
+  function applyCartToRun(){
+    power.shield += cart.shield;
+    power.slowmoT += cart.slowmo * 6.0;
+    power.magnetT += cart.magnet * 15.0;
+    power.invisT  += cart.invis  * 6.0;
+
+    runLives = 3 + cart.life;
+    runLives = clamp(runLives, 3, 5);
+
+    cart.shield = cart.slowmo = cart.magnet = cart.invis = cart.life = 0;
+    renderShop();
+  }
+
+  function syncUI(){
+    scoreEl.textContent = Math.floor(score);
+    bestEl.textContent = profile.bestScore || 0;
+    modeEl.textContent = mode.name;
+    runCoinsEl.textContent = runCoins;
+    bankCoinsEl.textContent = profile.bankCoins;
+    livesEl.textContent = runLives;
+    nitroFill.style.width = Math.round(clamp(nitro,0,1)*100)+"%";
+  }
+
+  function togglePause(){
     if(!running) return;
-    dragActive=true;
-    canvas.setPointerCapture?.(e.pointerId);
-    const lane=laneFromClientX(e.clientX);
-    player.targetX = laneCenter(lane);
-  });
-  canvas.addEventListener("pointermove",(e)=>{
-    if(!dragActive || !running) return;
-    const lane=laneFromClientX(e.clientX);
-    player.targetX = laneCenter(lane);
-  });
-  canvas.addEventListener("pointerup",()=>{ dragActive=false; });
-  canvas.addEventListener("pointercancel",()=>{ dragActive=false; });
-
-  canvas.addEventListener("touchstart",(e)=>{ e.preventDefault(); },{passive:false});
-  canvas.addEventListener("touchmove",(e)=>{ e.preventDefault(); },{passive:false});
-
-  // ===== Emojis =====
-  function popEmoji(emoji, x, y, duration=650){
-    const el=document.createElement("div");
-    el.className="emojiPop";
-    el.textContent=emoji;
-    el.style.left=x+"px";
-    el.style.top=y+"px";
-    el.style.opacity="0";
-    emojiLayer.appendChild(el);
-
-    const start=performance.now();
-    function anim(now){
-      const t=(now-start)/duration;
-      if(t>=1){ el.remove(); return; }
-      const ease=t<0.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2;
-      el.style.opacity=String(1 - t*0.85);
-      el.style.transform=`translate(-50%,-50%) translateY(${-26*ease}px) scale(${0.85+1.0*ease})`;
-      requestAnimationFrame(anim);
-    }
-    requestAnimationFrame(anim);
+    paused = !paused;
+    last = performance.now();
   }
+  pauseBtn.addEventListener("click", togglePause);
+  restartBtn.addEventListener("click", ()=>{ if(running){ reset(); } });
+
+  function startBonus(){
+    bonusActive=true;
+    bonusT=BONUS_LEN;
+    traffic.length=0;
+    spawnTimer=coinTimer=pickupTimer=0;
+    pending.shield=0; pending.slowmoT=0; pending.magnetT=0; pending.invisT=0; pending.nitro=0; pending.coinMultT=0; pending.coinMult=1;
+    popEmoji("✨", window.innerWidth/2, 120);
+  }
+  function endBonus(){
+    bonusActive=false;
+    power.shield += pending.shield;
+    power.slowmoT += pending.slowmoT;
+    power.magnetT += pending.magnetT;
+    power.invisT  += pending.invisT;
+    nitro = clamp(nitro + pending.nitro, 0, 1.75);
+    if(pending.coinMultT > 0){
+      power.coinMultT = Math.max(power.coinMultT, pending.coinMultT);
+      power.coinMult = Math.max(power.coinMult, pending.coinMult);
+    }
+    popEmoji("🏁", window.innerWidth/2, 140);
+  }
+
+  function loseLife(){
+    if(invulnT > 0) return;
+    if(power.shield > 0){
+      power.shield -= 1;
+      popEmoji("🛡", window.innerWidth/2, window.innerHeight*0.22);
+      return;
+    }
+    runLives -= 1;
+    invulnT = 2.0;
+    sfx("crash");
+    if(runLives <= 0) gameOver();
+    else popEmoji("💥", window.innerWidth/2, window.innerHeight*0.22);
+  }
+
+  function canRevive(){ return profile.bankCoins >= 100; }
+  function revive(){
+    if(!canRevive()) return;
+    profile.bankCoins -= 100;
+    saveProfile(profile);
+    updateHeaderUI();
+    runLives = 1;
+    invulnT = 2.0;
+    running = true;
+    paused = false;
+    gameOverModal.style.display = "none";
+    document.body.classList.add("playing");
+  }
+
+  async function gameOver(){
+    running=false;
+    profile.bankCoins += runCoins;
+    runCoins = 0;
+    saveProfile(profile);
+
+    // send both leaderboards
+    try{
+      const nm = profile.name || "Gamer";
+      if (SB.enabled() && nm && nm !== "Gamer"){
+        await SB.upsertAllTime(nm, profile.bestScore);
+        await SB.upsertWeekly(weekStartISO(), nm, profile.bestScore);
+      }
+    } catch {}
+
+    updateHeaderUI();
+    await syncLeaderboards();
+
+    reviveBtn.disabled = !canRevive();
+    gameOverText.textContent = `Best: ${profile.bestScore} • Bank: ${profile.bankCoins} 🪙`;
+    gameOverModal.style.display = "grid";
+    document.body.classList.remove("playing");
+  }
+
+  reviveBtn.addEventListener("click", revive);
+  backHomeBtn.addEventListener("click", ()=>{
+    gameOverModal.style.display="none";
+    document.body.classList.remove("playing");
+  });
+
+  shareBtn.addEventListener("click", async ()=>{
+    const ws = weekStartISO();
+    const text = `I scored ${profile.bestScore} in Neon Highway Racer! 🏎️🔥\nWeekly resets every Monday (week: ${ws}).\nPlay: ${location.href}`;
+    try{
+      if (navigator.share) await navigator.share({ title:"Neon Highway Racer", text, url: location.href });
+      else if (navigator.clipboard){ await navigator.clipboard.writeText(text); alert("Copied! Share it anywhere."); }
+      else prompt("Copy:", text);
+    } catch {}
+  });
 
   // ===== Drawing =====
   function roundRect(x,y,w,h,r){
@@ -1468,68 +1475,98 @@
     ctx.closePath();
   }
 
-  // More “solid” + normal proportions (no see-through)
-  function drawCar(x,y,w,h,isPlayer,seed){
+  function skinGrad(){
+    const skin = SKINS.find(s=>s.id===profile.selectedSkin) || SKINS[0];
+    return skin.grad;
+  }
+
+  function drawCar(x,y,w,h,isPlayer,seed,kind){
     ctx.save();
+    const g = ctx.createLinearGradient(x-w/2, y-h/2, x+w/2, y+h/2);
 
-    // ground shadow
-    ctx.fillStyle="rgba(0,0,0,.55)";
-    ctx.beginPath();
-    ctx.ellipse(x, y+h*0.38, w*0.70, 15, 0, 0, Math.PI*2);
-    ctx.fill();
-
-    // body
-    const bodyGrad = ctx.createLinearGradient(x-w/2,y-h/2,x+w/2,y+h/2);
-    if(isPlayer){
-      bodyGrad.addColorStop(0,"#2c7df6");
-      bodyGrad.addColorStop(0.55,"#38f0d2");
-      bodyGrad.addColorStop(1,"#2150d8");
+    if(kind==="gift"){
+      g.addColorStop(0,"rgba(255,210,77,.98)");
+      g.addColorStop(1,"rgba(255,90,140,.96)");
+    } else if(isPlayer){
+      const [c1,c2] = skinGrad();
+      g.addColorStop(0, c1);
+      g.addColorStop(1, c2);
     } else {
-      const hue = Math.floor(200 + seed*90);
-      bodyGrad.addColorStop(0, `hsl(${hue} 85% 60%)`);
-      bodyGrad.addColorStop(1, `hsl(${(hue+40)%360} 90% 55%)`);
+      g.addColorStop(0, `rgba(${Math.floor(120+seed*120)},${Math.floor(70+seed*90)},${Math.floor(160+seed*80)},.98)`);
+      g.addColorStop(1, `rgba(${Math.floor(200+seed*55)},${Math.floor(80+seed*120)},${Math.floor(120+seed*90)},.98)`);
     }
-    ctx.fillStyle=bodyGrad;
-    roundRect(x-w/2,y-h/2,w,h,16);
+
+    ctx.shadowBlur = isPlayer ? 20 : 14;
+    ctx.shadowColor = isPlayer ? "rgba(124,255,234,.45)" : "rgba(255,106,223,.28)";
+
+    ctx.fillStyle = g;
+    roundRect(x-w/2, y-h/2, w, h, 14);
     ctx.fill();
 
-    // roof / window (solid dark)
-    ctx.fillStyle="rgba(0,0,0,.50)";
-    roundRect(x-w*0.26, y-h*0.20, w*0.52, h*0.28, 10);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle="rgba(15,18,28,.88)";
+    roundRect(x-w*0.30, y-h*0.26, w*0.60, h*0.30, 10);
     ctx.fill();
 
-    // hood highlight
-    ctx.fillStyle="rgba(255,255,255,.14)";
-    roundRect(x-w*0.30, y-h*0.32, w*0.60, h*0.18, 10);
+    ctx.fillStyle="rgba(255,255,255,.10)";
+    roundRect(x-w*0.26, y-h*0.22, w*0.52, h*0.22, 10);
     ctx.fill();
 
-    // headlights
-    ctx.fillStyle="rgba(255,255,255,.95)";
-    ctx.fillRect(x-w*0.34,y-h*0.46,w*0.18,6);
-    ctx.fillRect(x+w*0.16,y-h*0.46,w*0.18,6);
+    ctx.fillStyle = "rgba(255,255,255,.85)";
+    ctx.fillRect(x-w*0.36, y-h*0.45, w*0.18, 7);
+    ctx.fillRect(x+w*0.18, y-h*0.45, w*0.18, 7);
 
-    // tail lights
-    ctx.fillStyle="rgba(255,70,110,.92)";
-    ctx.fillRect(x-w*0.34,y+h*0.40,w*0.18,6);
-    ctx.fillRect(x+w*0.16,y+h*0.40,w*0.18,6);
+    ctx.fillStyle = "rgba(255,90,140,.85)";
+    ctx.fillRect(x-w*0.36, y+h*0.40, w*0.18, 7);
+    ctx.fillRect(x+w*0.18, y+h*0.40, w*0.18, 7);
+
+    if(kind==="gift"){
+      ctx.fillStyle="rgba(0,0,0,.22)";
+      roundRect(x-w*0.20, y-h*0.04, w*0.40, h*0.22, 10);
+      ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,.92)";
+      ctx.font="900 18px system-ui, sans-serif";
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText("🎁", x, y+h*0.03);
+    }
 
     ctx.restore();
   }
 
   function drawCoin(c){
     ctx.save();
-    const pulse=1+Math.sin(c.spin)*0.12;
-    ctx.shadowBlur=18;
+    c.spin += 0.08;
+    const pulse=1 + Math.sin(c.spin)*0.12;
+    ctx.shadowBlur=16;
     ctx.shadowColor="rgba(255,210,77,0.95)";
     ctx.fillStyle="rgba(255,210,77,0.92)";
     ctx.beginPath(); ctx.arc(c.x,c.y,c.r*pulse,0,Math.PI*2); ctx.fill();
     ctx.shadowBlur=0;
-    ctx.fillStyle="rgba(0,0,0,.28)";
+    ctx.fillStyle="rgba(0,0,0,.25)";
     ctx.beginPath(); ctx.arc(c.x,c.y,c.r*0.55,0,Math.PI*2); ctx.fill();
     ctx.fillStyle="rgba(255,255,255,.95)";
-    ctx.font="950 13px system-ui, sans-serif";
+    ctx.font="900 12px Rajdhani, sans-serif";
     ctx.textAlign="center"; ctx.textBaseline="middle";
-    ctx.fillText("🪙", c.x, c.y+0.5);
+    ctx.fillText(c.value===1 ? "🪙" : `x${c.value}`, c.x, c.y+0.5);
+    ctx.restore();
+  }
+
+  function drawPickup(p){
+    ctx.save();
+    p.spin += 0.08;
+    const s = 1 + Math.sin(p.spin)*0.08;
+    ctx.translate(p.x, p.y);
+    ctx.scale(s, s);
+    ctx.shadowBlur = 16;
+    ctx.shadowColor = "rgba(124,255,234,.55)";
+    ctx.fillStyle = "rgba(0,0,0,.28)";
+    roundRect(-p.w/2, -p.h/2, p.w, p.h, 10); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "rgba(255,255,255,.92)";
+    ctx.font = "900 16px Rajdhani, sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    const map = { shield:"🛡", magnet:"🧲", slowmo:"⏱", invis:"👻", nitro:"🚀", coinx5:"x5", coinx10:"x10" };
+    ctx.fillText(map[p.type] || "⭐", 0, 1);
     ctx.restore();
   }
 
@@ -1537,8 +1574,7 @@
     ctx.fillStyle="#050814";
     ctx.fillRect(0,0,W,H);
 
-    ctx.globalAlpha=0.65;
-    ctx.fillStyle="rgba(255,255,255,.9)";
+    ctx.globalAlpha=0.6;
     for(const st of stars){
       ctx.fillRect(st.x,st.y,st.s,st.s);
       st.y += (speed*0.02)*(st.s)*0.03;
@@ -1551,267 +1587,103 @@
     grad.addColorStop(0.5,"rgba(255,255,255,.05)");
     grad.addColorStop(1,"rgba(255,70,220,.10)");
     ctx.fillStyle=grad;
-    roundRect(road.x,0,road.w,H,22);
-    ctx.fill();
+    roundRect(road.x,0,road.w,H,22); ctx.fill();
 
     ctx.strokeStyle="rgba(255,255,255,.16)";
     ctx.lineWidth=2;
-    roundRect(road.x,0,road.w,H,22);
-    ctx.stroke();
+    roundRect(road.x,0,road.w,H,22); ctx.stroke();
 
+    // walls visual
+    ctx.save();
+    ctx.globalAlpha = 0.30;
+    ctx.fillStyle = "rgba(255,90,132,1)";
+    ctx.fillRect(road.x,0,WALL_MARGIN,H);
+    ctx.fillRect(road.x+road.w-WALL_MARGIN,0,WALL_MARGIN,H);
+    ctx.restore();
+
+    // lane lines
     ctx.save();
     ctx.beginPath(); ctx.rect(road.x,0,road.w,H); ctx.clip();
-    ctx.strokeStyle="rgba(255,255,255,.22)";
+    ctx.strokeStyle="rgba(255,255,255,.20)";
     ctx.lineWidth=2;
     for(let i=1;i<laneCount;i++){
-      const lx=road.x+laneW*i;
-      for(let y=-80;y<H+80;y+=60){
-        const yy=y+(roadY%60);
-        ctx.beginPath();
-        ctx.moveTo(lx,yy);
-        ctx.lineTo(lx,yy+26);
-        ctx.stroke();
+      const lx = road.x + laneW*i;
+      for(let y=-80; y<H+80; y+=60){
+        const yy = y + (roadY%60);
+        ctx.beginPath(); ctx.moveTo(lx,yy); ctx.lineTo(lx,yy+26); ctx.stroke();
       }
     }
     ctx.restore();
-  }
 
-  // ===== Spawn =====
-  let spawnTimer=0;
-  coinTimer=0;
-
-  function spawnCar(){
-    const mode = MODES[profile.modeKey] || MODES.easy;
-    if(traffic.length>=mode.maxTraffic) return;
-    const lane=randInt(0,laneCount-1);
-    if(traffic.some(t=>t.targetLane===lane && t.y<170)) return;
-
-    traffic.push({
-      x: laneCenter(lane),
-      y: -150,
-      w: 52, h: 96,
-      rel: lerp(mode.trafficRelMin, mode.trafficRelMax, Math.random()),
-      seed: Math.random(),
-      targetLane: lane,
-      laneChangeCooldown: lerp(mode.laneChangeCooldown[0], mode.laneChangeCooldown[1], Math.random()),
-      countedPass:false
-    });
-  }
-
-  function spawnCoin(){
-    if(coins.length>=12) return;
-    const lane=randInt(0,laneCount-1);
-    coins.push({lane, x:laneCenter(lane), y:-60, r:12, spin:Math.random()*10});
-  }
-
-  // ===== Apply inventory to run =====
-  function consumeInventoryForRun(){
-    power.shield = Math.min(profile.inv.shield||0, 2);
-    power.slowmoT = Math.min(profile.inv.slowmo||0, 3) * 4.5;
-    power.magnetT = Math.min(profile.inv.magnet||0, 3) * 6.0;
-    nitro = clamp(1.0 + Math.min(profile.inv.nitro||0, 3)*0.25, 0, 1.75);
-
-    profile.inv.shield = (profile.inv.shield||0) - power.shield;
-    profile.inv.slowmo = (profile.inv.slowmo||0) - Math.min(profile.inv.slowmo||0, 3);
-    profile.inv.magnet = (profile.inv.magnet||0) - Math.min(profile.inv.magnet||0, 3);
-    profile.inv.nitro  = (profile.inv.nitro||0)  - Math.min(profile.inv.nitro||0, 3);
-
-    for(const k of ["shield","slowmo","magnet","nitro","life"]){
-      profile.inv[k]=Math.max(0, profile.inv[k]||0);
+    if(bonusActive){
+      ctx.save();
+      ctx.globalAlpha = 0.10;
+      ctx.fillStyle = "rgba(255,210,77,1)";
+      ctx.fillRect(0,0,W,H);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle="rgba(255,255,255,.95)";
+      ctx.font="900 24px Orbitron, sans-serif";
+      ctx.textAlign="center";
+      ctx.fillText(`BONUS LEVEL • ${Math.ceil(bonusT)}s`, W/2, 44);
+      ctx.restore();
     }
-    saveProfile(profile);
   }
 
-  // ===== Missions update =====
+  function reset(){
+    score=0; speed=mode.baseSpeed; roadY=0;
+    runCoins=0; nitro=1.0; nitroActive=false; driftActive=false;
+    invulnT=0;
+
+    bonusActive=false; bonusT=0; nextBonusAt=BONUS_EVERY;
+
+    power.shield=0; power.slowmoT=0; power.magnetT=0; power.invisT=0; power.coinMultT=0; power.coinMult=1;
+
+    player.x=laneCenter(1); player.vx=0; player.targetX=null;
+
+    traffic.length=0; coins.length=0; sparks.length=0; pickups.length=0;
+
+    passedCarsThisRun=0; closeCallsThisRun=0;
+
+    applyCartToRun();
+
+    running=true; paused=false; last=performance.now();
+    syncUI();
+  }
+
   function updateMissionsProgress(){
-    for(const m of profile.missions){
-      if(m.type==="passCars") m.progress=Math.max(m.progress, passedCarsThisRun);
-      if(m.type==="collectCoins") m.progress=Math.max(m.progress, runCoins);
-      if(m.type==="closeCalls") m.progress=Math.max(m.progress, closeCallsThisRun);
+    for (const m of profile.missions){
+      if (m.type === "passCars") m.progress = Math.max(m.progress, passedCarsThisRun);
+      if (m.type === "collectCoins") m.progress = Math.max(m.progress, runCoins);
+      if (m.type === "closeCalls") m.progress = Math.max(m.progress, closeCallsThisRun);
     }
     saveProfile(profile);
   }
 
-  // ===== HUD sync =====
-  function syncGameHUD(){
-    const mode = MODES[profile.modeKey] || MODES.easy;
-    hudScore.textContent = Math.floor(score);
-    hudBest.textContent = profile.bestScore || 0;
-    hudRunCoins.textContent = runCoins;
-    hudBank.textContent = profile.bankCoins || 0;
-    hudMode.textContent = mode.name;
-    nitroFill.style.width = Math.round(clamp(nitro,0,1)*100)+"%";
-  }
-
-  // ===== Pause/Exit =====
-  function togglePause(){
-    if(!running) return;
-    paused=!paused;
-    last=performance.now();
-  }
-  pauseBtn.addEventListener("click",togglePause);
-
-  function gameOverlayShown(){ return gameOverlay.style.display==="block"; }
-
-  function showGame(){
-    ensureAudio();
-    audioCtx?.resume?.();
-    gameOverlay.style.display="block";
-    gameOverlay.setAttribute("aria-hidden","false");
-    window.scrollTo({top:0,behavior:"instant"});
-  }
-  function hideGame(){
-    gameOverlay.style.display="none";
-    gameOverlay.setAttribute("aria-hidden","true");
-    running=false;
-    paused=false;
-    closeRevive();
-    keys.clear();
-    syncHomeUI();
-    syncShopUI();
-    renderMissions();
-    syncLeaderboard();
-  }
-  exitBtn.addEventListener("click",()=>{
-    endRunAndSubmit(true);
-    hideGame();
-  });
-
-  // ===== Run start/reset =====
-  function startRun(){
-    const mode = MODES[profile.modeKey] || MODES.easy;
-    score=0;
-    speed=mode.baseSpeed;
-    roadY=0;
-    runCoins=0;
-    nitro=1.0;
-    nitroActive=false;
-    driftActive=false;
-
-    passedCarsThisRun=0;
-    closeCallsThisRun=0;
-    reviveUsedThisRun=false;
-
-    player.x=laneCenter(1);
-    player.vx=0;
-    player.targetX=null;
-
-    traffic.length=0;
-    coins.length=0;
-
-    consumeInventoryForRun();
-
-    running=true;
-    paused=false;
-    last=performance.now();
-
-    syncShopUI();
-    syncHomeUI();
-    syncGameHUD();
-  }
-
-  function restartRun(){
-    closeRevive();
-    startRun();
-  }
-
-  // ===== Revive modal =====
-  function openRevive(opts){
-    reviveOverlay.style.display="grid";
-    const tokens = profile.inv.life||0;
-    reviveTitle.textContent = "Game Over";
-    if(opts.canUseToken){
-      reviveText.textContent = `Use 1 Extra Life token to revive? (You have ${tokens})`;
-      reviveBtn.textContent = "Use Extra Life ❤️";
-      reviveHint.textContent = "Tip: You can also buy Extra Life in Shop (stored in inventory).";
-      reviveBtn.disabled=false;
-      reviveBtn.dataset.action="use_token";
-    } else if(opts.canBuy){
-      reviveText.textContent = `Revive now for ${opts.buyCost} coins?`;
-      reviveBtn.textContent = `Buy Revive (🪙 ${opts.buyCost})`;
-      reviveHint.textContent = "This is a one-time revive for this run.";
-      reviveBtn.disabled=false;
-      reviveBtn.dataset.action="buy_revive";
-    } else {
-      reviveText.textContent = "No revive available. Earn more coins and try again!";
-      reviveBtn.textContent = "Revive";
-      reviveHint.textContent = "Play more to collect coins.";
-      reviveBtn.disabled=true;
-      reviveBtn.dataset.action="none";
-    }
-  }
-  function closeRevive(){ reviveOverlay.style.display="none"; }
-
-  reviveBtn.addEventListener("click",()=>{
-    if(reviveBtn.dataset.action==="use_token"){
-      if((profile.inv.life||0) <= 0) return;
-      profile.inv.life -= 1;
-      saveProfile(profile);
-      reviveUsedThisRun=true;
-      closeRevive();
-      doRevive();
-      return;
-    }
-    if(reviveBtn.dataset.action==="buy_revive"){
-      const cost=100;
-      if((profile.bankCoins||0) < cost) return;
-      profile.bankCoins -= cost;
-      saveProfile(profile);
-      reviveUsedThisRun=true;
-      closeRevive();
-      doRevive();
-      return;
-    }
-  });
-
-  endBtn.addEventListener("click",()=>{
-    closeRevive();
-    endRunAndSubmit(false);
-    hideGame();
-  });
-
-  function doRevive(){
-    power.shield = Math.max(power.shield, 1);
-    score = Math.max(0, score - 80);
-
-    for(let i=traffic.length-1;i>=0;i--){
-      if(Math.abs(traffic[i].y - player.y) < 220) traffic.splice(i,1);
-    }
-    running=true;
-    paused=false;
-    last=performance.now();
-    syncGameHUD();
-    sfx("pickup");
-  }
-
-  // ===== Update =====
-  function update(dtRaw){
-    const mode = MODES[profile.modeKey] || MODES.easy;
-
-    const timeScale = power.slowmoT>0 ? 0.70 : 1.0;
-    const dt = dtRaw * timeScale;
-
+  function update(dt){
     speed += mode.accel * dt;
 
-    nitroActive = (keys.has("arrowup")||keys.has("w")) && nitro>0.02 && running && !paused;
-    if(nitroActive) nitro=Math.max(0, nitro - dt*0.35);
-    else nitro=Math.min(1.75, nitro + dt*0.18);
+    const nitroKey = keys.has("arrowup") || keys.has("w");
+    nitroActive = nitroKey && nitro > 0.02 && running && !paused;
+    if(nitroActive) nitro = Math.max(0, nitro - dt*0.35);
+    else nitro = Math.min(1.75, nitro + dt*0.18);
 
     driftActive = keys.has("shift");
-    const steerLeft = keys.has("arrowleft")||keys.has("a");
-    const steerRight= keys.has("arrowright")||keys.has("d");
+    const steerLeft = keys.has("arrowleft") || keys.has("a");
+    const steerRight= keys.has("arrowright") || keys.has("d");
 
     const nitroBoost = nitroActive ? 170 : 0;
-    const effectiveSpeed = speed + nitroBoost;
+    const playerSpeed = speed + nitroBoost;
+    const obstacleFactor = (power.slowmoT > 0) ? 0.20 : 1.0;
 
-    roadY += effectiveSpeed*dt;
-    if(roadY>60) roadY-=60;
+    roadY += playerSpeed*dt;
+    if(roadY>60) roadY -= 60;
 
+    // steering
     const steerPower = driftActive ? 3400 : 2400;
     if(steerLeft) player.vx -= steerPower*dt;
     if(steerRight)player.vx += steerPower*dt;
 
-    if(player.targetX!==null){
+    if(player.targetX !== null){
       const dx = player.targetX - player.x;
       player.vx += dx*18*dt;
       if(Math.abs(dx)<3){ player.x=player.targetX; player.targetX=null; player.vx*=0.2; }
@@ -1821,306 +1693,312 @@
     player.vx *= Math.pow(friction, dt);
     player.x += player.vx*dt;
 
-    const minX = road.x + player.w*0.55;
-    const maxX = road.x + road.w - player.w*0.55;
+    // clamp + wall punishment
+    const minX = road.x + WALL_MARGIN + player.w*0.55;
+    const maxX = road.x + road.w - WALL_MARGIN - player.w*0.55;
     player.x = clamp(player.x, minX, maxX);
 
-    spawnTimer += dt * mode.spawnRate * (0.85 + effectiveSpeed/560);
-    if(spawnTimer>=1){
-      spawnTimer=0;
-      spawnCar();
-      if(profile.modeKey!=="easy" && Math.random()<0.28) spawnCar();
-      if(profile.modeKey==="hard" && Math.random()<0.35) spawnCar();
+    const leftWallX = road.x + WALL_MARGIN;
+    const rightWallX = road.x + road.w - WALL_MARGIN;
+    const playerLeft = player.x - player.w*0.5;
+    const playerRight= player.x + player.w*0.5;
+    if(playerLeft <= leftWallX + 1 || playerRight >= rightWallX - 1){
+      if(power.invisT <= 0) loseLife();
+      player.x = clamp(player.x, minX+2, maxX-2);
+      player.vx *= -0.25;
     }
 
-    coinTimer += dt*(0.65+effectiveSpeed/900);
+    // spawns
+    if(!bonusActive){
+      spawnTimer += dt * mode.spawnRate * (0.85 + playerSpeed/560);
+      if(spawnTimer>=1){
+        spawnTimer=0;
+        spawnCar();
+        if(modeKey!=="easy" && Math.random()<0.28) spawnCar();
+        if(modeKey==="hard" && Math.random()<0.35) spawnCar();
+      }
+    }
+
+    coinTimer += dt * (0.95 + playerSpeed/850) * (bonusActive ? 2.2 : 1.0);
     if(coinTimer>=1){
       coinTimer=0;
-      if(Math.random()<0.85) spawnCoin();
-      if(profile.modeKey!=="easy" && Math.random()<0.25) spawnCoin();
+      spawnCoin(bonusActive);
+      if(Math.random()<0.65) spawnCoin(bonusActive);
+      if(bonusActive && Math.random()<0.75) spawnCoin(true);
     }
 
+    pickupTimer += dt * (bonusActive ? 1.8 : 0.55);
+    if(pickupTimer>=1){
+      pickupTimer=0;
+      if(Math.random() < (bonusActive ? 0.85 : 0.22)) spawnPickup(bonusActive);
+    }
+
+    // bonus trigger
+    if(!bonusActive && score >= nextBonusAt){
+      nextBonusAt += BONUS_EVERY;
+      startBonus();
+    }
+    if(bonusActive){
+      bonusT -= dt;
+      if(bonusT <= 0) endBonus();
+    }
+
+    // move traffic
     for(let i=traffic.length-1;i>=0;i--){
-      const t=traffic[i];
-      t.y += effectiveSpeed*dt*t.rel;
+      const t = traffic[i];
+      t.y += playerSpeed*dt*t.rel*obstacleFactor;
 
       if(!t.countedPass && t.y > player.y + player.h*0.6){
-        t.countedPass=true;
+        t.countedPass = true;
         passedCarsThisRun += 1;
       }
 
       t.x += Math.sin((t.y/120)+t.seed*10)*dt*mode.wiggle*0.35;
 
       t.laneChangeCooldown -= dt;
-      if(t.laneChangeCooldown<=0 && Math.random()<mode.laneChangeRate){
+      if(t.laneChangeCooldown <= 0 && Math.random() < mode.laneChangeRate){
         const dir = Math.random()<0.5 ? -1 : 1;
-        const next = clamp(t.targetLane+dir, 0, laneCount-1);
-        const safe = !traffic.some(o=>o!==t && o.targetLane===next && Math.abs(o.y-t.y)<120);
-        if(safe) t.targetLane=next;
+        const next = clamp(t.targetLane + dir, 0, laneCount-1);
+        const safe = !traffic.some(o => o!==t && o.targetLane===next && Math.abs(o.y - t.y) < 120);
+        if(safe) t.targetLane = next;
         t.laneChangeCooldown = lerp(mode.laneChangeCooldown[0], mode.laneChangeCooldown[1], Math.random());
       }
-      const tx=laneCenter(t.targetLane);
-      t.x += (tx - t.x) * dt * mode.laneChangeSpeed;
 
-      if(t.y>H+170) traffic.splice(i,1);
+      const targetX = laneCenter(t.targetLane);
+      t.x += (targetX - t.x) * dt * mode.laneChangeSpeed;
+      t.x = clamp(t.x, road.x + WALL_MARGIN + t.w*0.55, road.x + road.w - WALL_MARGIN - t.w*0.55);
+
+      if(t.y > H+160) traffic.splice(i,1);
     }
 
+    // coins
     for(let i=coins.length-1;i>=0;i--){
-      const c=coins[i];
-      c.y += effectiveSpeed*dt*0.90;
-      c.spin += dt*8;
+      const c = coins[i];
+      c.y += playerSpeed*dt*0.90*obstacleFactor;
 
-      if(power.magnetT>0){
+      if(power.magnetT > 0){
         const dx = player.x - c.x;
-        c.x += dx*dt*2.8;
+        const dy = player.y - c.y;
+        c.x += dx*dt*7.5;
+        c.y += dy*dt*7.5;
       } else {
         c.x += (laneCenter(c.lane)-c.x)*dt*2.0;
       }
-
-      if(c.y>H+60) coins.splice(i,1);
+      if(c.y > H+60) coins.splice(i,1);
     }
 
-    score += dt*(effectiveSpeed*0.055);
+    // pickups
+    for(let i=pickups.length-1;i>=0;i--){
+      const p = pickups[i];
+      p.y += playerSpeed*dt*0.85*obstacleFactor;
+      if(power.magnetT > 0){
+        p.x += (player.x - p.x)*dt*3.2;
+        p.y += (player.y - p.y)*dt*3.2;
+      }
+      if(p.y > H+80) pickups.splice(i,1);
+    }
+
+    // scoring
+    score += dt*(playerSpeed*0.055);
     if(nitroActive) score += dt*22;
     if(driftActive && (steerLeft||steerRight)) score += dt*10;
 
-    for(const t of traffic){
-      const d = distRect(player.x, player.y, player.w, player.h, t.x, t.y, t.w, t.h);
-      if(d < 10 && d > 0){
-        score += dt*48;
-        if(Math.random()<0.06){
-          const rect=canvas.getBoundingClientRect();
-          popEmoji("😲", rect.left + rect.width*(player.x/W), rect.top + rect.height*(player.y/H));
+    // close calls
+    if(power.invisT <= 0){
+      for(const t of traffic){
+        if(t.kind==="gift") continue;
+        const d = distRect(player.x, player.y, player.w, player.h, t.x, t.y, t.w, t.h);
+        if(d < 10 && d > 0){
+          score += dt*48;
+          if(Math.random()<0.05) popEmoji("😲", window.innerWidth*0.5, window.innerHeight*0.18);
+          if(Math.random()<0.22) closeCallsThisRun += 1;
         }
-        if(Math.random()<0.20) closeCallsThisRun += 1;
       }
     }
 
+    // collect coins
     for(let i=coins.length-1;i>=0;i--){
       const c=coins[i];
       if(rectHit(player.x, player.y, player.w*0.9, player.h*0.9, c.x, c.y, c.r*2, c.r*2)){
         coins.splice(i,1);
-        runCoins += 1;
-        score += 15;
+        const multActive = (power.coinMultT > 0) ? power.coinMult : 1;
+        const gained = c.value * multActive;
+        runCoins += gained;
+        score += 12 + gained;
         sfx("coin");
       }
     }
 
-    for(const t of traffic){
+    // collect pickups
+    for(let i=pickups.length-1;i>=0;i--){
+      const p=pickups[i];
+      if(rectHit(player.x, player.y, player.w*0.9, player.h*0.9, p.x, p.y, p.w, p.h)){
+        pickups.splice(i,1);
+        sfx("pickup");
+        const applyTo = bonusActive ? pending : power;
+
+        if(p.type==="shield") applyTo.shield = (applyTo.shield||0) + 1;
+        else if(p.type==="magnet") applyTo.magnetT = (applyTo.magnetT||0) + 15.0;
+        else if(p.type==="slowmo") applyTo.slowmoT = (applyTo.slowmoT||0) + 6.0;
+        else if(p.type==="invis") applyTo.invisT = (applyTo.invisT||0) + 6.0;
+        else if(p.type==="nitro"){
+          if(bonusActive) pending.nitro += 0.35;
+          else nitro = clamp(nitro + 0.35, 0, 1.75);
+        }
+        else if(p.type==="coinx5"){
+          if(bonusActive){ pending.coinMult= Math.max(pending.coinMult,5); pending.coinMultT = Math.max(pending.coinMultT, 12); }
+          else { power.coinMult= Math.max(power.coinMult,5); power.coinMultT = Math.max(power.coinMultT, 12); }
+        }
+        else if(p.type==="coinx10"){
+          if(bonusActive){ pending.coinMult= Math.max(pending.coinMult,10); pending.coinMultT = Math.max(pending.coinMultT, 10); }
+          else { power.coinMult= Math.max(power.coinMult,10); power.coinMultT = Math.max(power.coinMultT, 10); }
+        }
+        popEmoji("⚡", window.innerWidth*0.5, window.innerHeight*0.18);
+      }
+    }
+
+    // collisions
+    if(invulnT > 0) invulnT = Math.max(0, invulnT - dt);
+
+    for(let i=traffic.length-1;i>=0;i--){
+      const t = traffic[i];
+      if(t.kind==="gift" && rectHit(player.x, player.y, player.w, player.h, t.x, t.y, t.w, t.h)){
+        traffic.splice(i,1);
+        const gift = randInt(500,600);
+        profile.bankCoins += gift;
+        saveProfile(profile);
+        updateHeaderUI();
+        popEmoji("🎁", window.innerWidth*0.5, window.innerHeight*0.22);
+        popEmoji(`+${gift}🪙`, window.innerWidth*0.5, window.innerHeight*0.28);
+        continue;
+      }
+
       if(rectHit(player.x, player.y, player.w, player.h, t.x, t.y, t.w, t.h)){
-        handleCrash();
+        if(power.invisT > 0){
+          // phase
+        } else {
+          loseLife();
+        }
         break;
       }
     }
 
-    power.slowmoT = Math.max(0, power.slowmoT - dtRaw);
-    power.magnetT = Math.max(0, power.magnetT - dtRaw);
+    // timers
+    power.slowmoT = Math.max(0, power.slowmoT - dt);
+    power.magnetT = Math.max(0, power.magnetT - dt);
+    power.invisT  = Math.max(0, power.invisT  - dt);
+    power.coinMultT = Math.max(0, power.coinMultT - dt);
+    if(power.coinMultT <= 0) power.coinMult = 1;
 
     updateMissionsProgress();
 
-    const sc=Math.floor(score);
-    if(sc > (profile.bestScore||0)){
-      profile.bestScore=sc;
+    const sc = Math.floor(score);
+    if(sc > (profile.bestScore || 0)){
+      profile.bestScore = sc;
       saveProfile(profile);
     }
 
-    syncGameHUD();
+    syncUI();
   }
 
-  function handleCrash(){
-    if(power.shield > 0){
-      power.shield -= 1;
-      score = Math.max(0, score - 120);
-      sfx("pickup");
-      return;
-    }
-    crash();
-  }
-
-  async function crash(){
-    running=false;
-    paused=false;
-    sfx("crash");
-
-    if(!reviveUsedThisRun){
-      const tokens = profile.inv.life||0;
-      const canUseToken = tokens > 0;
-      const canBuy = (profile.bankCoins||0) >= 100;
-      openRevive({ canUseToken, canBuy, buyCost:100 });
-      return;
-    }
-
-    await endRunAndSubmit(false);
-    hideGame();
-  }
-
-  async function endRunAndSubmit(){
-    profile.bankCoins += runCoins;
-    runCoins = 0;
-    saveProfile(profile);
-
-    try{
-      if (SB.enabled() && profile.name && profile.name !== "Gamer"){
-        await SB.saveBest(profile.name, profile.bestScore || 0);
-      }
-    } catch {}
-
-    syncHomeUI();
-    syncShopUI();
-    syncRewardUI();
-    renderMissions();
-    syncLeaderboard();
-  }
-
-  // ===== Draw =====
   function draw(){
     drawRoad();
-
     for(const c of coins) drawCoin(c);
-    for(const t of traffic) drawCar(t.x,t.y,t.w,t.h,false,t.seed);
-    drawCar(player.x,player.y,player.w,player.h,true,0.3);
+    for(const p of pickups) drawPickup(p);
+    for(const t of traffic) drawCar(t.x, t.y, t.w, t.h, false, t.seed, t.kind);
+    drawCar(player.x, player.y, player.w, player.h, true, 0.3, "player");
 
-    if(power.shield>0){
+    if(power.shield > 0){
       ctx.save();
-      ctx.globalAlpha=0.7;
-      ctx.strokeStyle="rgba(124,255,234,.9)";
+      ctx.globalAlpha=0.70;
+      ctx.strokeStyle="rgba(124,255,234,.95)";
       ctx.lineWidth=3;
       ctx.beginPath();
-      ctx.arc(player.x, player.y, 58, 0, Math.PI*2);
+      ctx.arc(player.x, player.y, 62, 0, Math.PI*2);
       ctx.stroke();
       ctx.restore();
     }
-
     if(paused && running){
       ctx.fillStyle="rgba(0,0,0,.45)";
       ctx.fillRect(0,0,W,H);
       ctx.fillStyle="rgba(255,255,255,.92)";
-      ctx.font="950 44px system-ui, sans-serif";
+      ctx.font="900 44px Orbitron, sans-serif";
       ctx.textAlign="center";
       ctx.fillText("PAUSED", W/2, H/2);
     }
   }
 
-  // ===== Loop =====
   function loop(now){
-    const dt=Math.min(0.033, (now-last)/1000);
-    last=now;
-    if(gameOverlayShown()){
-      if(running && !paused) update(dt);
-      draw();
-    }
+    const dt = Math.min(0.033, (now-last)/1000);
+    last = now;
+    if(running && !paused) update(dt);
+    draw();
     requestAnimationFrame(loop);
   }
 
-  // ===== Play should not autostart =====
-  playHome.addEventListener("click",()=>{
-    showGame();
-    startRun();
+  // ===== UI events =====
+  saveNameBtn.addEventListener("click", ()=>{
+    const nm = (nameInput.value || "").trim().slice(0,18);
+    if(!nm) return;
+    profile.name = nm;
+    saveProfile(profile);
+    updateHeaderUI();
+    syncLeaderboards();
+  });
+  resetNameBtn.addEventListener("click", ()=>{
+    profile.name = "Gamer";
+    saveProfile(profile);
+    nameInput.value = "Gamer";
+    updateHeaderUI();
+    syncLeaderboards();
   });
 
-  // ===== Pause/Exit =====
-  function togglePause(){
-    if(!running) return;
-    paused=!paused;
-    last=performance.now();
-  }
+  claimBtn.addEventListener("click", ()=>{
+    const r = claimDailyBonus();
+    alert(r.msg);
+    updateHeaderUI();
+    renderStreak();
+    renderShop();
+    renderGarage();
+  });
 
-  // ===== init =====
+  function openShop(){ shopModal.style.display="grid"; renderShop(); }
+  function closeShop(){ shopModal.style.display="none"; }
+
+  openShopBtn.addEventListener("click", openShop);
+  homeOpenShop.addEventListener("click", openShop);
+  shopClose.addEventListener("click", closeShop);
+  shopModal.addEventListener("click", (e)=>{ if(e.target===shopModal) closeShop(); });
+
+  homeOpenGarage.addEventListener("click", ()=>{
+    document.getElementById("garageCard").scrollIntoView({ behavior:"smooth", block:"start" });
+  });
+  homeOpenBoards.addEventListener("click", ()=>{
+    lbAllTimeEl.scrollIntoView({ behavior:"smooth", block:"start" });
+  });
+
+  function startGame(){
+    document.body.classList.add("playing");
+    reset();
+  }
+  homePlay.addEventListener("click", startGame);
+
+  // ===== Init =====
   ensureDailyMissions();
-  syncHomeUI();
-  syncShopUI();
-  syncRewardUI();
+  updateHeaderUI();
+  renderStreak();
   renderMissions();
-  syncLeaderboard();
+  renderModeButtons();
+  renderShop();
+  renderGarage();
+  syncLeaderboards();
 
-  nameInput.value = profile.name && profile.name !== "Gamer" ? profile.name : "Gamer";
+  nameInput.value = profile.name || "Gamer";
+  modeEl.textContent = mode.name;
 
-  setTab("account");
-
-  window.addEventListener("pointerdown",()=>{ ensureAudio(); audioCtx?.resume?.(); },{once:false});
   requestAnimationFrame(loop);
-
-  // ===== Leaders =====
-  async function syncLeaderboard(){
-    if(!SB.enabled()){
-      lbStatusEl.innerHTML = `<span class="statusBad">Leaderboard not configured.</span>`;
-      lbListEl.innerHTML = "";
-      return;
-    }
-    try{
-      lbStatusEl.innerHTML = `<span class="statusOk">Loading live leaderboard…</span>`;
-      const top = await SB.top10();
-      lbStatusEl.innerHTML = `<span class="statusOk">Live leaderboard:</span>`;
-      lbListEl.innerHTML="";
-      if(!top || !top.length){
-        lbListEl.innerHTML = `<div class="small">No scores yet. Play once and finish a run to submit.</div>`;
-        return;
-      }
-      for(let i=0;i<top.length;i++){
-        const row=document.createElement("div");
-        row.className="lbRow";
-        row.innerHTML=`<span>#${i+1} <b>${escapeHtml(top[i].name)}</b></span><span><b>${top[i].score}</b></span>`;
-        lbListEl.appendChild(row);
-      }
-    } catch {
-      lbStatusEl.innerHTML = `<span class="statusBad">Couldn’t load leaderboard.</span>`;
-      lbListEl.innerHTML = `<div class="small">Check Supabase RLS SELECT policy for leaderboard table.</div>`;
-    }
-  }
-
-  // ===== close helper =====
-  function closeRevive(){ reviveOverlay.style.display="none"; }
-
-  // ===== tiny SFX wrapper =====
-  function sfx(type){
-    if(!profile.sfx) return;
-    ensureAudio();
-    const t0=audioCtx.currentTime;
-    const g=audioCtx.createGain(); g.connect(master);
-
-    if(type==="coin"){
-      const o=audioCtx.createOscillator();
-      o.type="square";
-      o.frequency.setValueAtTime(980,t0);
-      o.frequency.exponentialRampToValueAtTime(1560,t0+0.06);
-      g.gain.setValueAtTime(0.0001,t0);
-      g.gain.exponentialRampToValueAtTime(0.22,t0+0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001,t0+0.12);
-      o.connect(g); o.start(t0); o.stop(t0+0.13);
-      return;
-    }
-    if(type==="pickup"){
-      const o=audioCtx.createOscillator();
-      o.type="triangle";
-      o.frequency.setValueAtTime(540,t0);
-      o.frequency.exponentialRampToValueAtTime(860,t0+0.08);
-      g.gain.setValueAtTime(0.0001,t0);
-      g.gain.exponentialRampToValueAtTime(0.20,t0+0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001,t0+0.16);
-      o.connect(g); o.start(t0); o.stop(t0+0.17);
-      return;
-    }
-    if(type==="crash"){
-      const dur=0.35;
-      const buffer=audioCtx.createBuffer(1,audioCtx.sampleRate*dur,audioCtx.sampleRate);
-      const data=buffer.getChannelData(0);
-      for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*Math.exp(-i/(data.length/4));
-      const src=audioCtx.createBufferSource(); src.buffer=buffer;
-      const f=audioCtx.createBiquadFilter(); f.type="lowpass"; f.frequency.value=900;
-      g.gain.setValueAtTime(0.0001,t0);
-      g.gain.exponentialRampToValueAtTime(0.50,t0+0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
-      src.connect(f); f.connect(g);
-      src.start(t0); src.stop(t0+dur);
-      return;
-    }
-  }
 
 })();
 </script>
 </body>
 </html>
-
-
-
-
