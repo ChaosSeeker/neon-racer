@@ -6,7 +6,6 @@ import { Leaderboard } from "./leaderboard.js";
 const canvas = document.getElementById("game");
 
 const ui = {
-  // Home layout
   home: document.getElementById("home"),
   howPanel: document.getElementById("howPanel"),
 
@@ -23,8 +22,12 @@ const ui = {
   btnHowClose: document.getElementById("btn-how-close"),
   btnFeedback: document.getElementById("btn-feedback"),
 
+  // NEW: name UI
+  nameInput: document.getElementById("nameInput"),
+  btnSaveName: document.getElementById("btn-save-name"),
+  namePreview: document.getElementById("namePreview"),
+
   // HUD
-  hud: document.getElementById("hud"),
   score: document.getElementById("score"),
   combo: document.getElementById("combo"),
   coins: document.getElementById("coins"),
@@ -34,13 +37,12 @@ const ui = {
   bonus: document.getElementById("bonus"),
   ghost: document.getElementById("ghost"),
   pillBonus: document.getElementById("pillBonus"),
-  pillGhost: document.getElementById("pillGhost"),
   btnMenu: document.getElementById("btn-menu"),
 
-  // overlays
   countdown: document.getElementById("countdown"),
   gameover: document.getElementById("gameover"),
   menu: document.getElementById("menu"),
+
   finalScore: document.getElementById("finalScore"),
   finalCoins: document.getElementById("finalCoins"),
   btnRestart: document.getElementById("btn-restart"),
@@ -53,33 +55,25 @@ const ui = {
   shareOut: document.getElementById("shareOut"),
   btnRevive: document.getElementById("btn-revive"),
 
-  // daily reward
   btnReward: document.getElementById("btn-reward"),
   rewardStreak: document.getElementById("rewardStreak"),
   rewardAmt: document.getElementById("rewardAmt"),
 
-  // crate
   btnCrate: document.getElementById("btn-crate"),
   crateOut: document.getElementById("crateOut"),
 
-  // missions
   missions: document.getElementById("missions"),
   missionsBonus: document.getElementById("missionsBonus"),
   btnRefreshMissions: document.getElementById("btn-refresh-missions"),
 
-  // shop
   shopQueued: document.getElementById("shopQueued"),
   btnClearQueued: document.getElementById("btn-clear-queued"),
 
-  // skins + lb
   skins: document.getElementById("skins"),
   lb: document.getElementById("lb"),
   btnRefresh: document.getElementById("btn-refresh"),
 
-  // toast
   toast: document.getElementById("toast"),
-
-  // joystick
   joy: document.getElementById("joy"),
 };
 
@@ -87,22 +81,17 @@ const core = new GameCore();
 const renderer = new Renderer3D(canvas);
 const audio = new GameAudio();
 
-// optional leaderboard
 let lbEnabled = false;
 
-// -------- persistent state --------
 const LS = {
   name: "nr_name",
   bank: "nr_bank",
   best: "nr_best",
   skin: "nr_skin",
   skinOwned: "nr_skins_owned",
-
   shop: "nr_shop_loadout",
-
   rewardDay: "nr_reward_day",
   rewardStreak: "nr_reward_streak",
-
   crateDay: "nr_crate_day",
   missionsDay: "nr_missions_day",
   missions: "nr_missions",
@@ -112,24 +101,18 @@ function todayKey() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
-
 function getNum(k, def = 0) {
   const v = Number(localStorage.getItem(k));
   return Number.isFinite(v) ? v : def;
 }
-
 function setNum(k, v) { localStorage.setItem(k, String(Number(v) || 0)); }
-
 function getJSON(k, def) {
   try {
     const raw = localStorage.getItem(k);
     if (!raw) return def;
     return JSON.parse(raw);
-  } catch {
-    return def;
-  }
+  } catch { return def; }
 }
-
 function setJSON(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
 
 function toast(msg) {
@@ -171,6 +154,13 @@ function setMode(mode) {
     ui.menu.classList.add("visible");
   }
 
+  // Show joystick on mobile while playing
+  if (mode === "run" || mode === "countdown" || mode === "menu" || mode === "gameover") {
+    if (isTouchDevice()) ui.joy.classList.remove("hidden");
+  } else {
+    ui.joy.classList.add("hidden");
+  }
+
   window._mode = mode;
 }
 
@@ -183,7 +173,7 @@ function rankFromBest(best) {
   return "Rookie";
 }
 
-// -------- Skins (simple system) --------
+// -------- Skins --------
 const SKINS = [
   { id: "cyanPink", name: "Cyan/Pink", body: 0x00ffff, glow: 0xff4dff, rarity: "common" },
   { id: "gold", name: "Gold", body: 0xffd24d, glow: 0xffd24d, rarity: "rare" },
@@ -222,48 +212,37 @@ function renderSkins() {
   }
 }
 
-// -------- Daily Reward (7-day streak parity) --------
+// -------- Daily Reward --------
 function rewardForStreak(day) {
   const table = [60, 80, 100, 120, 150, 180, 240];
   return table[Math.max(0, Math.min(6, day - 1))];
 }
-
 function renderDailyReward() {
   const streak = getNum(LS.rewardStreak, 0);
   const day = Math.min(7, Math.max(1, streak + 1));
   ui.rewardStreak.textContent = String(streak);
   ui.rewardAmt.textContent = String(rewardForStreak(day));
 }
-
 function claimDailyReward() {
   const today = todayKey();
   const last = localStorage.getItem(LS.rewardDay);
-
   let streak = getNum(LS.rewardStreak, 0);
 
-  // If you missed a day, reset streak
   if (last) {
     const lastDate = new Date(last + "T00:00:00");
     const nowDate = new Date(today + "T00:00:00");
     const diffDays = Math.round((nowDate - lastDate) / (1000 * 60 * 60 * 24));
-
-    if (diffDays >= 2) streak = 0; // missed day
+    if (diffDays >= 2) streak = 0;
   }
-
-  if (last === today) {
-    toast("Already claimed today");
-    return;
-  }
+  if (last === today) { toast("Already claimed today"); return; }
 
   const day = Math.min(7, streak + 1);
   const amt = rewardForStreak(day);
 
-  const bank = getNum(LS.bank, 0) + amt;
-  setNum(LS.bank, bank);
+  setNum(LS.bank, getNum(LS.bank, 0) + amt);
+  streak = (day >= 7) ? 0 : day;
 
-  streak = (day >= 7) ? 0 : day; // after day7, reset next day
   setNum(LS.rewardStreak, streak);
-
   localStorage.setItem(LS.rewardDay, today);
 
   toast(`+${amt} coins!`);
@@ -271,14 +250,13 @@ function claimDailyReward() {
   renderDailyReward();
 }
 
-// -------- Crate (skins) --------
+// -------- Crate --------
 function openCrate() {
   const today = todayKey();
   const last = localStorage.getItem(LS.crateDay);
   if (last === today) { toast("Crate already opened today"); return; }
   localStorage.setItem(LS.crateDay, today);
 
-  // weighted rarity
   const roll = Math.random();
   let rarity = "common";
   if (roll > 0.92) rarity = "legend";
@@ -297,7 +275,7 @@ function openCrate() {
   renderSkins();
 }
 
-// -------- Missions (simple daily tasks) --------
+// -------- Missions (unchanged minimal) --------
 function randomMissions() {
   const list = [
     { id: "coins50", text: "Collect 50 coins", goal: 50, reward: 120 },
@@ -306,7 +284,6 @@ function randomMissions() {
     { id: "buff6", text: "Pick 6 buffs", goal: 6, reward: 140 },
     { id: "combo8", text: "Reach combo x8", goal: 8, reward: 160 },
   ];
-  // pick 3
   const out = [];
   const used = new Set();
   while (out.length < 3) {
@@ -317,7 +294,6 @@ function randomMissions() {
   }
   return out;
 }
-
 function loadMissions() {
   const today = todayKey();
   const last = localStorage.getItem(LS.missionsDay);
@@ -327,9 +303,7 @@ function loadMissions() {
   }
   return getJSON(LS.missions, randomMissions());
 }
-
 function saveMissions(m) { setJSON(LS.missions, m); }
-
 function renderMissions() {
   const m = loadMissions();
   ui.missions.innerHTML = "";
@@ -348,22 +322,17 @@ function renderMissions() {
     ui.missions.appendChild(div);
     if (item.done) bonus += item.reward;
   }
-
   ui.missionsBonus.textContent = String(bonus);
 }
-
 function refreshMissions() {
   localStorage.setItem(LS.missionsDay, todayKey());
   saveMissions(randomMissions());
   renderMissions();
   toast("New missions!");
 }
-
-// Update mission progress after a run
 function applyMissionProgress(run) {
   const m = loadMissions();
   let bankAdd = 0;
-
   for (const item of m) {
     if (item.done) continue;
 
@@ -391,17 +360,14 @@ function applyMissionProgress(run) {
 
 // -------- Shop --------
 const PRICES = { magnet: 120, shield: 140, scorex2: 160, nitro: 180, slowmo: 160, invis: 180 };
-
 function getShopQueued() { return getJSON(LS.shop, { magnet: 0, shield: 0, scorex2: 0, nitro: 0, slowmo: 0, invis: 0 }); }
 function setShopQueued(q) { setJSON(LS.shop, q); }
-
 function renderQueued() {
   const q = getShopQueued();
   const parts = [];
   for (const k of Object.keys(q)) if (q[k] > 0) parts.push(`${k}:${q[k]}`);
   ui.shopQueued.textContent = parts.length ? parts.join(", ") : "—";
 }
-
 function buy(type) {
   const price = PRICES[type];
   const bank = getNum(LS.bank, 0);
@@ -416,14 +382,13 @@ function buy(type) {
   refreshMetaUI();
   renderQueued();
 }
-
 function clearQueued() {
   setShopQueued({ magnet: 0, shield: 0, scorex2: 0, nitro: 0, slowmo: 0, invis: 0 });
   renderQueued();
   toast("Queued cleared");
 }
 
-// -------- Leaderboard UI --------
+// -------- Leaderboard --------
 async function refreshLeaderboard() {
   if (!lbEnabled) {
     ui.lb.innerHTML = `<div class="lbRow"><b>Leaderboard</b><span class="muted">Not enabled</span></div>`;
@@ -442,13 +407,11 @@ async function refreshLeaderboard() {
     ui.lb.appendChild(div);
   });
 }
-
 async function submitBest() {
   if (!lbEnabled) { toast("Leaderboard disabled"); return; }
   const name = localStorage.getItem(LS.name) || "Gamer";
   const best = getNum(LS.best, 0);
   const bank = getNum(LS.bank, 0);
-
   try {
     await Leaderboard.submit({ name, score: best, coins: bank });
     toast("Best submitted!");
@@ -458,7 +421,7 @@ async function submitBest() {
   }
 }
 
-// -------- Controls (keyboard + joystick) --------
+// -------- Controls --------
 let keys = new Set();
 window.addEventListener("keydown", (e) => {
   keys.add(e.code);
@@ -466,7 +429,7 @@ window.addEventListener("keydown", (e) => {
 });
 window.addEventListener("keyup", (e) => keys.delete(e.code));
 
-// Joystick (2D axis)
+// Joystick
 const joy = ui.joy;
 const joyKnob = joy.querySelector(".joy-knob");
 
@@ -477,11 +440,7 @@ let joyValueX = 0;
 let joyValueY = 0;
 let joyPointerId = null;
 
-const isTouch = matchMedia("(pointer: coarse)").matches;
-if (!isTouch) joy.classList.add("hidden");
-
 function setJoyKnob(dx, dy) {
-  // clamp
   const len = Math.hypot(dx, dy);
   if (len > joyRadius) {
     dx = dx / len * joyRadius;
@@ -489,8 +448,7 @@ function setJoyKnob(dx, dy) {
   }
   joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
   joyValueX = dx / joyRadius;
-  // dy positive is down; we want up=forward => invert
-  joyValueY = -dy / joyRadius;
+  joyValueY = -dy / joyRadius; // up=forward
 }
 
 joy.addEventListener("pointerdown", (e) => {
@@ -500,7 +458,6 @@ joy.addEventListener("pointerdown", (e) => {
 
   const rect = joy.getBoundingClientRect();
   joyCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-
   setJoyKnob(0, 0);
 });
 
@@ -522,10 +479,48 @@ function joyEnd(e) {
 joy.addEventListener("pointerup", joyEnd);
 joy.addEventListener("pointercancel", joyEnd);
 
-// -------- Game loop + glue --------
+// NEW: Swipe-drag steering anywhere on right side of screen
+let swipeActive = false;
+let swipeId = null;
+let swipeStart = { x: 0, y: 0 };
+let swipeAxes = { x: 0, y: 0 };
+
+canvas.addEventListener("pointerdown", (e) => {
+  const mode = window._mode || "home";
+  if (mode !== "run") return;
+
+  // right half = steering
+  if (e.clientX < window.innerWidth * 0.45) return;
+
+  swipeActive = true;
+  swipeId = e.pointerId;
+  swipeStart = { x: e.clientX, y: e.clientY };
+  canvas.setPointerCapture(swipeId);
+});
+
+canvas.addEventListener("pointermove", (e) => {
+  if (!swipeActive || e.pointerId !== swipeId) return;
+  const dx = (e.clientX - swipeStart.x);
+  const dy = (e.clientY - swipeStart.y);
+
+  // normalize to axes
+  swipeAxes.x = clamp(dx / 160, -1, 1);
+  swipeAxes.y = clamp(-dy / 160, -1, 1); // up=forward
+});
+
+function swipeEnd(e) {
+  if (!swipeActive || e.pointerId !== swipeId) return;
+  swipeActive = false;
+  swipeId = null;
+  swipeAxes.x = 0;
+  swipeAxes.y = 0;
+}
+canvas.addEventListener("pointerup", swipeEnd);
+canvas.addEventListener("pointercancel", swipeEnd);
+
+// -------- Game loop glue --------
 let last = performance.now();
 let maxComboThisRun = 1;
-let ghostFrame = null;
 
 core.onEvent = (type, payload) => {
   if (type === "coin") audio.sfx("coin");
@@ -541,12 +536,9 @@ core.onEvent = (type, payload) => {
     ui.ghost.textContent = payload?.on ? "ON" : "OFF";
   }
   if (type === "ghost_frame") {
-    ghostFrame = payload;
     renderer.syncGhostFrame(payload);
   }
-  if (type === "end") {
-    onGameOver(payload);
-  }
+  if (type === "end") onGameOver(payload);
 };
 
 function refreshMetaUI() {
@@ -559,6 +551,8 @@ function refreshMetaUI() {
   ui.chipBest.textContent = String(best);
   ui.chipRank.textContent = rankFromBest(best);
 
+  if (ui.namePreview) ui.namePreview.textContent = name;
+
   core.setMeta({
     bank,
     best,
@@ -569,7 +563,7 @@ function refreshMetaUI() {
 }
 
 function buildInput() {
-  // keyboard
+  // Keyboard
   const left = keys.has("ArrowLeft") || keys.has("KeyA");
   const right = keys.has("ArrowRight") || keys.has("KeyD");
   const up = keys.has("ArrowUp") || keys.has("KeyW");
@@ -583,12 +577,20 @@ function buildInput() {
   if (up) moveY += 1;
   if (down) moveY -= 1;
 
-  // joystick override
-  if (Math.abs(joyValueX) > 0.03) moveX = joyValueX;
-  if (Math.abs(joyValueY) > 0.03) moveY = joyValueY;
+  // Mobile: prefer swipe (right side), else joystick
+  const sw = Math.max(Math.abs(swipeAxes.x), Math.abs(swipeAxes.y));
+  const jv = Math.max(Math.abs(joyValueX), Math.abs(joyValueY));
 
-  const drift = keys.has("ShiftLeft") || keys.has("ShiftRight");
-  const driftDir = drift ? (moveX < -0.15 ? -1 : moveX > 0.15 ? 1 : 0) : 0;
+  if (sw > 0.02) {
+    moveX = swipeAxes.x;
+    moveY = swipeAxes.y;
+  } else if (jv > 0.02) {
+    moveX = joyValueX;
+    moveY = joyValueY;
+  }
+
+  const driftHeld = keys.has("ShiftLeft") || keys.has("ShiftRight");
+  const driftDir = driftHeld ? (moveX < -0.15 ? -1 : moveX > 0.15 ? 1 : 0) : 0;
 
   return {
     moveX: clamp(moveX, -1, 1),
@@ -609,7 +611,6 @@ function updateHUD() {
   const d = Math.round((core.player.drift.amount || 0) * 100);
   ui.drift.textContent = `${d}%`;
 
-  // bonus
   if (core.inBonus) {
     ui.pillBonus.style.display = "";
     ui.bonus.textContent = `${core.bonusT.toFixed(1)}s`;
@@ -618,23 +619,16 @@ function updateHUD() {
     ui.bonus.textContent = "—";
   }
 
-  // revive button state
   ui.btnRevive.disabled = core.player.reviveUsed || core.coins < 100;
   ui.btnRevive.textContent = core.player.reviveUsed ? "Revive used" : (core.coins < 100 ? "Need 100🪙" : "Revive (100🪙)");
 }
 
 function onGameOver(payload) {
-  // bank coins
-  const bank = getNum(LS.bank, 0) + (payload.coins || 0);
-  setNum(LS.bank, bank);
-
-  // best score
-  const best = Math.max(getNum(LS.best, 0), payload.score || 0);
-  setNum(LS.best, best);
+  setNum(LS.bank, getNum(LS.bank, 0) + (payload.coins || 0));
+  setNum(LS.best, Math.max(getNum(LS.best, 0), payload.score || 0));
 
   refreshMetaUI();
 
-  // missions progress
   applyMissionProgress({
     score: payload.score || 0,
     coinsPicked: core.stats.coinsPicked || 0,
@@ -645,7 +639,6 @@ function onGameOver(payload) {
 
   ui.finalScore.textContent = String(payload.score || 0);
   ui.finalCoins.textContent = String(payload.coins || 0);
-
   ui.shareOut.textContent = "";
 
   setMode("gameover");
@@ -653,8 +646,6 @@ function onGameOver(payload) {
 
 function makeChallengeLink(seed, ghostRec) {
   const base = location.origin + location.pathname;
-  // store ghost record compressed-ish as JSON (kept small by sampling + rounding)
-  // NOTE: if you want ultra-small links later, we can do base64 + delta encoding.
   const ghostStr = encodeURIComponent(JSON.stringify(ghostRec || []));
   return `${base}?seed=${encodeURIComponent(seed)}&ghost=${ghostStr}&challenge=1`;
 }
@@ -669,7 +660,6 @@ function parseChallenge() {
   if (ghost) {
     try { ghostArr = JSON.parse(decodeURIComponent(ghost)); } catch {}
   }
-
   return {
     challenge,
     seed: seed != null ? Number(seed) : null,
@@ -680,32 +670,25 @@ function parseChallenge() {
 async function startRun() {
   await audio.start();
 
-  // apply shop queued into core meta
   core.setMeta({ queued: getShopQueued() });
-
-  // parse challenge
   const ch = parseChallenge();
-  maxComboThisRun = 1;
-  ghostFrame = null;
 
-  // countdown
+  maxComboThisRun = 1;
+
   setMode("countdown");
   const countEl = ui.countdown.querySelector(".count");
   let t = 3;
-
   countEl.textContent = String(t);
   await wait(420); t--; countEl.textContent = String(t);
   await wait(420); t--; countEl.textContent = String(t);
   await wait(420); countEl.textContent = "GO";
   await wait(250);
 
-  // start
   core.start({
     seed: ch.seed != null ? ch.seed : undefined,
     ghostPlay: ch.challenge ? ch.ghost : null
   });
 
-  // consume queued items
   setShopQueued({ magnet: 0, shield: 0, scorex2: 0, nitro: 0, slowmo: 0, invis: 0 });
   renderQueued();
 
@@ -727,44 +710,29 @@ function tick(now) {
     renderer.sync(core);
     audio.update(dt, core);
     updateHUD();
-
-    if (core.gameOver) {
-      // handled by core.onEvent end
-    }
-  } else {
-    // home render only
-    renderer.render(dt);
-    audio.update(dt, { running: false, gameOver: true, player: { speed: 0, nitro: { t: 0 } } });
   }
 
   renderer.render(dt);
   requestAnimationFrame(tick);
 }
 
-// -------- Buttons / UI wiring --------
+// -------- UI wiring --------
 ui.btnPlay.onclick = () => startRun();
 ui.btnHow.onclick = () => ui.howPanel.classList.add("visible");
 ui.btnHowClose.onclick = () => ui.howPanel.classList.remove("visible");
 ui.btnFeedback.onclick = () => toast("DM on Instagram / GitHub Issues");
 
 ui.btnAudio.onclick = async () => { await audio.start(); audio.setEnabled(!audio.enabled); ui.btnAudio.textContent = audio.enabled ? "🔊" : "🔇"; };
-
 ui.btnFullscreen.onclick = async () => {
   try {
     if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
     else await document.exitFullscreen();
-  } catch {
-    toast("Fullscreen not supported");
-  }
+  } catch { toast("Fullscreen not supported"); }
 };
 
-ui.btnMenu.onclick = () => {
-  if ((window._mode || "home") !== "run") return;
-  setMode("menu");
-};
-
+ui.btnMenu.onclick = () => { if ((window._mode || "home") === "run") setMode("menu"); };
 ui.btnResume.onclick = () => setMode("run");
-ui.btnHome2.onclick = () => { setMode("home"); };
+ui.btnHome2.onclick = () => setMode("home");
 
 ui.btnRestart.onclick = () => startRun();
 ui.btnHome.onclick = () => setMode("home");
@@ -792,21 +760,32 @@ ui.btnRefreshMissions.onclick = () => refreshMissions();
 
 ui.btnClearQueued.onclick = () => clearQueued();
 
-// shop buy buttons
 document.querySelectorAll("[data-buy]").forEach(btn => {
   btn.addEventListener("click", () => buy(btn.getAttribute("data-buy")));
 });
 
+// NEW: Save name
+ui.btnSaveName.onclick = () => {
+  const raw = (ui.nameInput.value || "").trim();
+  const name = raw ? raw.slice(0, 18) : "Gamer";
+  localStorage.setItem(LS.name, name);
+  ui.nameInput.value = name;
+  toast("Name saved!");
+  refreshMetaUI();
+};
+
 // init
 (async function init() {
-  // start in home mode
   setMode("home");
 
-  // load saved
   if (!localStorage.getItem(LS.name)) localStorage.setItem(LS.name, "Gamer");
   if (!localStorage.getItem(LS.skin)) localStorage.setItem(LS.skin, "cyanPink");
 
-  // apply skin + UI
+  // init name UI
+  const nm = localStorage.getItem(LS.name) || "Gamer";
+  ui.nameInput.value = nm;
+  ui.namePreview.textContent = nm;
+
   renderSkins();
   applySkin(localStorage.getItem(LS.skin) || "cyanPink");
 
@@ -818,7 +797,6 @@ document.querySelectorAll("[data-buy]").forEach(btn => {
   lbEnabled = await Leaderboard.init();
   await refreshLeaderboard();
 
-  // show ghost indicator if challenge link
   const ch = parseChallenge();
   ui.ghost.textContent = ch.challenge ? "ON" : "OFF";
   renderer.setGhostVisible(!!ch.challenge);
@@ -826,12 +804,11 @@ document.querySelectorAll("[data-buy]").forEach(btn => {
   requestAnimationFrame((t) => { last = t; requestAnimationFrame(tick); });
 })();
 
-// ---- utils ----
 function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 function escapeHtml(s) {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
+  return String(s).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
+function isTouchDevice() {
+  return matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
 }
