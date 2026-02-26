@@ -393,3 +393,17 @@ body.run-mode .hud{
   background:linear-gradient(135deg, rgba(124,255,234,.95), rgba(255,106,223,.80));
   box-shadow: 0 10px 20px rgba(0,0,0,.35);
 }
+.nameInput{
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(124,255,234,.18);
+  background:rgba(10,14,40,.45);
+  color:var(--text);
+  font-weight:800;
+  outline:none;
+  min-width: 220px;
+}
+.nameInput::placeholder{color:rgba(159,176,230,.75)}
+
+/* Joystick visibility: show in RUN mode on touch devices */
+body.run-mode #joy.hidden{ display:block; }
