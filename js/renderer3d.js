@@ -67,7 +67,16 @@ export class Renderer3D {
   makeRoad() {
     const group = new THREE.Group();
 
-    const roadGeo = new THREE.PlaneGeometry(10, 220, 1, 40);
+    const roadGeo = new THREE.PlaneGeometry(10, 220, 1, 80);
+    const pos = roadGeo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i);
+      const z = pos.getY(i); // PlaneGeometry uses Y as length before rotation
+      const curve = Math.pow(x / 5, 2) * 0.25; // subtle "bowl"
+      pos.setZ(i, curve);
+    }
+pos.needsUpdate = true;
+roadGeo.computeVertexNormals();
     const roadMat = new THREE.MeshStandardMaterial({
       color: 0x071025,
       roughness: 0.45,
