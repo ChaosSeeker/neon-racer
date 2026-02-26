@@ -261,7 +261,15 @@ function endGame() {
 }
 
 function updateInput() {
-  // keyboard move
+  // On touch devices, joystick is primary input.
+  // Still allow nitro via space if someone uses keyboard.
+  if (isTouch) {
+    input.nitro = keys.has("Space");
+    input.driftDir = 0;
+    return;
+  }
+
+  // keyboard move (desktop)
   let mx = input.moveX;
   if (keys.has("ArrowLeft") || keys.has("KeyA")) mx -= 0.08;
   if (keys.has("ArrowRight") || keys.has("KeyD")) mx += 0.08;
@@ -269,7 +277,6 @@ function updateInput() {
 
   input.nitro = keys.has("Space");
 
-  // drift direction (optional visual)
   input.driftDir = 0;
   if (keys.has("ShiftLeft") || keys.has("ShiftRight")) {
     input.driftDir = (input.moveX < -0.1) ? -1 : (input.moveX > 0.1 ? 1 : 0);
