@@ -14,12 +14,7 @@
       --bg:#060814; --panel:#0b1230;
       --text:#eaf0ff; --muted:#9fb0e6;
       --a:#7cffea; --p:#ff6adf; --g:#ffd24d; --r:#ff4b5c;
-      --safe:#33ff99;
-
-      --common:#9fb0e6;
-      --rare:#7cffea;
-      --epic:#ff6adf;
-      --legend:#ffd24d;
+      --common:#9fb0e6; --rare:#7cffea; --epic:#ff6adf; --legend:#ffd24d;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -183,13 +178,22 @@
       border:1px solid rgba(255,255,255,.12);
       font-size:12px;
       font-weight:950;
+      white-space:nowrap;
     }
-    .swatch{display:flex; gap:8px; align-items:center; margin-top:2px;}
+    .swatch{display:flex; gap:8px; align-items:center;}
     .dot{
-      width:12px; height:12px; border-radius:999px;
+      width:14px; height:14px; border-radius:999px;
       border:1px solid rgba(255,255,255,.18);
       background:#fff;
       box-shadow:0 8px 18px rgba(0,0,0,.25);
+    }
+    .skinBar{
+      height:14px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow:0 10px 22px rgba(0,0,0,.25);
+      flex:1;
+      min-width:80px;
     }
 
     @media (max-width:900px){ .grid{grid-template-columns:1fr} }
@@ -310,6 +314,28 @@
       display:none;
       backdrop-filter: blur(10px);
       box-shadow:0 12px 40px rgba(0,0,0,.35);
+      max-width:min(92vw, 520px);
+      text-align:center;
+    }
+    .toastTop{
+      position:fixed;
+      left:50%;
+      top: max(16px, env(safe-area-inset-top));
+      transform:translateX(-50%);
+      background:linear-gradient(135deg, rgba(124,255,234,.22), rgba(255,106,223,.18));
+      border:1px solid rgba(255,255,255,.18);
+      padding:10px 14px;
+      border-radius:999px;
+      color:var(--text);
+      font-size:13px;
+      z-index:100;
+      display:none;
+      backdrop-filter: blur(10px);
+      box-shadow:0 18px 50px rgba(0,0,0,.45);
+      max-width:min(92vw, 520px);
+      text-align:center;
+      font-weight:950;
+      letter-spacing:.2px;
     }
   </style>
 </head>
@@ -384,7 +410,6 @@
         <h3>Leaderboard (Top 10)</h3>
         <p class="muted" id="lbStatus">Loading…</p>
         <div class="lbList" id="lbList"></div>
-        <p class="small" style="margin-top:10px">Live leaderboard uses Supabase RPC upsert (secure).</p>
       </div>
     </div>
 
@@ -396,7 +421,7 @@
 
     <div class="card">
       <h3>Skins</h3>
-      <p class="muted">Cosmetics only. Buy once, use forever. Colors shown as the skin name.</p>
+      <p class="muted">Cosmetics only. Buy once, use forever.</p>
       <div class="shopGrid" id="skins"></div>
     </div>
 
@@ -418,7 +443,7 @@
       <h3>Privacy / Terms</h3>
       <p class="muted">
         We store player name, best score, coins, missions, crate state, and skins in your browser (localStorage).
-        Leaderboard stores your name + best score online.
+        Leaderboard stores your name + best score online (if enabled).
       </p>
       <p class="small" style="margin-top:10px">
         Optional audio files: <b>/assets/bgm.mp3</b>, <b>/assets/sfx_coin.mp3</b>, <b>/assets/sfx_pickup.mp3</b>, <b>/assets/sfx_crash.mp3</b>, <b>/assets/sfx_bonus.mp3</b>
@@ -530,6 +555,7 @@
   </div>
 </div>
 
+<div class="toastTop" id="toastTop"></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -640,11 +666,13 @@
   const mDrift = document.getElementById("mDrift");
 
   const toastEl = document.getElementById("toast");
+  const toastTopEl = document.getElementById("toastTop");
 
   // =========================
   // UTIL
   // =========================
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const lerp=(a,b,t)=>a+(b-a)*t;
   const rand=(a,b)=>a+Math.random()*(b-a);
   const randi=(a,b)=>Math.floor(rand(a,b+1));
 
@@ -653,6 +681,12 @@
     toastEl.style.display="block";
     clearTimeout(toastEl._t);
     toastEl._t=setTimeout(()=>toastEl.style.display="none", ms);
+  }
+  function toastTop(msg, ms=1600){
+    toastTopEl.textContent = msg;
+    toastTopEl.style.display="block";
+    clearTimeout(toastTopEl._t);
+    toastTopEl._t=setTimeout(()=>toastTopEl.style.display="none", ms);
   }
 
   function todayISO(){
@@ -774,7 +808,7 @@
   function saveProfileThrottled(dt){
     _saveCooldown -= dt;
     if(_saveCooldown <= 0){
-      _saveCooldown = 0.5;
+      _saveCooldown = 0.55;
       saveProfile();
     }
   }
@@ -903,7 +937,7 @@
     { key:"slowmo",       name:"⏱ Slow-Motion",  desc:"Obstacles 5× slower.", base: 40,  max:3 },
     { key:"invisibility", name:"👻 Invisibility", desc:"Phase through cars.", base: 60,  max:2 },
     { key:"extraLife",    name:"❤️ Extra Life",  desc:"Adds +1 life this run.", base: 100, max:2 },
-    { key:"magnet",       name:"🧲 Magnet",       desc:"Auto-collect coins (7s).", base: 70, max:3 },
+    { key:"magnet",       name:"🧲 Magnet",       desc:"Pulls ALL coins to you (7s).", base: 70, max:3 },
   ];
   function priceFor(itemKey){
     const it=SHOP.find(x=>x.key===itemKey);
@@ -950,7 +984,7 @@
   }
 
   // =========================
-  // SKINS
+  // SKINS (show ONLY the colors)
   // =========================
   const RARITY_ORDER = { common:0, rare:1, epic:2, legendary:3 };
   const RARITY_COLORS = { common:"common", rare:"rare", epic:"epic", legendary:"legendary" };
@@ -960,29 +994,29 @@
   }
 
   const SKINS = [
-    { rarity:"common", cost:500,  colors:["Cyan","Pink"],       hex:["#4df6ff","#ff5cd6"] },
-    { rarity:"common", cost:600,  colors:["Mint","Violet"],     hex:["#33ff99","#6f7bff"] },
-    { rarity:"common", cost:700,  colors:["Amber","Magenta"],   hex:["#ffd24d","#ff6adf"] },
-    { rarity:"common", cost:800,  colors:["Sky","Rose"],        hex:["#6fd6ff","#ff7fb0"] },
-    { rarity:"common", cost:900,  colors:["Lime","Indigo"],     hex:["#b6ff4d","#6f7bff"] },
+    { rarity:"common", cost:500,  hex:["#4df6ff","#ff5cd6"] },
+    { rarity:"common", cost:600,  hex:["#33ff99","#6f7bff"] },
+    { rarity:"common", cost:700,  hex:["#ffd24d","#ff6adf"] },
+    { rarity:"common", cost:800,  hex:["#6fd6ff","#ff7fb0"] },
+    { rarity:"common", cost:900,  hex:["#b6ff4d","#6f7bff"] },
 
-    { rarity:"rare", cost:1200, colors:["Aqua","Electric Pink"], hex:["#00fff0","#ff2bd6"] },
-    { rarity:"rare", cost:1400, colors:["Gold","Neon Blue"],     hex:["#ffd24d","#3aa0ff"] },
-    { rarity:"rare", cost:1600, colors:["Teal","Hot Magenta"],   hex:["#00d6c7","#ff38d1"] },
-    { rarity:"rare", cost:1750, colors:["Neon Green","Purple"],  hex:["#33ff99","#8f4dff"] },
-    { rarity:"rare", cost:1900, colors:["Coral","Ice"],          hex:["#ff6b6b","#a8f0ff"] },
+    { rarity:"rare", cost:1200, hex:["#00fff0","#ff2bd6"] },
+    { rarity:"rare", cost:1400, hex:["#ffd24d","#3aa0ff"] },
+    { rarity:"rare", cost:1600, hex:["#00d6c7","#ff38d1"] },
+    { rarity:"rare", cost:1750, hex:["#33ff99","#8f4dff"] },
+    { rarity:"rare", cost:1900, hex:["#ff6b6b","#a8f0ff"] },
 
-    { rarity:"epic", cost:2500, colors:["Ultraviolet","Cyan"],   hex:["#b84dff","#4df6ff"] },
-    { rarity:"epic", cost:2800, colors:["Crimson","Gold"],       hex:["#ff2e4d","#ffd24d"] },
-    { rarity:"epic", cost:3200, colors:["Aurora","Pink"],        hex:["#33ffdd","#ff5cd6"] },
-    { rarity:"epic", cost:3500, colors:["Neon Orange","Violet"], hex:["#ff8a2b","#8f4dff"] },
-    { rarity:"epic", cost:3900, colors:["Frost","Magenta"],      hex:["#bff6ff","#ff2bd6"] },
+    { rarity:"epic", cost:2500, hex:["#b84dff","#4df6ff"] },
+    { rarity:"epic", cost:2800, hex:["#ff2e4d","#ffd24d"] },
+    { rarity:"epic", cost:3200, hex:["#33ffdd","#ff5cd6"] },
+    { rarity:"epic", cost:3500, hex:["#ff8a2b","#8f4dff"] },
+    { rarity:"epic", cost:3900, hex:["#bff6ff","#ff2bd6"] },
 
-    { rarity:"legendary", cost:5000, colors:["Solar Gold","Royal Purple"], hex:["#ffd24d","#6b2bff"] },
-    { rarity:"legendary", cost:5000, colors:["Plasma Cyan","Ruby"],        hex:["#4df6ff","#ff2e4d"] },
-    { rarity:"legendary", cost:5000, colors:["Emerald","Sunset Pink"],     hex:["#33ff99","#ff5cd6"] },
-    { rarity:"legendary", cost:5000, colors:["Void Black","Neon Gold"],    hex:["#111111","#ffd24d"] },
-  ].map(s => ({ ...s, key: skinKey(s.rarity, s.cost, s.colors[0], s.colors[1]) }));
+    { rarity:"legendary", cost:5000, hex:["#ffd24d","#6b2bff"] },
+    { rarity:"legendary", cost:5000, hex:["#4df6ff","#ff2e4d"] },
+    { rarity:"legendary", cost:5000, hex:["#33ff99","#ff5cd6"] },
+    { rarity:"legendary", cost:5000, hex:["#111111","#ffd24d"] },
+  ].map((s,i) => ({ ...s, key: skinKey(s.rarity, s.cost, "c"+i, "d"+i) }));
 
   if(!SKINS.some(s => s.key === profile.skin)){
     profile.skin = SKINS[0].key;
@@ -990,7 +1024,6 @@
     saveProfile();
   }
   function getSkin(){ return SKINS.find(s=>s.key===profile.skin) || SKINS[0]; }
-  function skinLabel(s){ return `${s.colors[0]} / ${s.colors[1]}`; }
   function rarityChip(r){ return `<span class="chip rar ${RARITY_COLORS[r]}">${r.toUpperCase()}</span>`; }
 
   function renderSkins(where){
@@ -1012,18 +1045,17 @@
       div.className="item";
       div.innerHTML=`
         <div class="top">
-          <div class="name">${escapeHtml(skinLabel(s))}</div>
+          <div class="swatch" style="flex:1">
+            ${rarityChip(s.rarity)}
+            <span class="dot" style="background:${s.hex[0]}"></span>
+            <span class="dot" style="background:${s.hex[1]}"></span>
+            <span class="skinBar" style="background:linear-gradient(135deg, ${s.hex[0]}, ${s.hex[1]});"></span>
+          </div>
           <span class="qty">${owned ? "OWNED" : (s.cost+" 🪙")}</span>
-        </div>
-        <div class="swatch">
-          ${rarityChip(s.rarity)}
-          <span class="dot" style="background:${s.hex[0]}"></span>
-          <span class="dot" style="background:${s.hex[1]}"></span>
-          <span class="small">${selected ? "Selected ✅" : (owned ? "Tap to select" : "Tap to buy")}</span>
         </div>
         <div class="row" style="margin-top:auto;justify-content:space-between">
           <button data-skin="${s.key}">${owned ? (selected ? "Selected" : "Select") : "Buy"}</button>
-          <span class="small"></span>
+          <span class="small">${selected ? "Using ✅" : (owned ? "Tap Select" : "")}</span>
         </div>
       `;
       where.appendChild(div);
@@ -1040,7 +1072,7 @@
           if(profile.bankCoins < s.cost) return toast("Not enough coins.");
           profile.bankCoins -= s.cost;
           profile.ownedSkins.push(k);
-          toast(`Unlocked: ${skinLabel(s)}`);
+          toast("Skin unlocked!");
         }
         profile.skin = k;
         saveProfile();
@@ -1136,7 +1168,7 @@
         msg = `Daily Crate: Duplicate skin → +${comp} coins 🪙`;
       }else{
         profile.ownedSkins.push(s.key);
-        msg = `Daily Crate: Unlocked skin (${s.rarity.toUpperCase()}) → ${skinLabel(s)}`;
+        msg = `Daily Crate: Skin unlocked! (${s.rarity.toUpperCase()})`;
       }
     }
 
@@ -1153,7 +1185,7 @@
   }
 
   // =========================
-  // LEADERBOARD UI
+  // LEADERBOARD UI (fallback: "coming soon")
   // =========================
   function renderLeaderboard(where, list){
     where.innerHTML="";
@@ -1165,11 +1197,16 @@
     });
   }
 
+  function showLeaderboardComingSoon(){
+    lbStatusEl.textContent = "Leaderboard coming soon";
+    lbStatus2El.textContent = "Leaderboard coming soon";
+    lbListEl.innerHTML = "";
+    lbList2El.innerHTML = "";
+  }
+
   async function syncLeaderboard(){
     if(!SB.enabled()){
-      lbStatusEl.textContent = "Leaderboard not configured.";
-      lbStatus2El.textContent = "Leaderboard not configured.";
-      lbListEl.innerHTML = lbList2El.innerHTML = "";
+      showLeaderboardComingSoon();
       return;
     }
     try{
@@ -1177,13 +1214,19 @@
       lbStatus2El.textContent = "Loading…";
       const top = await SB.top10();
       const list = Array.isArray(top) ? top : [];
+      if(!list.length){
+        // if table exists but empty, still show a friendly message
+        lbStatusEl.textContent = "Leaderboard coming soon";
+        lbStatus2El.textContent = "Leaderboard coming soon";
+        lbListEl.innerHTML = lbList2El.innerHTML = "";
+        return;
+      }
       lbStatusEl.textContent = "Live leaderboard:";
       lbStatus2El.textContent = "Live leaderboard:";
       renderLeaderboard(lbListEl, list);
       renderLeaderboard(lbList2El, list);
     }catch{
-      lbStatusEl.textContent = "Leaderboard coming soon...";
-      lbStatus2El.textContent = "Leaderboard coming soon...";
+      showLeaderboardComingSoon();
     }
   }
 
@@ -1209,7 +1252,7 @@
   }
 
   // =========================
-  // GAME CORE (EASY START → GRADUAL RAMP)
+  // GAME CORE (AUDITED)
   // =========================
   let dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
   let vw=1, vh=1;
@@ -1257,17 +1300,18 @@
   function roadW(){ return vw * 0.56; }
   function laneCenter(l){ return roadX() + laneW()*(l+0.5); }
 
-  // Very easy early game (slow) + smooth ramp (addictive curve)
+  // Very easy early game + smooth ramp
   const DIFF = {
-    baseSpeed: 150,     // slower start
-    accel: 3.8,         // gentle speed ramp
-    spawnBase: 0.62,    // fewer obstacles early
-    spawnRamp: 0.00095, // gradual spawn increase
+    baseSpeed: 150,
+    accel: 3.8,
+    spawnBase: 0.62,
+    spawnRamp: 0.00095,
     laneChangeRate: 0.055,
     laneChangeSpeed: 3.1,
   };
 
   const player = { x:0, y:0, w:0, h:0, vx:0, lane:1, targetX:null };
+
   const traffic=[], coins=[], pickups=[];
   const PICK_TYPES = ["shield","magnet","slowmo","nitro","invisibility"];
 
@@ -1290,8 +1334,13 @@
   let spawnT=0, coinT=0, pickT=0;
   let roadScroll=0;
 
-  // lane switching: edge-triggered (no spam)
+  // lane switching: edge-triggered + cooldown (slower early)
   let prevLeft=false, prevRight=false;
+  let laneCd=0;
+
+  // celebration flags
+  let praised1000=false;
+  let praised50cars=false;
 
   function rectHit(ax,ay,aw,ah, bx,by,bw,bh){
     const aL=ax-aw/2, aR=ax+aw/2, aT=ay-ah/2, aB=ay+ah/2;
@@ -1353,6 +1402,10 @@
     nextBonusAt = 500;
 
     prevLeft=false; prevRight=false;
+    laneCd=0;
+
+    praised1000=false;
+    praised50cars=false;
   }
 
   function requestFS(){
@@ -1373,6 +1426,7 @@
     requestFS();
     initAudioFromGesture().then(()=>playBgm());
 
+    // ensure canvas/layout computed before placing player (fixes top-left flash)
     requestAnimationFrame(() => {
       resizeCanvas();
       layoutPlayer();
@@ -1437,8 +1491,8 @@
       targetLane: lane,
       y: -h,
       w, h,
-      rel: rand(0.86, 1.02), // calmer speed variance (slower overall early)
-      cd: rand(1.0, 1.9),    // fewer lane swaps early
+      rel: rand(0.86, 1.02),
+      cd: rand(1.0, 1.9),
       passed:false
     });
   }
@@ -1768,12 +1822,13 @@
     }
 
     invulnT = Math.max(0, invulnT - dt);
+    laneCd = Math.max(0, laneCd - dt);
 
-    // Core ramp
+    // ramp
     speed += DIFF.accel * dt;
 
-    // Addictive curve: super easy first ~20 seconds (soft spawns), then ramps
-    const easyWindow = clamp(score / 600, 0, 1); // reaches 1 around score ~600
+    // super easy first ~20 seconds, then ramps
+    const easyWindow = clamp(score / 600, 0, 1);
     const spawnRate = (DIFF.spawnBase + (Math.floor(score) * DIFF.spawnRamp)) * (0.65 + 0.35*easyWindow);
 
     if(!inBonus){
@@ -1782,7 +1837,7 @@
       buffInvisibility  = Math.max(0, buffInvisibility  - dt);
     }
 
-    // Nitro (slower boost)
+    // Nitro (slower)
     const nitroKey = (keys.has("arrowup") || keys.has("w"));
     nitroActive = nitroKey && nitro > 0.02 && !inBonus;
     if(nitroActive) nitro = Math.max(0, nitro - dt*0.22);
@@ -1792,31 +1847,38 @@
     const rightNow= keys.has("arrowright")|| keys.has("d");
     const drift   = keys.has("shift");
 
-    // Edge-trigger steering (one lane per press)
-    if(leftNow && !prevLeft) steer(-1);
-    if(rightNow && !prevRight) steer(1);
+    // Lane change cooldown (SLOW early)
+    const laneCooldownTarget = lerp(0.22, 0.12, clamp(score/2000, 0, 1)); // slower at start
+    if(leftNow && !prevLeft && laneCd<=0){
+      steer(-1);
+      laneCd = laneCooldownTarget;
+    }
+    if(rightNow && !prevRight && laneCd<=0){
+      steer(1);
+      laneCd = laneCooldownTarget;
+    }
     prevLeft = leftNow;
     prevRight = rightNow;
 
-    // Player movement feel: slower and less twitchy
+    // Player lane transition speed (SLOW early, slightly faster later)
+    const snapStrength = lerp(8.6, 12.0, clamp(score/2500, 0, 1));
     if(player.targetX!==null){
       const dx = player.targetX - player.x;
-      player.vx += dx * 13.2 * dt; // slower pull
-      if(Math.abs(dx)<2.6){
+      player.vx += dx * snapStrength * dt;
+      if(Math.abs(dx)<2.8){
         player.x = player.targetX;
         player.targetX=null;
         player.vx*=0.28;
       }
     }
-    player.vx *= Math.pow(0.00155, dt); // more damping
+    player.vx *= Math.pow(0.00145, dt);
     player.x += player.vx*dt;
     enforceRoadBarrier();
 
-    // World speed (road/coins/pickups)
+    // World speed
     const effectiveSpeed = speed + (nitroActive ? 105 : 0);
 
-    // OBSTACLE speed: VERY slow early, gradually catches up
-    // starts at 0.55x and ramps to 1.00x by ~score 6000
+    // Obstacles: VERY slow early, catch up gradually
     const obstacleFactor = 0.55 + clamp(score / 6000, 0, 0.45);
     const obstacleSpeed = effectiveSpeed * obstacleFactor;
 
@@ -1830,17 +1892,17 @@
       if(bonusT <= 0) endBonus();
     }
 
-    // Spawning: easy early, ramps
+    // Spawning
     if(!inBonus){
       spawnT += dt * spawnRate * (0.70 + effectiveSpeed/950);
       if(spawnT>=1){
         spawnT=0;
         spawnTraffic();
-        if(score > 1200 && Math.random()<0.12) spawnTraffic(); // no double-spawn early
+        if(score > 1200 && Math.random()<0.12) spawnTraffic();
       }
     }
 
-    // Coins frequent (hooks dopamine)
+    // Coins frequent
     coinT += dt * (0.86 + effectiveSpeed/1150);
     if(coinT>=1){
       coinT=0;
@@ -1855,7 +1917,7 @@
       if(Math.random()<0.62) spawnPickup();
     }
 
-    // Move traffic (uses obstacleSpeed)
+    // Move traffic
     const obstacleScale = (!inBonus && buffSlowmo>0) ? 0.20 : 1.0;
     for(let i=traffic.length-1;i>=0;i--){
       const t=traffic[i];
@@ -1884,15 +1946,41 @@
       if(t.y > vh + 200) traffic.splice(i,1);
     }
 
-    // Coins/pickups follow road speed (feels good even when obstacles slow)
+    // Coins (MAGNET FIX: pull ALL coins to the player; auto-collect if close)
     for(let i=coins.length-1;i>=0;i--){
       const c=coins[i];
+
+      // baseline forward motion
       c.y += effectiveSpeed*dt*0.90;
-      if(!inBonus && buffMagnet>0) c.x += (player.x - c.x)*dt*4.0;
-      else c.x += (laneCenter(c.lane) - c.x)*dt*2.0;
-      if(c.y > vh+80) coins.splice(i,1);
+
+      if(!inBonus && buffMagnet>0){
+        // strong attract in BOTH axes (so coins don't sit in lanes)
+        const dx = (player.x - c.x);
+        const dy = (player.y - c.y);
+        // strength ramps slightly with score so it still feels strong later
+        const pull = 6.5 + clamp(score/2500, 0, 2.0);
+        c.x += dx * dt * pull;
+        c.y += dy * dt * (pull * 0.55); // pull upward toward player too
+
+        // hard guarantee: if close enough, auto-collect even without exact overlap
+        const d = Math.hypot(player.x - c.x, player.y - c.y);
+        const collectR = Math.max(18, player.w*0.75);
+        if(d < collectR){
+          coins.splice(i,1);
+          if(inBonus) bonusCollected.coins += c.val;
+          else runCoins += c.val;
+          sfx("coin");
+          continue;
+        }
+      }else{
+        // normal lane settle
+        c.x += (laneCenter(c.lane) - c.x)*dt*2.0;
+      }
+
+      if(c.y > vh+120) coins.splice(i,1);
     }
 
+    // Pickups
     for(let i=pickups.length-1;i>=0;i--){
       const p=pickups[i];
       p.y += effectiveSpeed*dt*0.88;
@@ -1900,11 +1988,12 @@
       if(p.y > vh+80) pickups.splice(i,1);
     }
 
-    // Scoring tuned for "easy start → chase" (still rewarding)
+    // Scoring tuned
     score += dt * (24 + clamp(effectiveSpeed/55, 0, 10));
     if(nitroActive) score += dt*7;
     if(drift && (leftNow||rightNow)) score += dt*5;
 
+    // Close calls
     if(!inBonus){
       for(const t of traffic){
         const d = distRect(player.x,player.y,player.w,player.h, t.x,t.y,t.w,t.h);
@@ -1917,7 +2006,7 @@
       }
     }
 
-    // Collect
+    // Collect (normal overlap)
     for(let i=coins.length-1;i>=0;i--){
       const c=coins[i];
       if(rectHit(player.x,player.y,player.w*0.92,player.h*0.92, c.x,c.y, c.r*2, c.r*2)){
@@ -1947,8 +2036,20 @@
       }
     }
 
+    // Missions progress
     updateMissionsProgress();
 
+    // PRAISE POPUPS
+    if(!praised1000 && Math.floor(score) >= 1000){
+      praised1000 = true;
+      toastTop("🎉 Well done! 1,000+ points!");
+    }
+    if(!praised50cars && passedCars >= 50){
+      praised50cars = true;
+      toastTop("🔥 Amazing! 50 cars dodged!");
+    }
+
+    // best + save throttled
     const sc=Math.floor(score);
     if(sc > (profile.bestScore||0)){
       profile.bestScore=sc;
