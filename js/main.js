@@ -75,6 +75,7 @@ if (isTouch) joy.classList.remove("hidden");
 if (isTouch) {
   // Spawn joystick where user touches (left half of screen)
   window.addEventListener("pointerdown", async (e) => {
+    if (e.target && joy.contains(e.target)) return;
     if (ui.home.classList.contains("visible") || ui.gameover.classList.contains("visible")) return;
     if (e.clientX > window.innerWidth * 0.65) return; // avoid right-side taps (buttons)
     await ensureAudio();
