@@ -4,7 +4,7 @@ export class Renderer3D {
   constructor(canvas) {
     this.canvas = canvas;
 
-    // Scene
+    // Scene + fog (depth cue)
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.Fog(0x05060a, 5, 70);
 
@@ -14,42 +14,49 @@ export class Renderer3D {
     this.renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-    // Shadows (HUGE for depth)
+    // Shadows
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-    // Camera (strong 3D perspective)
+    // Camera: obvious 3D
     this.camera = new THREE.PerspectiveCamera(80, 1, 0.1, 320);
     this.camera.position.set(0, 2.2, 5.8);
     this.camera.lookAt(0, 0.6, -30);
 
     // Lights
-    const amb = new THREE.AmbientLight(0x7aa6ff, 0.35);
-    this.scene.add(amb);
+    this.scene.add(new THREE.AmbientLight(0x7aa6ff, 0.35));
 
-    // Directional key light casting shadows
     this.key = new THREE.DirectionalLight(0xffffff, 1.2);
     this.key.position.set(6, 10, 6);
     this.key.castShadow = true;
-    this.key.shadow.mapSize.set(1024, 1024);
+    this.key.shadow.mapSize.set(2048, 2048);
     this.key.shadow.camera.near = 0.5;
-    this.key.shadow.camera.far = 80;
-    this.key.shadow.camera.left = -14;
-    this.key.shadow.camera.right = 14;
-    this.key.shadow.camera.top = 14;
-    this.key.shadow.camera.bottom = -14;
+    this.key.shadow.camera.far = 90;
+    this.key.shadow.camera.left = -16;
+    this.key.shadow.camera.right = 16;
+    this.key.shadow.camera.top = 16;
+    this.key.shadow.camera.bottom = -16;
+
+    // Shadow stability (reduces shimmer)
+    this.key.shadow.bias = -0.00035;
+    this.key.shadow.normalBias = 0.02;
+
+    // Lock light direction to a fixed target (stability)
+    this.keyTarget = new THREE.Object3D();
+    this.keyTarget.position.set(0, 0, -30);
+    this.scene.add(this.keyTarget);
+    this.key.target = this.keyTarget;
+
     this.scene.add(this.key);
 
-    // Neon accent light
     const mag = new THREE.PointLight(0xff4dff, 1.2, 55);
     mag.position.set(-4, 3.2, -18);
     this.scene.add(mag);
 
-    // World groups
+    // World (STATIC). We do NOT move the road anymore -> fixes drifting shadow.
     this.world = new THREE.Group();
     this.scene.add(this.world);
 
-    // Road / lanes / rails / posts
     this.road = this.makeRoad();
     this.world.add(this.road);
 
@@ -66,7 +73,7 @@ export class Renderer3D {
     this.playerMesh = this.makePlayerCar();
     this.scene.add(this.playerMesh);
 
-    // Mesh pools
+    // Pools
     this.obsMeshes = [];
     this.coinMeshes = [];
     this.buffMeshes = [];
@@ -75,7 +82,6 @@ export class Renderer3D {
     this.shakeT = 0;
     this.shakeAmt = 0;
 
-    // Resize
     window.addEventListener("resize", () => this.resize());
     this.resize();
   }
@@ -88,21 +94,20 @@ export class Renderer3D {
     this.camera.updateProjectionMatrix();
   }
 
-  // ---------- WORLD BUILDERS ----------
+  // ---------- WORLD ----------
 
   makeRoad() {
     const group = new THREE.Group();
 
-    // Curved road: camber (bowl) + subtle hills along length
     const roadGeo = new THREE.PlaneGeometry(8.6, 260, 18, 140);
-    const pos = roadGeo.attributes.position;
 
+    // Curve (camber + hills) => real 3D depth
+    const pos = roadGeo.attributes.position;
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i);
       const y = pos.getY(i); // length axis before rotation
-
-      const camber = (x * x) * 0.03; // bowl curve
-      const hills = Math.sin((y + 120) * 0.07) * 0.12; // gentle waves
+      const camber = (x * x) * 0.03;
+      const hills = Math.sin((y + 120) * 0.07) * 0.12;
       pos.setZ(i, camber + hills);
     }
     pos.needsUpdate = true;
@@ -122,7 +127,7 @@ export class Renderer3D {
     road.receiveShadow = true;
     group.add(road);
 
-    // Neon edge strips (taller so it feels like depth boundaries)
+    // Neon edges
     const edgeGeo = new THREE.BoxGeometry(0.16, 0.12, 260);
     const edgeMatL = new THREE.MeshStandardMaterial({ color: 0x071025, emissive: 0x7cf7ff, emissiveIntensity: 2.4 });
     const edgeMatR = new THREE.MeshStandardMaterial({ color: 0x071025, emissive: 0xff4dff, emissiveIntensity: 2.4 });
@@ -142,8 +147,6 @@ export class Renderer3D {
 
   makeLaneLines() {
     const group = new THREE.Group();
-
-    // Thinner + raised lane lines, emissive for neon feel
     const lineGeo = new THREE.BoxGeometry(0.05, 0.02, 260);
     const lineMat = new THREE.MeshStandardMaterial({
       color: 0x071025,
@@ -171,7 +174,6 @@ export class Renderer3D {
 
   makeRails() {
     const group = new THREE.Group();
-
     const railGeo = new THREE.BoxGeometry(0.25, 0.25, 260);
     const railMat = new THREE.MeshStandardMaterial({
       color: 0x071025,
@@ -197,7 +199,6 @@ export class Renderer3D {
 
   makePosts() {
     const group = new THREE.Group();
-
     const geo = new THREE.BoxGeometry(0.25, 2.5, 0.25);
     const mat = new THREE.MeshStandardMaterial({
       color: 0x071025,
@@ -207,7 +208,6 @@ export class Renderer3D {
       metalness: 0.05
     });
 
-    // Posts placed along the road edges for parallax
     for (let i = 0; i < 80; i++) {
       const z = -10 - i * 3.2;
 
@@ -256,7 +256,6 @@ export class Renderer3D {
     canopy.position.set(0, 0.62, 0.06);
     group.add(canopy);
 
-    // tail glow
     const glowGeo = new THREE.BoxGeometry(1.05, 0.12, 0.25);
     const glowMat = new THREE.MeshStandardMaterial({ color: 0x071025, emissive: 0xff4dff, emissiveIntensity: 3.2 });
     const glow = new THREE.Mesh(glowGeo, glowMat);
@@ -265,7 +264,6 @@ export class Renderer3D {
 
     group.position.set(0, 0, 0);
 
-    // Shadows on player meshes
     group.traverse(obj => {
       if (obj.isMesh) obj.castShadow = true;
     });
@@ -308,7 +306,6 @@ export class Renderer3D {
       group.add(m);
     }
 
-    // Shadows
     group.traverse(obj => {
       if (obj.isMesh) obj.castShadow = true;
     });
@@ -333,12 +330,7 @@ export class Renderer3D {
 
   makeBuff(type) {
     const geo = new THREE.IcosahedronGeometry(0.5, 0);
-    const emissiveMap = {
-      magnet: 0x7cf7ff,
-      shield: 0x2a6cff,
-      scorex2: 0xff4dff,
-      nitro: 0xffc14d
-    };
+    const emissiveMap = { magnet: 0x7cf7ff, shield: 0x2a6cff, scorex2: 0xff4dff, nitro: 0xffc14d };
     const mat = new THREE.MeshStandardMaterial({
       color: 0x071025,
       metalness: 0.2,
@@ -351,59 +343,46 @@ export class Renderer3D {
     return mesh;
   }
 
-  // ---------- FX ----------
-
+  // FX
   onNearMiss() {
-    this.shakeT = 0.22;
-    this.shakeAmt = 0.12;
+    this.shakeT = 0.18;
+    this.shakeAmt = 0.10;
   }
 
-  // ---------- RENDER LOOP ----------
-
   render(state, dt) {
-    // Strong speed-based FOV (depth + speed feel)
     const speedFeel = clamp01((state.player.speed - 12) / 24);
     const targetFov = 80 + speedFeel * 8 + (state.player.nitro.t > 0 ? 10 : 0);
     this.camera.fov = this.camera.fov + (targetFov - this.camera.fov) * 0.08;
     this.camera.updateProjectionMatrix();
 
-    // Player lean during drift
+    // Player
     const lean = state.player.drift.amount * state.player.drift.direction * 0.22;
     this.playerMesh.rotation.z = this.playerMesh.rotation.z + (lean - this.playerMesh.rotation.z) * 0.2;
 
-    // Invuln flicker
     const inv = state.player.invulnT > 0;
     this.playerMesh.visible = inv ? (Math.floor(state.t * 18) % 2 === 0) : true;
 
-    // Player position
     this.playerMesh.position.set(state.player.x, 0, 0);
 
-    // Camera follow + sway (motion parallax)
+    // Camera follow (parallax)
     const targetCamX = state.player.x * 0.35;
     this.camera.position.x += (targetCamX - this.camera.position.x) * 0.08;
 
+    // Roll
     const roll = state.player.drift.amount * state.player.drift.direction * 0.12;
     this.camera.rotation.z += (roll - this.camera.rotation.z) * 0.06;
 
-    // Camera shake
+    // Shake (camera only; road is static so shadow won't drift)
     if (this.shakeT > 0) {
       this.shakeT -= dt;
-      const s = this.shakeAmt * (this.shakeT / 0.22);
+      const s = this.shakeAmt * (this.shakeT / 0.18);
       this.camera.position.x += (Math.random() - 0.5) * s;
       this.camera.position.y = 2.2 + (Math.random() - 0.5) * s;
     } else {
       this.camera.position.y += (2.2 - this.camera.position.y) * 0.12;
     }
 
-    // Keep camera looking down the road always
     this.camera.lookAt(0, 0.6, -30);
-
-    // Scroll world with distance (keeps parallax objects moving)
-    const scroll = (state.distance % 6);
-    this.road.position.z = -120 - scroll;
-    this.laneLines.position.z = -120 - scroll;
-    this.rails.position.z = -120 - scroll;
-    this.posts.position.z = -(state.distance % 3.2);
 
     // Obstacles
     while (this.obsMeshes.length < state.obstacles.length) {
@@ -469,20 +448,14 @@ export class Renderer3D {
   }
 }
 
-// ---------- helpers ----------
+// helpers
 function clamp01(v) { return Math.max(0, Math.min(1, v)); }
-
 function disposeMesh(m) {
   if (!m) return;
   if (m.geometry) m.geometry.dispose?.();
   if (m.material) m.material.dispose?.();
 }
-
 function disposeGroup(g) {
   if (!g) return;
-  g.traverse(obj => {
-    if (obj.isMesh) {
-      disposeMesh(obj);
-    }
-  });
+  g.traverse(obj => { if (obj.isMesh) disposeMesh(obj); });
 }
