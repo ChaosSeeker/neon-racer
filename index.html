@@ -9,6 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
 
+  <!-- Supabase JS (no manual download/upload needed) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root{
       --bg:#060814; --panel:#0b1230;
@@ -243,7 +246,7 @@
       background:#050814;
     }
 
-    /* Premium joystick (mobile) */
+    /* joystick */
     .joystickWrap{
       position:absolute;
       left: max(12px, env(safe-area-inset-left));
@@ -299,7 +302,7 @@
       .joystickWrap{display:block}
     }
 
-    /* Touch action buttons (mobile) */
+    /* touch buttons */
     .touchBtns{
       position:absolute;
       right: max(12px, env(safe-area-inset-right));
@@ -324,9 +327,7 @@
       line-height:1.05;
       flex-direction:column;
     }
-    .touchBtn:active{
-      transform:translateY(1px) scale(0.99);
-    }
+    .touchBtn:active{ transform:translateY(1px) scale(0.99); }
     .touchBtn.on{
       background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.18), rgba(124,255,234,.20) 45%, rgba(0,0,0,.25));
       border-color:rgba(124,255,234,.45);
@@ -511,10 +512,6 @@
         We store player name, best score, coins, missions, crate state, skins, and ghost data in your browser (localStorage).
         Leaderboard stores your name + best score online (if enabled).
       </p>
-      <p class="small" style="margin-top:10px">
-        Optional audio files: <b>/assets/bgm.mp3</b>, <b>/assets/sfx_coin.mp3</b>, <b>/assets/sfx_pickup.mp3</b>,
-        <b>/assets/sfx_crash.mp3</b>, <b>/assets/sfx_bonus.mp3</b>
-      </p>
     </div>
   </div>
 
@@ -532,6 +529,7 @@
           <div class="pill" id="hudCombo" style="display:none">🔥 Combo <b id="hudComboV">x1</b></div>
           <div class="pill" id="hudBonus" style="display:none">BONUS <b id="hudBonusT">12.0</b>s</div>
           <div class="pill" id="hudGhost" style="display:none">👻 Ghost <b>ON</b></div>
+          <div class="pill" id="hudDrift" style="display:none">🌀 Drift <b id="hudDriftV">0%</b></div>
         </div>
         <div class="hudRight">
           <button class="menuBtn" id="menuBtn" title="Menu">☰</button>
@@ -548,7 +546,7 @@
         </div>
       </div>
 
-      <!-- Touch Buttons (mobile) -->
+      <!-- Touch Buttons -->
       <div class="touchBtns" id="touchBtns">
         <button class="touchBtn" id="nitroTouch" aria-label="Nitro">🚀<br/>Nitro</button>
         <button class="touchBtn" id="driftTouch" aria-label="Drift">🌀<br/>Drift</button>
@@ -641,30 +639,41 @@
   const SUPABASE_URL = "https://dnyibstgahnjbkjo.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_1PLhDg4aoFucc0-7qWH0KA_unYKueat";
 
-  const SB = {
-    enabled: () => Boolean(SUPABASE_URL && SUPABASE_ANON_KEY),
-    headers: () => ({
-      "apikey": SUPABASE_ANON_KEY,
-      "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-      "Content-Type": "application/json"
-    }),
-    async rpcUpsert(name, score){
-      if (!this.enabled()) return;
-      await fetch(`${SUPABASE_URL}/rest/v1/rpc/upsert_leaderboard`,{
-        method:"POST",
-        headers:this.headers(),
-        body: JSON.stringify({ p_name:name, p_score:score })
-      });
-    },
-    async top10(){
-      if (!this.enabled()) return null;
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?select=name,score&order=score.desc&limit=10`,{
-        headers:this.headers()
-      });
-      if(!res.ok) throw new Error("lb_fetch");
-      return await res.json();
-    }
-  };
+  // You should have a table: leaderboard(name text primary key or unique, score int, updated_at timestamptz default now())
+  // If name isn't unique, leaderboards will show duplicates. Best setup: name UNIQUE.
+  const sb = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+  async function lbTop10(){
+    if(!sb) return null;
+    const { data, error } = await sb.from("leaderboard")
+      .select("name,score")
+      .order("score", { ascending:false })
+      .limit(10);
+    if(error) throw error;
+    return data || [];
+  }
+
+  async function lbSubmit(name, score){
+    if(!sb) return;
+    const nm = (name || "Gamer").trim().slice(0,18);
+    const sc = Math.max(0, Math.floor(score||0));
+
+    // Try RPC if you have it; fallback to upsert.
+    // RPC expects: upsert_leaderboard(p_name text, p_score int)
+    try{
+      const { error } = await sb.rpc("upsert_leaderboard", { p_name:nm, p_score:sc });
+      if(!error) return;
+    }catch{}
+
+    // Fallback: upsert on name
+    const { error } = await sb.from("leaderboard").upsert(
+      { name:nm, score:sc, updated_at:new Date().toISOString() },
+      { onConflict:"name" }
+    );
+    if(error) throw error;
+  }
 
   // =========================
   // DOM
@@ -725,6 +734,8 @@
   const hudCombo = document.getElementById("hudCombo");
   const hudComboV = document.getElementById("hudComboV");
   const hudGhost = document.getElementById("hudGhost");
+  const hudDrift = document.getElementById("hudDrift");
+  const hudDriftV = document.getElementById("hudDriftV");
 
   const menuBtn = document.getElementById("menuBtn");
   const overlay = document.getElementById("overlay");
@@ -742,11 +753,9 @@
   const menuBest = document.getElementById("menuBest");
   const menuRank = document.getElementById("menuRank");
 
-  const joystickWrap = document.getElementById("joystickWrap");
   const joyBase = document.getElementById("joyBase");
   const joyStick = document.getElementById("joyStick");
 
-  const touchBtns = document.getElementById("touchBtns");
   const nitroTouch = document.getElementById("nitroTouch");
   const driftTouch = document.getElementById("driftTouch");
 
@@ -787,11 +796,9 @@
     const deep=`instagram://direct/new?username=${encodeURIComponent(username)}`;
     const web1=`https://ig.me/m/${encodeURIComponent(username)}`;
     const web2=`https://www.instagram.com/direct/new/?username=${encodeURIComponent(username)}`;
-
     const a=document.createElement("a");
     a.href=deep; a.style.display="none";
     document.body.appendChild(a); a.click(); a.remove();
-
     setTimeout(()=>{
       const w=window.open(web1,"_blank","noopener,noreferrer");
       if(!w) location.href=web2;
@@ -806,82 +813,260 @@
   wireInputFocus(nameInput);
 
   // =========================
-  // AUDIO (optional assets/*)
+  // BUILT-IN AUDIO (NO FILES)
   // =========================
-  const SETTINGS_KEY = "neon_racer_settings_v2";
+  const SETTINGS_KEY = "neon_racer_settings_v3";
   let settings = (() => {
     try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || "null"); } catch { return null; }
-  })() || { musicOn:true, sfxOn:true, musicVol:0.55, sfxVol:0.85 };
+  })() || { audioOn:true, musicVol:0.35, sfxVol:0.6 };
 
   function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
 
-  let audioReady = false;
-  const audio = {
-    bgm: new Audio("assets/bgm.mp3"),
-    sfx: {
-      coin:  new Audio("assets/sfx_coin.mp3"),
-      pickup:new Audio("assets/sfx_pickup.mp3"),
-      crash: new Audio("assets/sfx_crash.mp3"),
-      bonus: new Audio("assets/sfx_bonus.mp3"),
-      crate: new Audio("assets/sfx_bonus.mp3"),
-    }
+  let ac = null;
+  let master = null;
+  let musicBus = null;
+  let sfxBus = null;
+  let musicOn = true;
+
+  // Simple outrun-style step sequencer
+  const Music = {
+    tempo: 110,
+    playing:false,
+    nextTime:0,
+    step:0,
+    timer:null,
+    // synth nodes
+    bass:null,
+    lead:null,
+    hat:null,
   };
 
-  function applyAudioSettings(){
-    audio.bgm.loop = true;
-    audio.bgm.volume = settings.musicOn ? settings.musicVol : 0;
-    for(const k in audio.sfx){
-      audio.sfx[k].volume = settings.sfxOn ? settings.sfxVol : 0;
-    }
+  function ensureAudioContext(){
+    if(ac) return;
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain();
+    master.gain.value = settings.audioOn ? 1 : 0;
+    master.connect(ac.destination);
+
+    musicBus = ac.createGain();
+    sfxBus = ac.createGain();
+    musicBus.gain.value = settings.musicVol;
+    sfxBus.gain.value = settings.sfxVol;
+
+    musicBus.connect(master);
+    sfxBus.connect(master);
   }
 
-  async function initAudioFromGesture(){
-    if(audioReady) return;
-    audioReady = true;
-    applyAudioSettings();
-    try{
-      audio.bgm.muted = true;
-      await audio.bgm.play();
-      audio.bgm.pause();
-      audio.bgm.currentTime = 0;
-      audio.bgm.muted = false;
-    }catch{}
-  }
-
-  function playBgm(){
-    if(!settings.musicOn) return;
-    applyAudioSettings();
-    audio.bgm.play().catch(()=>{});
-  }
-  function pauseBgm(){ audio.bgm.pause(); }
-  function sfx(name){
-    if(!settings.sfxOn) return;
-    const a = audio.sfx[name];
-    if(!a) return;
-    try{ a.currentTime = 0; a.play().catch(()=>{}); }catch{}
+  function setAudioEnabled(on){
+    settings.audioOn = on;
+    saveSettings();
+    if(master) master.gain.value = on ? 1 : 0;
+    syncAudioBtn();
+    if(!on) stopMusic();
   }
 
   function syncAudioBtn(){
-    audioBtn.textContent = (settings.musicOn || settings.sfxOn) ? "🔊 Audio" : "🔇 Muted";
+    audioBtn.textContent = settings.audioOn ? "🔊 Audio" : "🔇 Muted";
   }
   syncAudioBtn();
 
+  function midiToFreq(m){ return 440 * Math.pow(2, (m-69)/12); }
+
+  function playSfx(type){
+    if(!settings.audioOn) return;
+    ensureAudioContext();
+    const now = ac.currentTime;
+
+    const g = ac.createGain();
+    g.connect(sfxBus);
+
+    if(type==="coin"){
+      const o = ac.createOscillator();
+      o.type="triangle";
+      o.frequency.setValueAtTime(880, now);
+      o.frequency.exponentialRampToValueAtTime(1320, now+0.06);
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(0.35, now+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, now+0.12);
+      o.connect(g); o.start(now); o.stop(now+0.13);
+      return;
+    }
+
+    if(type==="pickup"){
+      const o = ac.createOscillator();
+      o.type="sawtooth";
+      o.frequency.setValueAtTime(520, now);
+      o.frequency.exponentialRampToValueAtTime(1040, now+0.08);
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(0.28, now+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, now+0.18);
+      o.connect(g); o.start(now); o.stop(now+0.2);
+      return;
+    }
+
+    if(type==="crash"){
+      // noise burst using buffer
+      const dur = 0.25;
+      const buf = ac.createBuffer(1, Math.floor(ac.sampleRate*dur), ac.sampleRate);
+      const data = buf.getChannelData(0);
+      for(let i=0;i<data.length;i++){
+        const t=i/data.length;
+        data[i] = (Math.random()*2-1) * Math.pow(1-t, 2.8);
+      }
+      const src = ac.createBufferSource();
+      src.buffer = buf;
+
+      const f = ac.createBiquadFilter();
+      f.type="lowpass";
+      f.frequency.setValueAtTime(1400, now);
+      f.frequency.exponentialRampToValueAtTime(220, now+dur);
+
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(0.55, now+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, now+dur);
+
+      src.connect(f); f.connect(g);
+      src.start(now); src.stop(now+dur);
+      return;
+    }
+
+    if(type==="bonus" || type==="crate"){
+      const o = ac.createOscillator();
+      o.type="square";
+      o.frequency.setValueAtTime(660, now);
+      o.frequency.exponentialRampToValueAtTime(990, now+0.10);
+      o.frequency.exponentialRampToValueAtTime(1320, now+0.22);
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(0.32, now+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, now+0.35);
+      o.connect(g); o.start(now); o.stop(now+0.38);
+      return;
+    }
+  }
+
+  function startMusic(){
+    if(!settings.audioOn) return;
+    ensureAudioContext();
+    if(Music.playing) return;
+    Music.playing=true;
+    Music.step=0;
+    Music.nextTime = ac.currentTime + 0.05;
+
+    // Bass
+    const bass = ac.createOscillator();
+    bass.type="sawtooth";
+    const bassGain = ac.createGain();
+    bassGain.gain.value = 0.0;
+    bass.connect(bassGain);
+    bassGain.connect(musicBus);
+    bass.start();
+
+    // Lead
+    const lead = ac.createOscillator();
+    lead.type="square";
+    const leadGain = ac.createGain();
+    leadGain.gain.value = 0.0;
+    lead.connect(leadGain);
+    leadGain.connect(musicBus);
+    lead.start();
+
+    // Hat (noise)
+    const hatGain = ac.createGain();
+    hatGain.gain.value = 0.0;
+    hatGain.connect(musicBus);
+
+    Music.bass = { o:bass, g:bassGain };
+    Music.lead = { o:lead, g:leadGain };
+    Music.hat  = { g:hatGain };
+
+    function scheduleStep(){
+      if(!Music.playing) return;
+
+      const now = ac.currentTime;
+      const secondsPerBeat = 60 / Music.tempo;
+      const stepDur = secondsPerBeat / 2; // 8th notes
+      const scheduleAhead = 0.18;
+
+      while(Music.nextTime < now + scheduleAhead){
+        const st = Music.step % 16;
+
+        // Pattern (outrun-ish)
+        const bassNotes = [45,45,45,45, 43,43,43,43, 40,40,40,40, 43,43,43,43]; // A G E G (ish)
+        const leadNotes = [69,72,76,72, 71,74,78,74, 69,72,76,72, 71,74,78,74];
+
+        // Bass thump every step
+        const bn = bassNotes[st];
+        Music.bass.o.frequency.setValueAtTime(midiToFreq(bn), Music.nextTime);
+        Music.bass.g.gain.setValueAtTime(0.0001, Music.nextTime);
+        Music.bass.g.gain.exponentialRampToValueAtTime(0.22, Music.nextTime+0.01);
+        Music.bass.g.gain.exponentialRampToValueAtTime(0.0001, Music.nextTime+stepDur*0.9);
+
+        // Lead every other step
+        if(st % 2 === 0){
+          const ln = leadNotes[st];
+          Music.lead.o.frequency.setValueAtTime(midiToFreq(ln), Music.nextTime);
+          Music.lead.g.gain.setValueAtTime(0.0001, Music.nextTime);
+          Music.lead.g.gain.exponentialRampToValueAtTime(0.11, Music.nextTime+0.01);
+          Music.lead.g.gain.exponentialRampToValueAtTime(0.0001, Music.nextTime+stepDur*0.6);
+        }
+
+        // Hat on offbeats
+        if(st % 2 === 1){
+          // tiny noise click
+          const dur = 0.04;
+          const buf = ac.createBuffer(1, Math.floor(ac.sampleRate*dur), ac.sampleRate);
+          const data = buf.getChannelData(0);
+          for(let i=0;i<data.length;i++){
+            const t=i/data.length;
+            data[i] = (Math.random()*2-1) * Math.pow(1-t, 6);
+          }
+          const src = ac.createBufferSource();
+          src.buffer = buf;
+
+          const hp = ac.createBiquadFilter();
+          hp.type="highpass";
+          hp.frequency.setValueAtTime(4000, Music.nextTime);
+
+          Music.hat.g.gain.setValueAtTime(0.0001, Music.nextTime);
+          Music.hat.g.gain.exponentialRampToValueAtTime(0.12, Music.nextTime+0.005);
+          Music.hat.g.gain.exponentialRampToValueAtTime(0.0001, Music.nextTime+dur);
+
+          src.connect(hp);
+          hp.connect(Music.hat.g);
+          src.start(Music.nextTime);
+          src.stop(Music.nextTime+dur);
+        }
+
+        Music.nextTime += stepDur;
+        Music.step++;
+      }
+
+      Music.timer = setTimeout(scheduleStep, 25);
+    }
+
+    scheduleStep();
+  }
+
+  function stopMusic(){
+    Music.playing=false;
+    if(Music.timer) clearTimeout(Music.timer);
+    Music.timer=null;
+    try{ Music.bass?.o?.stop(); }catch{}
+    try{ Music.lead?.o?.stop(); }catch{}
+    Music.bass=null; Music.lead=null; Music.hat=null;
+  }
+
   audioBtn.addEventListener("click", async ()=>{
-    await initAudioFromGesture();
-    const next = !(settings.musicOn || settings.sfxOn);
-    settings.musicOn = next;
-    settings.sfxOn = next;
-    saveSettings();
-    applyAudioSettings();
-    if(running && !paused && next) playBgm(); else pauseBgm();
-    syncAudioBtn();
-    toast(next ? "Audio ON" : "Muted");
+    ensureAudioContext();
+    if(ac.state === "suspended") await ac.resume().catch(()=>{});
+    setAudioEnabled(!settings.audioOn);
+    toast(settings.audioOn ? "Audio ON" : "Muted");
   });
 
   // =========================
   // PROFILE
   // =========================
-  const PROFILE_KEY="neon_racer_profile_v3";
+  const PROFILE_KEY="neon_racer_profile_v4";
   function loadProfile(){
     try{ return JSON.parse(localStorage.getItem(PROFILE_KEY)||"null"); }catch{ return null; }
   }
@@ -907,7 +1092,7 @@
     ownedSkins:["common_500_c0_d0"],
     skin:"common_500_c0_d0",
     lastCrateDate:null,
-    ghost:null
+    ghost:null // { dt:0.08, samples:[{t,x,y,rot}] }
   };
 
   profile.ownedSkins ||= ["common_500_c0_d0"];
@@ -1270,7 +1455,7 @@
     renderShop(shopEl); renderShop(shop2El);
     renderSkins(skinsEl); renderSkins(skins2El);
     syncCrateUI();
-    sfx("crate");
+    playSfx("crate");
     toast(msg, 2200);
   }
 
@@ -1286,38 +1471,35 @@
       where.appendChild(row);
     });
   }
-  function showLeaderboardComingSoon(){
-    lbStatusEl.textContent = "Leaderboard coming soon";
-    lbStatus2El.textContent = "Leaderboard coming soon";
-    lbListEl.innerHTML = "";
-    lbList2El.innerHTML = "";
-  }
+
   async function syncLeaderboard(){
-    if(!SB.enabled()){
-      showLeaderboardComingSoon();
+    if(!sb){
+      lbStatusEl.textContent = "Leaderboard coming soon";
+      lbStatus2El.textContent = "Leaderboard coming soon";
+      lbListEl.innerHTML="";
+      lbList2El.innerHTML="";
       return;
     }
     try{
       lbStatusEl.textContent = "Loading…";
       lbStatus2El.textContent = "Loading…";
-      const top = await SB.top10();
-      const list = Array.isArray(top) ? top : [];
-      if(!list.length){
-        showLeaderboardComingSoon();
-        return;
-      }
-      lbStatusEl.textContent = "Live leaderboard:";
-      lbStatus2El.textContent = "Live leaderboard:";
+      const list = await lbTop10();
+      lbStatusEl.textContent = list.length ? "Live leaderboard:" : "No scores yet.";
+      lbStatus2El.textContent = list.length ? "Live leaderboard:" : "No scores yet.";
       renderLeaderboard(lbListEl, list);
       renderLeaderboard(lbList2El, list);
-    }catch{
-      showLeaderboardComingSoon();
+    }catch(e){
+      lbStatusEl.textContent = "Leaderboard error (check policies/RLS)";
+      lbStatus2El.textContent = "Leaderboard error (check policies/RLS)";
+      lbListEl.innerHTML="";
+      lbList2El.innerHTML="";
     }
   }
+
   async function submitScoreOnline(){
     try{
-      if(SB.enabled()){
-        await SB.rpcUpsert(profile.name || "Gamer", profile.bestScore || 0);
+      if(sb){
+        await lbSubmit(profile.name || "Gamer", profile.bestScore || 0);
       }
     }catch{}
   }
@@ -1401,7 +1583,7 @@
   const ro = new ResizeObserver(()=>resizeCanvas());
   ro.observe(canvas);
 
-  // Keyboard input (desktop)
+  // Keyboard input
   const keys = new Set();
   window.addEventListener("keydown",(e)=>{
     if(inputFocus) return;
@@ -1413,7 +1595,7 @@
   });
   window.addEventListener("keyup",(e)=>keys.delete(e.key.toLowerCase()));
 
-  // Joystick state (mobile)
+  // Joystick state
   const joy = { active:false, x:0, y:0, id:null, baseRect:null };
   function setStickPos(nx, ny){
     joy.x = clamp(nx, -1, 1);
@@ -1463,14 +1645,10 @@
     setStickPos(nx, ny);
   }
 
-  // Touch button states (mobile)
+  // Touch button states
   const touch = { nitro:false, drift:false };
-  function setBtnState(btn, on){
-    if(!btn) return;
-    btn.classList.toggle("on", !!on);
-  }
+  function setBtnState(btn, on){ btn.classList.toggle("on", !!on); }
   function bindHoldButton(btn, key){
-    if(!btn) return;
     btn.addEventListener("pointerdown", (e)=>{
       e.preventDefault();
       btn.setPointerCapture?.(e.pointerId);
@@ -1506,7 +1684,7 @@
   };
 
   // Entities
-  const player = { x:0, y:0, w:0, h:0, vx:0, vy:0, lane:1 };
+  const player = { x:0, y:0, w:0, h:0, vx:0, vy:0 };
   const traffic=[], coins=[], pickups=[];
   const PICK_TYPES = ["shield","magnet","slowmo","nitro","invisibility"];
 
@@ -1530,10 +1708,6 @@
   // Spawners
   let spawnT=0, coinT=0, pickT=0;
   let roadScroll=0;
-
-  // Praise flags
-  let praised1000=false;
-  let praised50cars=false;
 
   // COMBO
   let combo=0;
@@ -1561,12 +1735,18 @@
     }
   }
 
-  // GHOST MODE (race your best run)
-  let ghostPlay=null; // { xs:[], dt:0.08, t:0 }
-  let ghostRec=null;  // { xs:[], dt:0.08, acc:0 }
+  // =========================
+  // FIXED GHOST SYNC (records x + y + rot on gameplay time)
+  // =========================
+  let gameplayTime = 0; // only advances while actually playing (no pause, no hitstop, no countdown)
+  let ghostPlay=null;   // { dt, samples:[{t,x,y,r}], t0 }
+  let ghostRec=null;    // { dt, acc, samples:[] }
   function startGhostPlayback(){
-    if(profile.ghost && Array.isArray(profile.ghost.xs) && profile.ghost.xs.length>20){
-      ghostPlay = { xs: profile.ghost.xs.slice(0), dt: profile.ghost.dt || 0.08, t:0 };
+    if(profile.ghost && Array.isArray(profile.ghost.samples) && profile.ghost.samples.length>30){
+      ghostPlay = {
+        dt: profile.ghost.dt || 0.08,
+        samples: profile.ghost.samples.slice(0),
+      };
       hudGhost.style.display="inline-flex";
     }else{
       ghostPlay = null;
@@ -1574,48 +1754,80 @@
     }
   }
   function startGhostRecording(){
-    ghostRec = { xs:[], dt:0.08, acc:0 };
+    ghostRec = { dt:0.08, acc:0, samples:[] };
   }
-  function recordGhost(dt){
+  function recordGhost(dt, carRot){
     if(!ghostRec) return;
     ghostRec.acc += dt;
     while(ghostRec.acc >= ghostRec.dt){
       ghostRec.acc -= ghostRec.dt;
-      ghostRec.xs.push(player.x);
-      if(ghostRec.xs.length > 2400) ghostRec.xs.shift();
+      ghostRec.samples.push({ t: gameplayTime, x: player.x, y: player.y, r: carRot || 0 });
+      if(ghostRec.samples.length > 2600) ghostRec.samples.shift();
     }
   }
   function commitGhostIfBest(){
     const sc = Math.floor(score);
     if(!ghostRec) return;
-    if(sc >= (profile.bestScore||0) && ghostRec.xs.length>30){
-      profile.ghost = { xs: ghostRec.xs.slice(0), dt: ghostRec.dt };
+    if(sc >= (profile.bestScore||0) && ghostRec.samples.length>40){
+      profile.ghost = { dt: ghostRec.dt, samples: ghostRec.samples.slice(0) };
       saveProfile();
     }
   }
+  function sampleGhost(t){
+    if(!ghostPlay) return null;
+    const s = ghostPlay.samples;
+    if(!s.length) return null;
+    if(t <= s[0].t) return s[0];
+    if(t >= s[s.length-1].t) return s[s.length-1];
 
-  // VFX: drift + shake + hit-stop
-  let driftLean = 0;
+    // binary search
+    let lo=0, hi=s.length-1;
+    while(hi-lo>1){
+      const mid=(lo+hi)>>1;
+      if(s[mid].t <= t) lo=mid; else hi=mid;
+    }
+    const a=s[lo], b=s[hi];
+    const u = (t - a.t) / Math.max(0.0001, (b.t - a.t));
+    return { t, x: lerp(a.x,b.x,u), y: lerp(a.y,b.y,u), r: lerp(a.r,b.r,u) };
+  }
+
+  // =========================
+  // VFX + DRIFT "REAL PATCH"
+  // =========================
+  let driftLean = 0;      // visual lean (rotation)
+  let driftSlip = 0;      // 0..1 traction loss amount
+  let driftHeat = 0;      // 0..1 intensity for sparks/smoke
   let shakeT = 0;
   let shakePow = 0;
   let hitStop = 0;
+
   const smokes = [];
   const skids = [];
+  const sparks = [];
+  const trail = [];
 
-  function addSmoke(x,y, vx,vy){
-    smokes.push({ x,y, vx,vy, life: 1 });
-    if(smokes.length>120) smokes.shift();
+  function addSmoke(x,y, vx,vy, size=1){
+    smokes.push({ x,y, vx,vy, life: 1, size });
+    if(smokes.length>160) smokes.shift();
   }
   function addSkid(x1,y1,x2,y2){
     skids.push({ x1,y1,x2,y2, life: 1 });
-    if(skids.length>120) skids.shift();
+    if(skids.length>160) skids.shift();
+  }
+  function addSpark(x,y, vx,vy){
+    sparks.push({ x,y, vx,vy, life: 1 });
+    if(sparks.length>180) sparks.shift();
+  }
+  function addTrailPoint(){
+    trail.push({ x: player.x, y: player.y + player.h*0.15, life: 1 });
+    if(trail.length > 44) trail.shift();
   }
   function startShake(pow=1){
     shakeT = Math.max(shakeT, 0.18);
     shakePow = Math.max(shakePow, pow);
   }
 
-  // Drawing helpers
+  // collision helpers
   function rectHit(ax,ay,aw,ah, bx,by,bw,bh){
     const aL=ax-aw/2, aR=ax+aw/2, aT=ay-ah/2, aB=ay+ah/2;
     const bL=bx-bw/2, bR=bx+bw/2, bT=by-bh/2, bB=by+bh/2;
@@ -1639,8 +1851,7 @@
     player.w = clamp(vw*0.065, 36, 54);
     player.h = player.w * 1.75;
     player.y = vh*0.78;
-    player.lane = 1;
-    player.x = laneCenter(player.lane);
+    player.x = laneCenter(1);
     player.vx = 0;
     player.vy = 0;
   }
@@ -1673,19 +1884,18 @@
     buffBackup=null;
     nextBonusAt = 500;
 
-    praised1000=false; praised50cars=false;
-
     combo=0; comboTimer=0; lastNearMissId=-1;
 
+    // ghost
+    gameplayTime = 0;
     startGhostPlayback();
     startGhostRecording();
 
-    // VFX reset
-    driftLean = 0;
-    shakeT = 0; shakePow = 0;
-    hitStop = 0;
-    smokes.length = 0;
-    skids.length = 0;
+    // vfx
+    driftLean = 0; driftSlip = 0; driftHeat = 0;
+    shakeT=0; shakePow=0;
+    hitStop=0;
+    smokes.length=0; skids.length=0; sparks.length=0; trail.length=0;
 
     resetStick();
   }
@@ -1706,7 +1916,9 @@
     gameScreen.setAttribute("aria-hidden","false");
 
     requestFS();
-    initAudioFromGesture().then(()=>playBgm());
+    ensureAudioContext();
+    ac.resume?.().catch(()=>{});
+    startMusic();
 
     requestAnimationFrame(() => {
       resizeCanvas();
@@ -1725,7 +1937,7 @@
     gameScreen.style.display="none";
     gameScreen.setAttribute("aria-hidden","true");
     home.style.display="grid";
-    pauseBgm();
+    stopMusic();
     syncHomeUI();
     syncLeaderboard();
   }
@@ -1736,7 +1948,8 @@
 
     paused=true;
     overlay.style.display="grid";
-    pauseBgm();
+    // keep music low while paused? (simple: stop)
+    stopMusic();
 
     reviveBtn.disabled = true;
     reviveHint.textContent = "";
@@ -1752,7 +1965,7 @@
     if(!running) return;
     overlay.style.display="none";
     paused=false;
-    playBgm();
+    if(settings.audioOn) startMusic();
   }
   function togglePause(){
     if(!running) return;
@@ -1764,7 +1977,6 @@
     const lane=randi(0,laneCount-1);
     const w=clamp(vw*0.06, 34, 50);
     const h=w*1.75;
-
     if(traffic.some(o=>o.lane===lane && o.y < vh*0.20)) return;
 
     traffic.push({
@@ -1804,7 +2016,7 @@
     });
   }
 
-  // Drawing
+  // Drawing helpers
   function roundRect(x,y,w,h,r){
     const rr=Math.min(r,w/2,h/2);
     ctx.beginPath();
@@ -1866,22 +2078,22 @@
     ctx.restore();
   }
 
-  // Neon trail
-  const trail = [];
-  function addTrailPoint(){
-    trail.push({ x: player.x, y: player.y + player.h*0.15, life: 1 });
-    if(trail.length > 36) trail.shift();
+  function hexToRgba(hex, a){
+    const h = hex.replace("#","");
+    const r = parseInt(h.slice(0,2),16);
+    const g = parseInt(h.slice(2,4),16);
+    const b = parseInt(h.slice(4,6),16);
+    return `rgba(${r},${g},${b},${a})`;
   }
+
   function drawTrail(skin){
     if(trail.length < 3) return;
     ctx.save();
-    ctx.globalAlpha = 1;
-
     for(let i=trail.length-1;i>=1;i--){
       const a = trail[i];
       const b = trail[i-1];
       const t = i/(trail.length-1);
-      const alpha = 0.14 + (1-t)*0.22;
+      const alpha = 0.12 + (1-t)*0.22;
       ctx.strokeStyle = `rgba(124,255,234,${alpha})`;
       ctx.lineWidth = 10*(1-t);
       ctx.beginPath();
@@ -1897,26 +2109,19 @@
       ctx.lineTo(b.x,b.y);
       ctx.stroke();
     }
-
     ctx.restore();
   }
 
-  function hexToRgba(hex, a){
-    const h = hex.replace("#","");
-    const r = parseInt(h.slice(0,2),16);
-    const g = parseInt(h.slice(2,4),16);
-    const b = parseInt(h.slice(4,6),16);
-    return `rgba(${r},${g},${b},${a})`;
-  }
-
-  function drawCar(x,y,w,h,isPlayer,glowColor, skinHex, extraAlpha=1, rot=0){
+  function drawCar(x,y,w,h,isPlayer,glowColor, skinHex, extraAlpha=1, rot=0, driftSide=0){
     ctx.save();
     ctx.globalAlpha = extraAlpha;
 
-    if(rot){
+    // driftSide gives that "sliding sideways" illusion (tiny lateral offset)
+    if(rot || driftSide){
       ctx.translate(x,y);
       ctx.rotate(rot);
       ctx.translate(-x,-y);
+      x += driftSide;
     }
 
     ctx.fillStyle="rgba(0,0,0,.35)";
@@ -2042,7 +2247,7 @@
     inBonus=true;
     bonusT=12.0;
     hudBonus.style.display="inline-flex";
-    sfx("bonus");
+    playSfx("bonus");
 
     buffBackup = { shield:buffShield, magnet:buffMagnet, slowmo:buffSlowmo, invisibility:buffInvisibility };
     buffShield=0; buffMagnet=0; buffSlowmo=0; buffInvisibility=0;
@@ -2075,7 +2280,7 @@
 
   function hitCrash(){
     if(invulnT>0) return;
-    sfx("crash");
+    playSfx("crash");
     hitStop = Math.max(hitStop, 0.10);
     startShake(1.0);
 
@@ -2107,7 +2312,7 @@
     running=false;
     paused=true;
     overlay.style.display="grid";
-    pauseBgm();
+    stopMusic();
 
     profile.bankCoins += runCoins;
     const earned = runCoins;
@@ -2148,7 +2353,6 @@
     hudLives.textContent = lives;
     hudRank.textContent = rankFor(profile.bestScore||0);
     hudNitro.textContent = `${Math.round((nitro/1.8)*100)}%`;
-
     if(inBonus) hudBonusT.textContent = bonusT.toFixed(1);
 
     if(combo>0){
@@ -2160,13 +2364,20 @@
 
     hudGhost.style.display = ghostPlay ? "inline-flex" : "none";
 
+    if(driftSlip>0.05){
+      hudDrift.style.display="inline-flex";
+      hudDriftV.textContent = `${Math.round(driftSlip*100)}%`;
+    }else{
+      hudDrift.style.display="none";
+    }
+
     menuPlayer.textContent = profile.name || "Gamer";
     menuBank.textContent = profile.bankCoins || 0;
     menuBest.textContent = profile.bestScore || 0;
     menuRank.textContent = rankFor(profile.bestScore||0);
   }
 
-  // Nitro warp streaks
+  // Warp streaks
   const streaks = Array.from({length: 38}, () => ({
     x: Math.random(), y: Math.random(),
     l: rand(0.18, 0.55),
@@ -2197,13 +2408,13 @@
   let last=performance.now();
 
   function update(dt){
-    // Hit-stop: freeze gameplay briefly for punch
+    // Hit-stop
     if(hitStop > 0){
       hitStop = Math.max(0, hitStop - dt);
       return;
     }
 
-    // Countdown (3,2,1,GO)
+    // Countdown (no gameplay time during it)
     if(countdown && !countdown.done){
       countdown.t += dt;
       if(countdown.t > 0.9){
@@ -2214,7 +2425,10 @@
           countdown.onDone?.();
         }
       }
+      return; // don't run gameplay while countdown shows
     }
+
+    gameplayTime += dt;
 
     invulnT = Math.max(0, invulnT - dt);
 
@@ -2230,7 +2444,7 @@
       buffInvisibility  = Math.max(0, buffInvisibility  - dt);
     }
 
-    // Input: joystick + keyboard
+    // Input
     const kLeft  = keys.has("arrowleft") || keys.has("a");
     const kRight = keys.has("arrowright")|| keys.has("d");
     const kNitro = keys.has("arrowup") || keys.has("w");
@@ -2240,8 +2454,6 @@
     const jy = joy.y;
 
     const steerAxis = clamp((kLeft?-1:0) + (kRight?1:0) + jx, -1, 1);
-
-    // Nitro/Drift are explicit buttons (or keyboard)
     const nitroAxis = kNitro || touch.nitro;
     const driftAxis = kDrift || touch.drift;
 
@@ -2251,29 +2463,6 @@
     else nitro = Math.min(1.8, nitro + dt*0.14);
 
     const effectiveSpeed = speed + (nitroActive ? 105 : 0);
-
-    const obstacleFactor = 0.55 + clamp(score / 6000, 0, 0.45);
-    const obstacleSpeed = effectiveSpeed * obstacleFactor;
-
-    // Player movement (left/right)
-    const steerSpeed = lerp(520, 760, clamp(score/4200, 0, 1));
-    const targetVx = steerAxis * steerSpeed;
-    player.vx = lerp(player.vx, targetVx, 1 - Math.pow(0.0008, dt));
-    player.x += player.vx * dt;
-
-    // Player movement (forward/back from joystick)
-    const fbAxis = clamp(-jy, -1, 1); // up => forward
-    const fbSpeed = lerp(360, 520, clamp(score/4200, 0, 1));
-    const targetVy = fbAxis * fbSpeed;
-    player.vy = lerp(player.vy, targetVy, 1 - Math.pow(0.0012, dt));
-    player.y -= player.vy * dt;
-
-    // Clamp y region
-    const minY = vh*0.58;
-    const maxY = vh*0.86;
-    player.y = clamp(player.y, minY, maxY);
-
-    enforceRoadBarrier();
 
     // Road scroll
     roadScroll += effectiveSpeed*dt;
@@ -2313,8 +2502,75 @@
       if(Math.random()<0.62) spawnPickup();
     }
 
+    // =========================
+    // DRIFT REAL PATCH (traction + slip + yaw)
+    // =========================
+    const driftWanted = driftAxis && !inBonus && Math.abs(steerAxis) > 0.05;
+    const driftTargetSlip = driftWanted ? clamp(Math.abs(steerAxis) * (0.55 + clamp(effectiveSpeed/650,0,0.45)), 0, 1) : 0;
+    driftSlip = lerp(driftSlip, driftTargetSlip, 1 - Math.pow(0.0008, dt));
+    driftHeat = lerp(driftHeat, driftWanted ? driftSlip : 0, 1 - Math.pow(0.0007, dt));
+
+    // Visual yaw (car points a bit different from travel direction)
+    const yawTarget = driftWanted ? (steerAxis * (0.16 + driftSlip*0.14)) : (steerAxis * 0.06);
+    driftLean = lerp(driftLean, yawTarget, 1 - Math.pow(0.0007, dt));
+
+    // Player movement
+    const steerSpeed = lerp(520, 760, clamp(score/4200, 0, 1));
+    const traction = 1 - driftSlip*0.65; // drift reduces traction
+    const response = driftWanted ? 0.55 : 1.0;
+
+    const targetVx = steerAxis * steerSpeed;
+    const smooth = 1 - Math.pow(0.0012, dt * response);
+    player.vx = lerp(player.vx, targetVx, smooth);
+
+    // Add sideways slip: you keep sliding even if you neutral the stick
+    const slipPush = driftWanted ? (steerAxis * steerSpeed * 0.28 * driftSlip) : 0;
+    player.vx += slipPush * dt * 8;
+
+    // Apply traction damp
+    player.vx *= (0.985 + traction*0.01);
+
+    player.x += player.vx * dt;
+
+    // forward/back
+    const fbAxis = clamp(-jy, -1, 1);
+    const fbSpeed = lerp(360, 520, clamp(score/4200, 0, 1));
+    const targetVy = fbAxis * fbSpeed;
+    player.vy = lerp(player.vy, targetVy, 1 - Math.pow(0.0012, dt));
+    player.y -= player.vy * dt;
+
+    // Clamp y
+    const minY = vh*0.58;
+    const maxY = vh*0.86;
+    player.y = clamp(player.y, minY, maxY);
+
+    enforceRoadBarrier();
+
+    // Emit skid/smoke/sparks while drifting hard
+    if(driftWanted && driftSlip > 0.18){
+      if(Math.random() < 0.85){
+        const rearY = player.y + player.h*0.42;
+        const leftX = player.x - player.w*0.28;
+        const rightX= player.x + player.w*0.28;
+        addSkid(leftX, rearY, leftX - steerAxis*6, rearY + 12);
+        addSkid(rightX,rearY, rightX- steerAxis*6, rearY + 12);
+
+        addSmoke(player.x - steerAxis*16, rearY, rand(-20,20), rand(18,48), 1.0 + driftHeat*1.4);
+
+        // Sparks at high speed drift
+        if(effectiveSpeed > 320 && Math.random() < 0.35){
+          const sx = player.x + (steerAxis>0 ? -1 : 1) * player.w*0.22;
+          addSpark(sx, rearY, rand(-80,80) - steerAxis*60, rand(40,120));
+        }
+      }
+      addCombo(Math.random() < 0.10 ? 1 : 0);
+    }
+
     // Move traffic
+    const obstacleFactor = 0.55 + clamp(score / 6000, 0, 0.45);
+    const obstacleSpeed = effectiveSpeed * obstacleFactor;
     const obstacleScale = (!inBonus && buffSlowmo>0) ? 0.20 : 1.0;
+
     for(let i=traffic.length-1;i>=0;i--){
       const t=traffic[i];
 
@@ -2342,7 +2598,7 @@
       if(t.y > vh + 220) traffic.splice(i,1);
     }
 
-    // Coins (MAGNET VACUUM ALL LANES)
+    // Coins (magnet)
     for(let i=coins.length-1;i>=0;i--){
       const c=coins[i];
       c.y += effectiveSpeed*dt*0.90;
@@ -2360,7 +2616,7 @@
           coins.splice(i,1);
           if(inBonus) bonusCollected.coins += c.val;
           else runCoins += c.val;
-          sfx("coin");
+          playSfx("coin");
           if(!inBonus && Math.random()<0.10) addCombo(1);
           continue;
         }
@@ -2379,30 +2635,14 @@
       if(p.y > vh+90) pickups.splice(i,1);
     }
 
-    // Drift VFX lean (smooth)
-    const wantLean = (driftAxis ? clamp(steerAxis, -1, 1) : 0) * 0.22;
-    driftLean = lerp(driftLean, wantLean, 1 - Math.pow(0.0006, dt));
-
-    // Emit skid + smoke when drifting hard
-    if(driftAxis && Math.abs(steerAxis) > 0.45 && !inBonus){
-      if(Math.random() < 0.65){
-        const rearY = player.y + player.h*0.42;
-        const leftX = player.x - player.w*0.28;
-        const rightX= player.x + player.w*0.28;
-        addSkid(leftX, rearY, leftX - steerAxis*4, rearY + 10);
-        addSkid(rightX,rearY, rightX- steerAxis*4, rearY + 10);
-        addSmoke(player.x - steerAxis*14, rearY, rand(-14,14), rand(22,42));
-      }
-    }
-
     // Score + multiplier
     const mult = comboMult();
     let gain = dt * (24 + clamp(effectiveSpeed/55, 0, 10));
     if(nitroActive) gain += dt*7;
-    if(driftAxis && Math.abs(steerAxis) > 0.25) gain += dt*6;
+    if(driftWanted && driftSlip > 0.15) gain += dt*(7 + driftSlip*6);
     score += gain * mult;
 
-    // Close calls (near miss)
+    // Close calls
     if(!inBonus){
       for(const t of traffic){
         const d = distRect(player.x,player.y,player.w,player.h, t.x,t.y,t.w,t.h);
@@ -2418,14 +2658,14 @@
       }
     }
 
-    // Collect coins (normal overlap)
+    // Collect coins (overlap)
     for(let i=coins.length-1;i>=0;i--){
       const c=coins[i];
       if(rectHit(player.x,player.y,player.w*0.92,player.h*0.92, c.x,c.y, c.r*2, c.r*2)){
         coins.splice(i,1);
         if(inBonus) bonusCollected.coins += c.val;
         else runCoins += c.val;
-        sfx("coin");
+        playSfx("coin");
         if(!inBonus && Math.random()<0.10) addCombo(1);
       }
     }
@@ -2436,7 +2676,7 @@
       if(rectHit(player.x,player.y,player.w*0.92,player.h*0.92, p.x,p.y, p.r*2, p.r*2)){
         pickups.splice(i,1);
         applyPickup(p.type);
-        sfx("pickup");
+        playSfx("pickup");
         if(!inBonus) addCombo(1);
       }
     }
@@ -2454,16 +2694,6 @@
     // Missions + saving
     updateMissionsProgress();
 
-    // Praise popups
-    if(!praised1000 && Math.floor(score) >= 1000){
-      praised1000 = true;
-      toastTop("🎉 Well done! 1,000+ points!");
-    }
-    if(!praised50cars && passedCars >= 50){
-      praised50cars = true;
-      toastTop("🔥 Amazing! 50 cars dodged!");
-    }
-
     // best score updates
     const sc=Math.floor(score);
     if(sc > (profile.bestScore||0)){
@@ -2472,54 +2702,58 @@
     }
     saveProfileThrottled(dt);
 
-    // Ghost record
-    recordGhost(dt);
+    // Ghost record (record AFTER applying driftLean so ghost matches drift yaw)
+    recordGhost(dt, driftLean);
 
-    // Trail points
+    // Trail
     if(nitroActive || Math.abs(player.vx) > 100 || mult > 1.2){
       if(Math.random() < 0.70) addTrailPoint();
     }else if(Math.random() < 0.25){
       addTrailPoint();
     }
 
-    // Update VFX particles
+    // Update particles
     for(let i=smokes.length-1;i>=0;i--){
       const s = smokes[i];
-      s.life -= dt*1.6;
+      s.life -= dt*1.4;
       s.x += s.vx*dt;
       s.y += s.vy*dt;
-      s.vy += 12*dt;
+      s.vy += 14*dt;
       if(s.life<=0) smokes.splice(i,1);
     }
     for(let i=skids.length-1;i>=0;i--){
       const s = skids[i];
-      s.life -= dt*0.9;
+      s.life -= dt*0.8;
       if(s.life<=0) skids.splice(i,1);
+    }
+    for(let i=sparks.length-1;i>=0;i--){
+      const s = sparks[i];
+      s.life -= dt*2.6;
+      s.x += s.vx*dt;
+      s.y += s.vy*dt;
+      s.vy += 220*dt;
+      if(s.life<=0) sparks.splice(i,1);
     }
 
     syncHUD();
   }
 
-  function drawGhost(dt){
+  function drawGhost(){
     if(!ghostPlay) return;
-    ghostPlay.t += dt || (1/60);
-    const idx = Math.floor(ghostPlay.t / ghostPlay.dt);
-    if(idx <= 0 || idx >= ghostPlay.xs.length) return;
-
-    const gx = ghostPlay.xs[idx];
-    drawCar(gx, player.y, player.w*0.98, player.h*0.98, false, "rgba(124,255,234,.55)", getSkin().hex, 0.30, 0);
+    const g = sampleGhost(gameplayTime);
+    if(!g) return;
+    const skin = getSkin();
+    // ghost uses same shape but transparent
+    drawCar(g.x, g.y, player.w*0.98, player.h*0.98, false, "rgba(124,255,234,.55)", skin.hex, 0.28, g.r || 0, 0);
   }
 
   function draw(dt){
-    // screen shake
     ctx.save();
     if(shakeT > 0){
       shakeT = Math.max(0, shakeT - (dt || (1/60)));
       const p = (shakeT/0.18);
       const mag = (2 + 8*p) * shakePow;
-      const ox = rand(-mag, mag);
-      const oy = rand(-mag, mag);
-      ctx.translate(ox, oy);
+      ctx.translate(rand(-mag, mag), rand(-mag, mag));
       if(shakeT<=0){ shakePow = 0; }
     }
 
@@ -2546,11 +2780,25 @@
     // Smoke
     for(const s of smokes){
       ctx.save();
+      const size = 10 + (1-s.life)*28*s.size;
       ctx.globalAlpha = 0.10 + s.life*0.25;
       ctx.fillStyle = "rgba(255,255,255,.35)";
       ctx.beginPath();
-      ctx.arc(s.x, s.y, (10 + (1-s.life)*26), 0, Math.PI*2);
+      ctx.arc(s.x, s.y, size, 0, Math.PI*2);
       ctx.fill();
+      ctx.restore();
+    }
+
+    // Sparks
+    for(const s of sparks){
+      ctx.save();
+      ctx.globalAlpha = 0.15 + s.life*0.55;
+      ctx.strokeStyle = "rgba(255,210,77,.95)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(s.x - s.vx*0.03, s.y - s.vy*0.03);
+      ctx.stroke();
       ctx.restore();
     }
 
@@ -2558,15 +2806,19 @@
     for(const p of pickups) drawPickup(p);
 
     for(const t of traffic){
-      drawCar(t.x, t.y, t.w, t.h, false, "rgba(255,106,223,.60)", null, 1, 0);
+      drawCar(t.x, t.y, t.w, t.h, false, "rgba(255,106,223,.60)", null, 1, 0, 0);
     }
 
-    drawGhost(dt);
+    // Ghost (now syncs: x+y+rot by gameplayTime)
+    drawGhost();
 
     drawTrail(skin);
-    drawCar(player.x, player.y, player.w, player.h, true, "rgba(124,255,234,.95)", skin.hex, 1, driftLean);
 
-    // countdown
+    // Player driftSide gives slight lateral slide look
+    const driftSide = driftSlip * (player.vx * 0.004);
+    drawCar(player.x, player.y, player.w, player.h, true, "rgba(124,255,234,.95)", skin.hex, 1, driftLean, driftSide);
+
+    // countdown overlay
     if(countdown && !countdown.done){
       ctx.save();
       ctx.fillStyle="rgba(0,0,0,.35)";
@@ -2580,7 +2832,7 @@
       ctx.restore();
     }
 
-    ctx.restore(); // shake
+    ctx.restore();
   }
 
   function loop(now){
@@ -2619,7 +2871,7 @@
     toast("Revived!");
     syncHomeUI();
     syncHUD();
-    playBgm();
+    if(settings.audioOn) startMusic();
   });
 
   // =========================
@@ -2660,13 +2912,11 @@
   restartBtn.addEventListener("click", ()=>restartRun());
 
   exitBtn.addEventListener("click", async ()=>{
-    // Commit ghost if current run matches/exceeds best
     const sc = Math.floor(score);
     if(running && sc >= (profile.bestScore||0)){
       commitGhostIfBest();
       saveProfile();
     }
-
     await submitScoreOnline();
     await syncLeaderboard();
     exitToHome();
@@ -2686,10 +2936,10 @@
 
   document.addEventListener("visibilitychange", ()=>{
     if(document.hidden){
-      pauseBgm();
+      stopMusic();
       if(running && !paused) openMenu();
     }else{
-      if(running && !paused) playBgm();
+      if(running && !paused && settings.audioOn) startMusic();
     }
   });
 
