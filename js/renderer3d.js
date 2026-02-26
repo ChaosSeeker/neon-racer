@@ -10,6 +10,9 @@ export class Renderer3D {
     this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
     this.renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    // Enable shadows
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     this.camera = new THREE.PerspectiveCamera(75, 1, 0.1, 260);
     this.camera.position.set(0, 2.6, 6.6);
@@ -19,8 +22,18 @@ export class Renderer3D {
     const amb = new THREE.AmbientLight(0x7aa6ff, 0.35);
     this.scene.add(amb);
 
-    const key = new THREE.DirectionalLight(0x9bf8ff, 0.9);
+    const key = new THREE.DirectionalLight(0xffffff, 1.2);
     key.position.set(6, 10, 6);
+    key.castShadow = true;
+    
+    key.shadow.mapSize.set(1024, 1024);
+    key.shadow.camera.near = 0.5;
+    key.shadow.camera.far = 60;
+    key.shadow.camera.left = -10;
+    key.shadow.camera.right = 10;
+    key.shadow.camera.top = 10;
+    key.shadow.camera.bottom = -10;
+    
     this.scene.add(key);
 
     const mag = new THREE.PointLight(0xff4dff, 1.2, 40);
@@ -85,6 +98,7 @@ roadGeo.computeVertexNormals();
       emissiveIntensity: 0.5
     });
     const road = new THREE.Mesh(roadGeo, roadMat);
+    road.receiveShadow = true;
     road.rotation.x = -Math.PI / 2;
     road.position.z = -90;
     group.add(road);
@@ -161,7 +175,13 @@ roadGeo.computeVertexNormals();
     group.add(glow);
 
     group.position.set(0, 0, 0);
-    return group;
+
+// Make car cast shadows
+group.traverse(obj => {
+  if (obj.isMesh) obj.castShadow = true;
+});
+
+return group;
   }
 
   makeObstacle(kind="car") {
@@ -198,7 +218,9 @@ roadGeo.computeVertexNormals();
       m.position.y = 0.55;
       group.add(m);
     }
-
+    group.traverse(obj => {
+  if (obj.isMesh) obj.castShadow = true;
+});
     return group;
   }
 
