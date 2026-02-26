@@ -281,6 +281,7 @@ function loop(now) {
   last = now;
 
   updateInput();
+  applyJoystick(dt);
 
   // update game
   game.update(dt, input);
