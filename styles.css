@@ -111,4 +111,38 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-famil
   background:#070b16aa;border:1px solid #1b2a55;
   padding:10px 12px;border-radius:14px;
 }
+
 .lbRow b{color:var(--accent)}
+
+/* Joystick: small + moveable */
+.joy{
+  position:absolute;
+  left:90px;
+  bottom:90px;
+  width:90px;
+  height:90px;
+  z-index:30;
+  pointer-events:auto;
+  touch-action:none;
+}
+.joy.hidden{display:none}
+
+.joy-base{
+  position:absolute; inset:0;
+  border-radius:999px;
+  background: rgba(11,16,32,.55);
+  border: 1px solid #1b2a55;
+  box-shadow: 0 18px 50px rgba(0,0,0,.45);
+  backdrop-filter: blur(8px);
+}
+
+.joy-knob{
+  position:absolute;
+  width:34px;height:34px;
+  left:50%;top:50%;
+  transform: translate(-50%,-50%);
+  border-radius:999px;
+  background: rgba(124,247,255,.35);
+  border: 1px solid rgba(124,247,255,.7);
+  box-shadow: 0 18px 50px rgba(124,247,255,.15);
+}
