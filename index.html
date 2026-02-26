@@ -14,8 +14,6 @@
 
 <body class="home-mode">
   <div id="app">
-
-    <!-- 3D CANVAS -->
     <canvas id="game"></canvas>
 
     <!-- TOPBAR -->
@@ -37,7 +35,7 @@
       </div>
     </div>
 
-    <!-- HUD (in-game only) -->
+    <!-- HUD -->
     <div id="hud" class="hud">
       <div class="hudLeft">
         <div class="pill">Score <b id="score">0</b></div>
@@ -65,6 +63,7 @@
             <p class="heroTitle">Race. Dodge. Collect. Flex your rank.</p>
             <p class="muted">Free movement, real 3D cars, starfield universe, lane-switching traffic AI, bonus rounds + revive.</p>
           </div>
+
           <div class="row">
             <button id="btn-play" class="btn primary">▶ Play</button>
             <button id="btn-how" class="btn">📘 How to Play</button>
@@ -72,9 +71,19 @@
           </div>
         </div>
 
+        <!-- NEW: PLAYER NAME -->
+        <div class="card" style="margin-bottom:12px;">
+          <h3>Your Name (for leaderboard)</h3>
+          <p class="muted">Set once — you can change it anytime.</p>
+          <div class="row">
+            <input id="nameInput" class="nameInput" maxlength="18" placeholder="Enter your name…" />
+            <button id="btn-save-name" class="btn primary small">Save</button>
+            <span class="chip">Current: <b id="namePreview">Gamer</b></span>
+          </div>
+        </div>
+
         <div class="heroGrid">
 
-          <!-- DAILY REWARD -->
           <div class="card">
             <h3>Daily Reward</h3>
             <p class="muted">Claim once per day. Build streak for bigger rewards.</p>
@@ -85,7 +94,6 @@
             </div>
           </div>
 
-          <!-- DAILY CRATE -->
           <div class="card">
             <h3>Daily Crate</h3>
             <p class="muted">Free daily roll. Unlock skins.</p>
@@ -95,7 +103,6 @@
             </div>
           </div>
 
-          <!-- MISSIONS -->
           <div class="card">
             <h3>Daily Tasks</h3>
             <p class="muted">3 tasks refresh daily. Earn coins for consistency.</p>
@@ -106,7 +113,6 @@
             </div>
           </div>
 
-          <!-- SHOP -->
           <div class="card">
             <h3>Shop</h3>
             <p class="muted">Buy run-boosters. Applied automatically when you start.</p>
@@ -142,14 +148,12 @@
             </div>
           </div>
 
-          <!-- SKINS -->
           <div class="card">
             <h3>Skins</h3>
             <p class="muted">Your car preview updates in the 3D garage.</p>
             <div id="skins" class="skins"></div>
           </div>
 
-          <!-- LEADERBOARD -->
           <div class="card">
             <h3>Leaderboard</h3>
             <p class="muted">Submit your best. Challenge seeds can be shared.</p>
@@ -164,12 +168,12 @@
       </div>
     </div>
 
-    <!-- HOW TO PLAY -->
+    <!-- HOW -->
     <div id="howPanel" class="modal">
       <div class="panel">
         <h2>How to Play</h2>
         <ul>
-          <li><b>Move:</b> WASD / Arrow Keys / Joystick (mobile).</li>
+          <li><b>Move:</b> WASD / Arrow Keys / Mobile Joystick / Swipe-drag</li>
           <li><b>Nitro:</b> Space</li>
           <li><b>Drift:</b> Hold Shift + steer</li>
           <li><b>Goal:</b> Dodge traffic, collect coins, keep combo.</li>
@@ -182,12 +186,10 @@
       </div>
     </div>
 
-    <!-- COUNTDOWN -->
     <div id="countdown" class="overlay">
       <div class="count">3</div>
     </div>
 
-    <!-- MENU OVERLAY -->
     <div id="menu" class="overlay">
       <div class="panel">
         <h2>Paused</h2>
@@ -199,7 +201,6 @@
       </div>
     </div>
 
-    <!-- GAME OVER -->
     <div id="gameover" class="overlay">
       <div class="panel">
         <h2>Game Over</h2>
@@ -222,7 +223,6 @@
       </div>
     </div>
 
-    <!-- Toast -->
     <div id="toast" class="toast"></div>
 
     <!-- Mobile Joystick -->
