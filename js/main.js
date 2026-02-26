@@ -48,14 +48,14 @@ let last = performance.now();
 let input = {
   moveX: 0,
   nitro: false,
-  driftDir: 0
+  driftDir: 0,
 };
 
 // controls
 let keys = new Set();
 window.addEventListener("keydown", (e) => {
   keys.add(e.code);
-  if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Space"].includes(e.code)) e.preventDefault();
+  if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(e.code)) e.preventDefault();
 });
 window.addEventListener("keyup", (e) => keys.delete(e.code));
 
@@ -69,19 +69,27 @@ let joyRadius = 34; // how far knob can move
 let joyValueX = 0;  // -1..1 target
 let joyPointerId = null;
 
-// Show joystick on touch devices (and still works with mouse if you want)
+// Touch devices use joystick
 const isTouch = matchMedia("(pointer: coarse)").matches;
-if (isTouch) joy.classList.remove("hidden");
+
+// Keep hidden by default; we show/hide it via showHome/showGameOver and pointerdown spawn
+if (isTouch) joy.classList.add("hidden");
+
 if (isTouch) {
-  // Spawn joystick where user touches (left half of screen)
-  window.addEventListener("pointerdown", async (e) => {
-    if (e.target && joy.contains(e.target)) return;
-    if (ui.home.classList.contains("visible") || ui.gameover.classList.contains("visible")) return;
-    if (e.clientX > window.innerWidth * 0.65) return; // avoid right-side taps (buttons)
-    await ensureAudio();
-    setJoyPos(e.clientX, e.clientY);
-    joy.classList.remove("hidden");
-  }, { passive: true });
+  // Spawn joystick where user touches (left side of screen)
+  window.addEventListener(
+    "pointerdown",
+    async (e) => {
+      if (e.target && joy.contains(e.target)) return;
+      if (ui.home.classList.contains("visible") || ui.gameover.classList.contains("visible")) return;
+      if (e.clientX > window.innerWidth * 0.65) return; // avoid right-side taps (buttons)
+
+      await ensureAudio();
+      setJoyPos(e.clientX, e.clientY);
+      joy.classList.remove("hidden");
+    },
+    { passive: true }
+  );
 }
 
 function setJoyPos(x, y) {
@@ -90,8 +98,8 @@ function setJoyPos(x, y) {
   x = Math.max(pad, Math.min(window.innerWidth - pad, x));
   y = Math.max(pad, Math.min(window.innerHeight - pad, y));
   joyCenter = { x, y };
-  joy.style.left = (x - 45) + "px";
-  joy.style.top  = (y - 45) + "px";
+  joy.style.left = x - 45 + "px";
+  joy.style.top = y - 45 + "px";
 }
 
 function setKnob(dx, dy) {
@@ -100,9 +108,9 @@ function setKnob(dx, dy) {
   const nx = (dx / len) * cl;
   const ny = (dy / len) * cl;
 
+  // correct order: center first, then offset
   joyKnob.style.transform = `translate(-50%, -50%) translate(${nx}px, ${ny}px)`;
 
-  // map X to movement. Make it QUICK but still smooth.
   joyValueX = clamp(nx / joyRadius, -1, 1);
 }
 
@@ -144,21 +152,19 @@ joy.addEventListener("pointercancel", () => {
 });
 
 window.addEventListener("resize", () => {
-  // keep it in bounds on rotate
   setJoyPos(joyCenter.x, joyCenter.y);
 });
 
 // Use joystick value to control input smoothly but quickly
-let moveTarget = 0;
 function applyJoystick(dt) {
-  // if joystick active, update target
-  if (isTouch) {
-    moveTarget = joyValueX;
+  if (!isTouch) return;
 
-    // Quick response but smooth (lerp)
-    const follow = 1 - Math.exp(-24 * dt);
-    input.moveX = input.moveX + (moveTarget - input.moveX) * follow;
-  }
+  // Only drive movement while active; otherwise ease back to 0 smoothly
+  const target = joyActive ? joyValueX : 0;
+
+  // Quick response but smooth
+  const follow = 1 - Math.exp(-24 * dt);
+  input.moveX = input.moveX + (target - input.moveX) * follow;
 }
 
 ui.btnHow.onclick = () => ui.how.classList.toggle("hidden");
@@ -225,6 +231,10 @@ function showHome(v) {
   if (isTouch) joy.classList.toggle("hidden", !!v); // hide joystick on home
 }
 
+function showCountdown(v) {
+  ui.countdown.classList.toggle("visible", !!v);
+}
+
 function showGameOver(v) {
   ui.gameover.classList.toggle("visible", !!v);
   if (isTouch) joy.classList.toggle("hidden", !!v); // hide joystick on gameover
@@ -258,7 +268,6 @@ async function startCountdown() {
 }
 
 function startGame() {
-  // seed support
   const url = new URL(location.href);
   const seedParam = url.searchParams.get("seed");
   if (seedParam) game.setSeed(Number(seedParam) || game.seed);
@@ -266,7 +275,6 @@ function startGame() {
   game.start();
   showGameOver(false);
 
-  // subtle “challenge mode” toast
   if (url.searchParams.get("challenge") === "1") toast(`Challenge seed: ${game.seed}`);
 }
 
@@ -278,8 +286,7 @@ function endGame() {
 }
 
 function updateInput() {
-  // On touch devices, joystick is primary input.
-  // Still allow nitro via space if someone uses keyboard.
+  // Touch: joystick is primary input (movement handled in applyJoystick)
   if (isTouch) {
     input.nitro = keys.has("Space");
     input.driftDir = 0;
@@ -296,7 +303,7 @@ function updateInput() {
 
   input.driftDir = 0;
   if (keys.has("ShiftLeft") || keys.has("ShiftRight")) {
-    input.driftDir = (input.moveX < -0.1) ? -1 : (input.moveX > 0.1 ? 1 : 0);
+    input.driftDir = input.moveX < -0.1 ? -1 : input.moveX > 0.1 ? 1 : 0;
   }
 }
 
@@ -316,13 +323,11 @@ function loop(now) {
   ui.combo.textContent = "x" + String(Math.floor(game.combo * 10) / 10);
 
   // near miss feedback (shake + sfx)
-  if (game.lastNearMiss && (game.t - game.lastNearMiss) < 0.05) {
+  if (game.lastNearMiss && game.t - game.lastNearMiss < 0.05) {
     renderer.onNearMiss();
     audio.sfx("near");
   }
 
-  // coin/buff sfx (cheap detection: if coins changed)
-  // (kept simple; you can add event callbacks if you want)
   audio.update(dt, game);
 
   // render
@@ -341,16 +346,13 @@ requestAnimationFrame(loop);
 (async () => {
   showHome(true);
 
-  // Try enabling Supabase leaderboard if keys exist
   const ok = await Leaderboard.init();
   ui.lbStatus.textContent = ok ? "Leaderboard: live" : "Leaderboard: coming soon";
   refreshLeaderboard();
 
-  // auto-fill name
   const saved = localStorage.getItem("nr_name");
   if (saved) ui.playerName.value = saved;
 
-  // if user opened challenge link, keep home visible but highlight play
   const url = new URL(location.href);
   if (url.searchParams.get("challenge") === "1") {
     toast("Challenge link loaded. Hit Play!");
@@ -367,11 +369,11 @@ async function refreshLeaderboard() {
       const r = rows[i];
       const div = document.createElement("div");
       div.className = "lbRow";
-      div.innerHTML = `<span>${i+1}. <b>${escapeHtml(r.name || "Player")}</b></span>
-                       <span>${Number(r.score||0).toLocaleString()} pts</span>`;
+      div.innerHTML = `<span>${i + 1}. <b>${escapeHtml(r.name || "Player")}</b></span>
+                       <span>${Number(r.score || 0).toLocaleString()} pts</span>`;
       ui.leaderboard.appendChild(div);
     }
-  } catch (e) {
+  } catch {
     ui.lbStatus.textContent = "Leaderboard: error";
   }
 }
@@ -394,8 +396,12 @@ async function submitScore() {
   }
 }
 
-function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
-function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[c]));
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+function clamp(v, a, b) {
+  return Math.max(a, Math.min(b, v));
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
 }
