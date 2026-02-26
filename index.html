@@ -1304,14 +1304,14 @@
 
   // SPEED FIX: lower base speed and ramp
   const DIFF = {
-    baseSpeed: 200,   // was 240
-    accel: 7,         // was 10
-    spawnBase: 0.85,
-    spawnRamp: 0.0012,
-    laneChangeRate: 0.07,
-    laneChangeSpeed: 3.8,
-  };
-
+  baseSpeed: 170,   // slower start (was 200)
+  accel: 4.8,       // slower ramp (was 7)
+  spawnBase: 0.78,  // slightly fewer early spawns (was 0.85)
+  spawnRamp: 0.0010,
+  laneChangeRate: 0.065,
+  laneChangeSpeed: 3.4,
+};
+  
   const player = { x:0, y:0, w:0, h:0, vx:0, lane:1, targetX:null };
   const traffic=[], coins=[], pickups=[];
   const PICK_TYPES = ["shield","magnet","slowmo","nitro","invisibility"];
@@ -2146,3 +2146,4 @@
 </script>
 </body>
 </html>
+
