@@ -1,32 +1,32 @@
 export class GameCore {
   constructor() {
-    // Optional callbacks (UI/audio/renderer can subscribe)
-    // this.onEvent = (type, payload) => {}
     this.onEvent = null;
 
     // persistent meta (home economy can use these)
     this.meta = {
-      bank: 0,           // long-term coins (from homepage / saved)
-      best: 0,           // best score (from homepage / saved)
-      skinId: "cyanPink",// cosmetic id
-      queued: {          // shop purchases applied at next run start
+      bank: 0,
+      best: 0,
+      skinId: "cyanPink",
+      queued: {
         magnet: 0,
         shield: 0,
         scorex2: 0,
-        nitro: 0
-      }
+        nitro: 0,
+        slowmo: 0,
+        invis: 0,
+      },
+      // ghost / challenge
+      ghostEnabled: true,
     };
 
     this.reset();
   }
 
   // ---------------------------
-  // PUBLIC API FOR HOMEPAGE
+  // PUBLIC API (HOME)
   // ---------------------------
 
   setMeta(meta = {}) {
-    // Allows main.js to push saved data into GameCore
-    // Does not start the game.
     this.meta = {
       ...this.meta,
       ...meta,
@@ -40,65 +40,59 @@ export class GameCore {
   }
 
   clearQueued() {
-    this.meta.queued = { magnet: 0, shield: 0, scorex2: 0, nitro: 0 };
+    this.meta.queued = { magnet: 0, shield: 0, scorex2: 0, nitro: 0, slowmo: 0, invis: 0 };
   }
 
-  // Apply queued shop items to this run (called automatically by start() unless disabled)
   applyQueuedToRun() {
     const q = this.meta.queued || {};
     const total = Object.values(q).reduce((a, b) => a + (b || 0), 0);
     if (total <= 0) return;
 
-    // Timers stack by extending durations
     if (q.magnet) this.active.magnet = Math.max(this.active.magnet, 0) + 6.0 * q.magnet;
     if (q.shield) this.active.shield = Math.max(this.active.shield, 0) + 5.0 * q.shield;
     if (q.scorex2) this.active.scorex2 = Math.max(this.active.scorex2, 0) + 7.0 * q.scorex2;
-    if (q.nitro) this.player.nitro.charges = Math.min(2, this.player.nitro.charges + q.nitro);
+    if (q.slowmo) this.active.slowmo = Math.max(this.active.slowmo, 0) + 4.0 * q.slowmo;
+    if (q.invis) this.active.invis = Math.max(this.active.invis, 0) + 4.0 * q.invis;
+    if (q.nitro) this.player.nitro.charges = Math.min(3, this.player.nitro.charges + q.nitro);
 
     this.emit("shop_applied", { queued: { ...q } });
     this.clearQueued();
   }
 
-  // Useful for 3D homepage "garage" preview without gameplay
   getPreviewState() {
     return {
-      player: {
-        x: 0,
-        z: 0,
-        speed: 0,
-        invulnT: 0,
-        nitro: { ...this.player.nitro },
-        drift: { ...this.player.drift }
-      },
-      t: this.t,
-      obstacles: [],
-      coinPacks: [],
-      buffs: [],
-      active: { ...this.active }
+      skinId: this.meta.skinId,
+      bank: this.meta.bank,
+      best: this.meta.best,
     };
   }
 
   // ---------------------------
-  // CORE GAME LOOP
+  // CORE GAME STATE
   // ---------------------------
 
   reset() {
     this.running = false;
     this.gameOver = false;
 
-    // world
-    this.lanes = [-2.2, 0, 2.2];
+    // player motion (FREE movement)
     this.player = {
       x: 0,
-      lane: 1,
       targetX: 0,
-      z: 0,
+      zOff: 0,        // forward/back offset relative to origin (negative = forward)
+      targetZ: 0,
+
       speed: 12,
       maxSpeed: 36,
-      hp: 1,
+
       invulnT: 0,
+
       nitro: { charges: 1, t: 0 },
+
       drift: { on: false, amount: 0, direction: 0 },
+
+      lives: 2,
+      reviveUsed: false,
     };
 
     // stats
@@ -110,7 +104,7 @@ export class GameCore {
     // objects
     this.obstacles = [];
     this.coinPacks = [];
-    this.buffs = []; // {type, x,z, alive}
+    this.buffs = [];
     this.particles = [];
 
     // difficulty
@@ -120,21 +114,38 @@ export class GameCore {
     this.buffT = 0;
     this.distance = 0;
 
+    // bonus round (parity)
+    this.inBonus = false;
+    this.bonusT = 0;
+    this.nextBonusAt = 500; // distance threshold
+
     // buffs state
     this.active = {
       magnet: 0,
       shield: 0,
-      scorex2: 0
+      scorex2: 0,
+      slowmo: 0,
+      invis: 0,
     };
 
-    // scoring events
+    // events
     this.lastNearMiss = 0;
 
     // seedable challenge support
     this.seed = Math.floor(Math.random() * 1e9);
     this._rng = mulberry32(this.seed);
 
-    // internal stats (for missions / analytics)
+    // ghost (gameplay-time sampled)
+    this.ghost = {
+      enabled: !!this.meta.ghostEnabled,
+      rec: [],
+      play: null,      // array of samples: {t,x,z,r}
+      t: 0,
+      recAcc: 0,
+      playing: false,
+    };
+
+    // internal stats
     this.stats = {
       runs: 0,
       nearMisses: 0,
@@ -147,36 +158,79 @@ export class GameCore {
   }
 
   setSeed(seed) {
-    this.seed = seed >>> 0;
+    const s = Number(seed);
+    if (!Number.isFinite(s)) return;
+    this.seed = (s | 0) >>> 0;
     this._rng = mulberry32(this.seed);
-    this.emit("seed", { seed: this.seed });
   }
 
+  rand() { return this._rng(); }
+
   start(opts = {}) {
-    // opts: { seed, applyQueued=true }
     const applyQueued = (opts.applyQueued !== false);
 
     this.reset();
-
     if (opts.seed != null) this.setSeed(opts.seed);
+
+    // optional ghost playback (challenge)
+    if (opts.ghostPlay && Array.isArray(opts.ghostPlay)) {
+      this.ghost.play = opts.ghostPlay;
+      this.ghost.playing = true;
+      this.emit("ghost_mode", { on: true });
+    } else {
+      this.emit("ghost_mode", { on: false });
+    }
 
     this.running = true;
     this.stats.runs++;
-
     if (applyQueued) this.applyQueuedToRun();
 
     this.emit("start", { seed: this.seed });
   }
 
+  revive() {
+    if (!this.gameOver) return false;
+    if (this.player.reviveUsed) return false;
+
+    // spend 100 run coins
+    if (this.coins < 100) return false;
+
+    this.coins -= 100;
+    this.player.reviveUsed = true;
+
+    this.gameOver = false;
+    this.running = true;
+
+    // give protection window and a shield burst
+    this.player.invulnT = 1.5;
+    this.active.shield = Math.max(this.active.shield, 0) + 1.8;
+
+    this.emit("revive", { coins: this.coins });
+    return true;
+  }
+
   end(reason = "hit") {
     this.running = false;
     this.gameOver = true;
-    this.emit("end", { reason, score: this.score, coins: this.coins, seed: this.seed });
+    this.emit("end", {
+      reason,
+      score: this.score,
+      coins: this.coins,
+      seed: this.seed,
+      ghostRec: this.ghost.rec
+    });
   }
 
-  // input: moveX in [-1..1], nitro boolean, driftDir -1/0/1
+  // input:
+  // moveX, moveY in [-1..1]
+  // nitro boolean
+  // driftDir -1/0/1
   update(dt, input) {
     if (!this.running || this.gameOver) return;
+
+    // slowmo affects dt (parity)
+    let timeScale = (this.active.slowmo > 0) ? 0.55 : 1.0;
+    dt *= timeScale;
 
     this.t += dt;
 
@@ -185,15 +239,30 @@ export class GameCore {
     const targetSpeed = 14 + ramp * 18;
     this.player.speed = lerp(this.player.speed, Math.min(targetSpeed, this.player.maxSpeed), 0.04);
 
-    // nitro
-    if (this.player.nitro.t > 0) {
-      this.player.nitro.t = Math.max(0, this.player.nitro.t - dt);
+    // bonus round trigger
+    if (!this.inBonus && this.distance >= this.nextBonusAt) {
+      this.inBonus = true;
+      this.bonusT = 7.5;
+      this.nextBonusAt += 650;
+      this.emit("bonus_start", { t: this.bonusT });
     }
+    if (this.inBonus) {
+      this.bonusT = Math.max(0, this.bonusT - dt);
+      if (this.bonusT <= 0) {
+        this.inBonus = false;
+        this.emit("bonus_end", {});
+      }
+    }
+
+    // nitro
+    if (this.player.nitro.t > 0) this.player.nitro.t = Math.max(0, this.player.nitro.t - dt);
+
     if (input.nitro && this.player.nitro.charges > 0 && this.player.nitro.t <= 0) {
       this.player.nitro.charges--;
       this.player.nitro.t = 1.25;
       this.emit("nitro", { charges: this.player.nitro.charges });
     }
+
     const nitroBoost = (this.player.nitro.t > 0) ? 16 : 0;
 
     // drift / style
@@ -207,14 +276,23 @@ export class GameCore {
       this.player.drift.amount = clamp01(this.player.drift.amount - dt * 1.6);
     }
 
-    // lateral movement (smooth)
-    const maxX = 2.2;
-    const desiredX = clamp(input.moveX || 0, -1, 1) * maxX;
-    this.player.targetX = desiredX;
+    // FREE movement: X and forward/back Z
+    const maxX = 3.2;
+    const maxZ = 2.0;     // how far back you can drag
+    const minZ = -5.5;    // how far forward you can push
 
-    // drift adds sideways responsiveness at higher speed
+    const desiredX = clamp(input.moveX || 0, -1, 1) * maxX;
+    const desiredZ = clamp(input.moveY || 0, -1, 1); // up = forward
+    const targetZ = lerp(maxZ, minZ, (desiredZ + 1) * 0.5); // map [-1..1] -> [maxZ..minZ]
+
+    this.player.targetX = desiredX;
+    this.player.targetZ = targetZ;
+
     const responsiveness = 14 + this.player.drift.amount * 8;
     this.player.x = damp(this.player.x, this.player.targetX, responsiveness, dt);
+
+    // forward/back smoothing (a bit slower for control feel)
+    this.player.zOff = damp(this.player.zOff, this.player.targetZ, 10, dt);
 
     // invulnerability
     this.player.invulnT = Math.max(0, this.player.invulnT - dt);
@@ -232,39 +310,75 @@ export class GameCore {
     const speedZ = this.player.speed + nitroBoost;
     this.distance += speedZ * dt;
 
-    // obstacle spawn rate increases over time
+    // obstacle spawn (disabled during bonus)
     const spawnEvery = lerp(0.75, 0.38, ramp);
-    if (this.spawnT <= 0) {
+    if (!this.inBonus && this.spawnT <= 0) {
       this.spawnT = spawnEvery;
       this.spawnObstacle();
     }
 
+    // coins: more during bonus
     if (this.coinT <= 0) {
-      this.coinT = lerp(0.55, 0.35, ramp);
+      this.coinT = this.inBonus ? 0.22 : lerp(0.55, 0.35, ramp);
       this.spawnCoins();
     }
 
+    // buffs
     if (this.buffT <= 0) {
       this.buffT = 7.5 + this.rand() * 4.5;
       this.spawnBuff();
     }
 
-    // move world objects towards player (increase z towards 0)
+    // move world objects toward player
     const dz = speedZ * dt;
 
-    // obstacles
-    for (const o of this.obstacles) o.z += dz;
-    // coins
+    // obstacles: each has its own speed, so relative movement differs
+    for (const o of this.obstacles) {
+      // lane change AI
+      o.laneCooldown = Math.max(0, o.laneCooldown - dt);
+
+      // choose a lane switch sometimes, more likely if close to player
+      const close = (o.z - this.player.zOff) > -28 && (o.z - this.player.zOff) < -6;
+      const chance = close ? 0.035 : 0.010;
+      if (o.laneCooldown <= 0 && this.rand() < chance) {
+        const dir = (this.rand() < 0.5) ? -1 : 1;
+        o.targetLane = clampInt(o.targetLane + dir, 0, 2);
+        o.laneCooldown = 0.8 + this.rand() * 1.4;
+      }
+
+      // avoid occupying exactly the player's lane when super close (feels “smart”)
+      if (close && this.rand() < 0.05) {
+        const playerLane = xToLane(this.player.x);
+        if (o.targetLane === playerLane) {
+          o.targetLane = clampInt(o.targetLane + ((this.rand() < 0.5) ? -1 : 1), 0, 2);
+          o.laneCooldown = 1.2;
+        }
+      }
+
+      // smooth lane movement
+      const laneXs = [-2.6, 0, 2.6];
+      o.targetX = laneXs[o.targetLane] + (this.rand() - 0.5) * 0.15;
+      o.x = damp(o.x, o.targetX, 10, dt);
+
+      // forward motion: obstacle “drives” too
+      // if obstacle speed is close to player, it hangs around
+      const rel = (speedZ - o.speed);
+      o.z += rel * dt;
+
+      // tiny steering wobble for life
+      o.yaw = damp(o.yaw, (o.targetX - o.x) * 0.25, 8, dt);
+    }
+
+    // coins/buffs move by player speed
     for (const c of this.coinPacks) c.z += dz;
-    // buffs
     for (const b of this.buffs) b.z += dz;
 
     // remove passed objects
-    this.obstacles = this.obstacles.filter(o => o.z < 6);
-    this.coinPacks = this.coinPacks.filter(c => c.z < 6 && c.alive);
-    this.buffs = this.buffs.filter(b => b.z < 6 && b.alive);
+    this.obstacles = this.obstacles.filter(o => o.z < 8);
+    this.coinPacks = this.coinPacks.filter(c => c.z < 8 && c.alive);
+    this.buffs = this.buffs.filter(b => b.z < 8 && b.alive);
 
-    // magnet pulls ALL coins from ALL lanes toward player
+    // magnet pulls coins toward player
     if (this.active.magnet > 0) {
       for (const c of this.coinPacks) {
         c.x = damp(c.x, this.player.x, 14, dt);
@@ -275,7 +389,7 @@ export class GameCore {
     this.handleCollisions(dt);
 
     // score
-    const base = speedZ * dt * 10; // distance-based
+    const base = speedZ * dt * 10;
     const mult = (this.active.scorex2 > 0) ? 2 : 1;
     this.score += Math.floor(base * this.combo * mult);
 
@@ -283,13 +397,15 @@ export class GameCore {
     this.comboT = Math.max(0, this.comboT - dt);
     if (this.comboT <= 0) this.combo = 1;
 
-    // small passive recharge for nitro
-    if (this.player.nitro.charges < 2) {
+    // passive nitro recharge
+    if (this.player.nitro.charges < 3) {
       if (this.t % 6 < dt) this.player.nitro.charges++;
     }
 
-    // milestone events (useful for “Well Done” / achievements)
-    // score milestones every 1000
+    // ghost record + playback (sampled on gameplay time)
+    this.updateGhost(dt);
+
+    // milestone
     if (!this._nextScoreMilestone) this._nextScoreMilestone = 1000;
     if (this.score >= this._nextScoreMilestone) {
       this.emit("milestone_score", { score: this.score, milestone: this._nextScoreMilestone });
@@ -297,193 +413,234 @@ export class GameCore {
     }
   }
 
+  updateGhost(dt) {
+    // record
+    if (this.ghost.enabled) {
+      this.ghost.t += dt;
+      this.ghost.recAcc += dt;
+
+      const sampleEvery = 0.05; // 20 Hz
+      while (this.ghost.recAcc >= sampleEvery) {
+        this.ghost.recAcc -= sampleEvery;
+        this.ghost.rec.push({
+          t: Number(this.ghost.t.toFixed(3)),
+          x: Number(this.player.x.toFixed(3)),
+          z: Number(this.player.zOff.toFixed(3)),
+          r: Number((this.player.drift.amount * (this.player.drift.direction || 0)).toFixed(3)),
+        });
+      }
+    }
+
+    // playback
+    if (this.ghost.playing && Array.isArray(this.ghost.play) && this.ghost.play.length > 2) {
+      // Keep a ghostTime that matches gameplay time (NOT real time)
+      if (!this.ghost._playT) this.ghost._playT = 0;
+      this.ghost._playT += dt;
+
+      // find sample window
+      const arr = this.ghost.play;
+      let i = this.ghost._playIdx || 0;
+      while (i < arr.length - 2 && arr[i + 1].t < this.ghost._playT) i++;
+      this.ghost._playIdx = i;
+
+      const a = arr[i];
+      const b = arr[Math.min(i + 1, arr.length - 1)];
+      const span = Math.max(0.0001, (b.t - a.t));
+      const u = clamp01((this.ghost._playT - a.t) / span);
+
+      const gx = lerp(a.x, b.x, u);
+      const gz = lerp(a.z, b.z, u);
+      const gr = lerp(a.r || 0, b.r || 0, u);
+
+      this.emit("ghost_frame", { x: gx, z: gz, r: gr });
+    }
+  }
+
   handleCollisions(dt) {
     const px = this.player.x;
-    const pz = 0;
+    const pz = this.player.zOff; // player “forward/back”
 
-    // player collision radius
-    const pr = 0.55;
+    // smaller collision while invisible
+    const baseR = (this.active.invis > 0) ? 0.35 : 0.55;
+    const pr = baseR;
 
     // obstacles
     for (const o of this.obstacles) {
-      if (!o.alive) continue;
-      const dx = o.x - px;
-      const dz = o.z - pz;
-      const dist2 = dx * dx + dz * dz;
+      const dx = (o.x - px);
+      const dz = (o.z - pz);
+      const rr = pr + o.r;
 
-      // near miss: pass close but not hit (trigger once)
-      const nearR = 1.05;
-      if (!o.nearMissed && dz > -0.6 && dz < 0.35 && dist2 < nearR * nearR && dist2 > pr * pr) {
-        o.nearMissed = true;
-        this.onNearMiss();
+      // near miss
+      const dist2 = dx * dx + dz * dz;
+      const near = (rr + 0.45);
+      if (dist2 < near * near && dist2 > rr * rr) {
+        if (this.t - this.lastNearMiss > 0.35) {
+          this.lastNearMiss = this.t;
+          this.stats.nearMisses++;
+          this.combo = Math.min(12, this.combo + 1);
+          this.comboT = 1.3;
+          this.emit("near_miss", { combo: this.combo });
+        }
       }
 
       // hit
-      if (dist2 < pr * pr) {
+      if (dist2 < rr * rr) {
+        if (this.player.invulnT > 0) continue;
+
         if (this.active.shield > 0) {
-          o.alive = false;
-          this.onHitBlocked();
-        } else if (this.player.invulnT <= 0) {
-          this.player.invulnT = 1.0;
-          this.onHit();
-          this.end("hit");
+          this.active.shield = 0;
+          this.player.invulnT = 0.7;
+          this.stats.hitsBlocked++;
+          this.emit("shield_break", {});
+          // knock obstacle aside slightly
+          o.x += (dx >= 0 ? 0.55 : -0.55);
+          o.laneCooldown = 1.2;
           return;
         }
+
+        // lose life
+        this.player.lives--;
+        this.player.invulnT = 1.2;
+        this.emit("life_lost", { lives: this.player.lives });
+
+        // push player a bit back to give recovery feel
+        this.player.zOff = Math.min(2.0, this.player.zOff + 1.0);
+
+        if (this.player.lives <= 0) {
+          this.end("hit");
+        }
+        return;
       }
     }
 
     // coins
     for (const c of this.coinPacks) {
       if (!c.alive) continue;
-      const dx = c.x - px;
-      const dz = c.z - pz;
-      if (dx * dx + dz * dz < 0.8 * 0.8) {
+      const dx = (c.x - px);
+      const dz = (c.z - pz);
+      if (dx * dx + dz * dz < (pr + 0.35) ** 2) {
         c.alive = false;
-        this.coins++;
-        this.stats.coinsPicked++;
-        this.onCollect();
-        this.emit("coin", { total: this.coins });
+        const amt = c.amt || 1;
+        this.coins += amt;
+        this.stats.coinsPicked += amt;
+        this.comboT = 1.3;
+        this.emit("coin", { coins: this.coins, amt });
       }
     }
 
     // buffs
     for (const b of this.buffs) {
       if (!b.alive) continue;
-      const dx = b.x - px;
-      const dz = b.z - pz;
-      if (dx * dx + dz * dz < 0.95 * 0.95) {
+      const dx = (b.x - px);
+      const dz = (b.z - pz);
+      if (dx * dx + dz * dz < (pr + 0.5) ** 2) {
         b.alive = false;
         this.stats.buffsPicked++;
         this.applyBuff(b.type);
-        this.emit("buff", { type: b.type, active: { ...this.active }, nitro: { ...this.player.nitro } });
       }
     }
-  }
-
-  onCollect() {
-    this.combo = Math.min(12, this.combo + 0.15);
-    this.comboT = 2.4;
-  }
-
-  onNearMiss() {
-    this.combo = Math.min(12, this.combo + 0.35);
-    this.comboT = 2.8;
-    this.score += 250 * Math.floor(this.combo);
-    this.lastNearMiss = this.t;
-    this.stats.nearMisses++;
-    this.emit("near_miss", { combo: this.combo, score: this.score });
-  }
-
-  onHitBlocked() {
-    this.score += 200;
-    this.stats.hitsBlocked++;
-    this.emit("hit_blocked", {});
-  }
-
-  onHit() {
-    // game over handled outside
-    this.emit("hit", {});
   }
 
   applyBuff(type) {
-    if (type === "magnet") this.active.magnet = 6.0;
-    if (type === "shield") this.active.shield = 5.0;
-    if (type === "scorex2") this.active.scorex2 = 7.0;
-    if (type === "nitro") this.player.nitro.charges = Math.min(2, this.player.nitro.charges + 1);
+    const t = type || "magnet";
+    if (t === "magnet") this.active.magnet = Math.max(this.active.magnet, 0) + 6.0;
+    if (t === "shield") this.active.shield = Math.max(this.active.shield, 0) + 5.0;
+    if (t === "scorex2") this.active.scorex2 = Math.max(this.active.scorex2, 0) + 7.0;
+    if (t === "slowmo") this.active.slowmo = Math.max(this.active.slowmo, 0) + 4.0;
+    if (t === "invis") this.active.invis = Math.max(this.active.invis, 0) + 4.0;
+    if (t === "nitro") this.player.nitro.charges = Math.min(3, this.player.nitro.charges + 1);
 
-    // reward feedback
-    this.score += 400;
-    this.combo = Math.min(12, this.combo + 0.25);
-    this.comboT = 2.6;
+    this.emit("buff", { type: t, active: { ...this.active }, nitro: this.player.nitro.charges });
   }
 
   spawnObstacle() {
-    // choose lane-ish position but allow between-lane to force skill dodges
-    const lane = Math.floor(this.rand() * 3);
-    const jitter = (this.rand() - 0.5) * 0.6;
-    const x = this.lanes[lane] + jitter;
+    // lane-based traffic car positions, but player is free to drift between
+    const laneXs = [-2.6, 0, 2.6];
+    const lane = (this.rand() * 3) | 0;
 
-    // spacing ahead
-    const z = -70 - this.rand() * 55;
+    const ramp = Math.min(1, this.t / 90);
 
-    // vary width
-    const w = 0.95 + this.rand() * 0.35;
+    // obstacle “car speed” in world (so relative speed varies)
+    const base = 8 + ramp * 10;
+    const speed = base + (this.rand() - 0.5) * 5;
 
     this.obstacles.push({
-      x, z, w,
-      alive: true,
-      nearMissed: false,
-      kind: (this.rand() < 0.75) ? "car" : "block",
+      x: laneXs[lane],
+      targetX: laneXs[lane],
+      z: -60 - this.rand() * 22,
+      r: 0.62,
+      speed,
+      targetLane: lane,
+      laneCooldown: 0.5 + this.rand() * 0.9,
+      yaw: 0,
+      kind: (this.rand() < 0.15) ? "truck" : "car"
     });
-
-    this.emit("spawn_obstacle", { x, z });
   }
 
   spawnCoins() {
-    const pattern = Math.floor(this.rand() * 4);
-    const z0 = -45 - this.rand() * 55;
+    const laneXs = [-2.6, 0, 2.6];
+    const lane = (this.rand() * 3) | 0;
 
-    if (pattern === 0) {
-      // 3-lane row
-      for (let i = 0; i < 3; i++) this.coinPacks.push({ x: this.lanes[i], z: z0 - i * 2, alive: true });
-    } else if (pattern === 1) {
-      // snake
-      const start = Math.floor(this.rand() * 3);
-      for (let k = 0; k < 7; k++) {
-        const lane = (start + k) % 3;
-        this.coinPacks.push({ x: this.lanes[lane], z: z0 - k * 2.4, alive: true });
-      }
-    } else if (pattern === 2) {
-      // single line with jitter
-      const lane = Math.floor(this.rand() * 3);
-      for (let k = 0; k < 9; k++) {
-        this.coinPacks.push({ x: this.lanes[lane] + (this.rand() - 0.5) * 0.25, z: z0 - k * 2.2, alive: true });
-      }
-    } else {
-      // spread (magnet feels amazing here)
-      for (let k = 0; k < 9; k++) {
-        const lane = Math.floor(this.rand() * 3);
-        this.coinPacks.push({ x: this.lanes[lane] + (this.rand() - 0.5) * 0.9, z: z0 - k * 2.0, alive: true });
-      }
+    // coin lines a bit more dense during bonus
+    const count = this.inBonus ? 7 : 5;
+    for (let i = 0; i < count; i++) {
+      this.coinPacks.push({
+        x: laneXs[lane] + (this.rand() - 0.5) * 0.35,
+        z: -40 - i * (this.inBonus ? 1.8 : 2.4),
+        alive: true,
+        amt: 1
+      });
     }
-
-    this.emit("spawn_coins", { count: this.coinPacks.length });
   }
 
   spawnBuff() {
-    const types = ["magnet", "shield", "scorex2", "nitro"];
-    const type = types[Math.floor(this.rand() * types.length)];
-    const lane = Math.floor(this.rand() * 3);
-    const x = this.lanes[lane] + (this.rand() - 0.5) * 0.4;
-    const z = -85 - this.rand() * 70;
-    this.buffs.push({ type, x, z, alive: true });
+    const laneXs = [-2.6, 0, 2.6];
+    const lane = (this.rand() * 3) | 0;
 
-    this.emit("spawn_buff", { type, x, z });
-  }
+    // include parity buffs
+    const pool = ["magnet", "shield", "scorex2", "nitro", "slowmo", "invis"];
+    const type = pool[(this.rand() * pool.length) | 0];
 
-  rand() {
-    return this._rng();
+    this.buffs.push({
+      type,
+      x: laneXs[lane],
+      z: -60 - this.rand() * 18,
+      alive: true,
+    });
   }
 
   emit(type, payload) {
-    if (typeof this.onEvent === "function") {
-      try { this.onEvent(type, payload); } catch {}
-    }
+    if (typeof this.onEvent === "function") this.onEvent(type, payload);
   }
 }
 
-// utilities
+// ------------------ helpers ------------------
+
 function lerp(a, b, t) { return a + (b - a) * t; }
+
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
 function clamp01(v) { return clamp(v, 0, 1); }
+
 function damp(current, target, lambda, dt) {
-  return current + (target - current) * (1 - Math.exp(-lambda * dt));
+  // exponential smoothing
+  return lerp(current, target, 1 - Math.exp(-lambda * dt));
 }
+
 function mulberry32(a) {
   return function () {
-    let t = (a += 0x6D2B79F5);
+    let t = a += 0x6D2B79F5;
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+function clampInt(v, a, b) { return Math.max(a, Math.min(b, v | 0)); }
+
+function xToLane(x) {
+  // map free X to a “virtual” lane
+  if (x < -0.9) return 0;
+  if (x > 0.9) return 2;
+  return 1;
 }
