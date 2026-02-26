@@ -184,9 +184,7 @@
       font-size:12px;
       font-weight:950;
     }
-    .swatch{
-      display:flex; gap:8px; align-items:center; margin-top:2px;
-    }
+    .swatch{display:flex; gap:8px; align-items:center; margin-top:2px;}
     .dot{
       width:12px; height:12px; border-radius:999px;
       border:1px solid rgba(255,255,255,.18);
@@ -197,11 +195,7 @@
     @media (max-width:900px){ .grid{grid-template-columns:1fr} }
     @media (max-width:520px){ .shopGrid{grid-template-columns:1fr} }
 
-    .gameScreen{
-      position:fixed; inset:0;
-      display:none;
-      background: #050814;
-    }
+    .gameScreen{position:fixed; inset:0; display:none; background:#050814;}
     .gameWrap{position:absolute; inset:0; display:flex; flex-direction:column;}
 
     .hud{
@@ -270,9 +264,7 @@
       border:1px solid rgba(255,255,255,.16);
       backdrop-filter: blur(10px);
     }
-    @media (max-width:760px){
-      .mobileControls{display:flex}
-    }
+    @media (max-width:760px){ .mobileControls{display:flex} }
 
     .overlay{
       position:absolute; inset:0;
@@ -392,9 +384,7 @@
         <h3>Leaderboard (Top 10)</h3>
         <p class="muted" id="lbStatus">Loading…</p>
         <div class="lbList" id="lbList"></div>
-        <p class="small" style="margin-top:10px">
-          Live leaderboard uses Supabase RPC upsert (secure).
-        </p>
+        <p class="small" style="margin-top:10px">Live leaderboard uses Supabase RPC upsert (secure).</p>
       </div>
     </div>
 
@@ -468,9 +458,7 @@
       <div class="overlay" id="overlay">
         <div class="modal">
           <h2>Menu</h2>
-          <p class="muted" style="margin-top:0">
-            Resume, restart, shop, tasks, leaderboard, fullscreen, share, feedback.
-          </p>
+          <p class="muted" style="margin-top:0">Resume, restart, shop, tasks, leaderboard, fullscreen, share, feedback.</p>
 
           <div class="split">
             <div class="card" style="background:rgba(0,0,0,.18)">
@@ -707,9 +695,7 @@
     try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || "null"); } catch { return null; }
   })() || { musicOn:true, sfxOn:true, musicVol:0.55, sfxVol:0.85 };
 
-  function saveSettings(){
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  }
+  function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
 
   let audioReady = false;
   const audio = {
@@ -801,13 +787,13 @@
     lastBonusDate:null,
     missionsDate:null,
     missions:[],
-    ownedSkins:["c_500_cyan_pink"], // a free default skin key
-    skin:"c_500_cyan_pink",
+    ownedSkins:["common_500_cyan_pink"],
+    skin:"common_500_cyan_pink",
     lastCrateDate:null
   };
 
-  profile.ownedSkins ||= ["c_500_cyan_pink"];
-  profile.skin ||= "c_500_cyan_pink";
+  profile.ownedSkins ||= ["common_500_cyan_pink"];
+  profile.skin ||= "common_500_cyan_pink";
   profile.lastCrateDate ||= null;
 
   function dailyBonusForDay(n){ return 40 + n*10; }
@@ -908,7 +894,7 @@
   }
 
   // =========================
-  // SHOP (buffs) + requested prices + invisibility rename
+  // SHOP (buffs)
   // =========================
   const cart = { shield:0, magnet:0, slowmo:0, nitro:0, invisibility:0, extraLife:0 };
   const SHOP = [
@@ -919,13 +905,10 @@
     { key:"extraLife",    name:"❤️ Extra Life",  desc:"Adds +1 life this run.", base: 100, max:2 },
     { key:"magnet",       name:"🧲 Magnet",       desc:"Auto-collect coins (7s).", base: 70, max:3 },
   ];
-
-  // Keep multiplier = 1 to match your exact fixed prices (no streak inflation)
   function priceFor(itemKey){
     const it=SHOP.find(x=>x.key===itemKey);
     return Math.round(it?.base || 50);
   }
-
   function renderShop(where){
     where.innerHTML="";
     SHOP.forEach(it=>{
@@ -967,7 +950,7 @@
   }
 
   // =========================
-  // SKINS (more skins + rarity tiers + color-based names)
+  // SKINS
   // =========================
   const RARITY_ORDER = { common:0, rare:1, epic:2, legendary:3 };
   const RARITY_COLORS = { common:"common", rare:"rare", epic:"epic", legendary:"legendary" };
@@ -976,58 +959,39 @@
     return `${rarity}_${cost}_${c1.toLowerCase().replace(/\s+/g,"")}_${c2.toLowerCase().replace(/\s+/g,"")}`;
   }
 
-  // Prices start at 500 (common) and scale up to 5000 (legendary)
   const SKINS = [
-    // COMMON (500–900)
     { rarity:"common", cost:500,  colors:["Cyan","Pink"],       hex:["#4df6ff","#ff5cd6"] },
     { rarity:"common", cost:600,  colors:["Mint","Violet"],     hex:["#33ff99","#6f7bff"] },
     { rarity:"common", cost:700,  colors:["Amber","Magenta"],   hex:["#ffd24d","#ff6adf"] },
     { rarity:"common", cost:800,  colors:["Sky","Rose"],        hex:["#6fd6ff","#ff7fb0"] },
     { rarity:"common", cost:900,  colors:["Lime","Indigo"],     hex:["#b6ff4d","#6f7bff"] },
 
-    // RARE (1200–1900)
     { rarity:"rare", cost:1200, colors:["Aqua","Electric Pink"], hex:["#00fff0","#ff2bd6"] },
     { rarity:"rare", cost:1400, colors:["Gold","Neon Blue"],     hex:["#ffd24d","#3aa0ff"] },
     { rarity:"rare", cost:1600, colors:["Teal","Hot Magenta"],   hex:["#00d6c7","#ff38d1"] },
     { rarity:"rare", cost:1750, colors:["Neon Green","Purple"],  hex:["#33ff99","#8f4dff"] },
     { rarity:"rare", cost:1900, colors:["Coral","Ice"],          hex:["#ff6b6b","#a8f0ff"] },
 
-    // EPIC (2500–3900)
     { rarity:"epic", cost:2500, colors:["Ultraviolet","Cyan"],   hex:["#b84dff","#4df6ff"] },
     { rarity:"epic", cost:2800, colors:["Crimson","Gold"],       hex:["#ff2e4d","#ffd24d"] },
     { rarity:"epic", cost:3200, colors:["Aurora","Pink"],        hex:["#33ffdd","#ff5cd6"] },
     { rarity:"epic", cost:3500, colors:["Neon Orange","Violet"], hex:["#ff8a2b","#8f4dff"] },
     { rarity:"epic", cost:3900, colors:["Frost","Magenta"],      hex:["#bff6ff","#ff2bd6"] },
 
-    // LEGENDARY (5000 only)
     { rarity:"legendary", cost:5000, colors:["Solar Gold","Royal Purple"], hex:["#ffd24d","#6b2bff"] },
     { rarity:"legendary", cost:5000, colors:["Plasma Cyan","Ruby"],        hex:["#4df6ff","#ff2e4d"] },
     { rarity:"legendary", cost:5000, colors:["Emerald","Sunset Pink"],     hex:["#33ff99","#ff5cd6"] },
     { rarity:"legendary", cost:5000, colors:["Void Black","Neon Gold"],    hex:["#111111","#ffd24d"] },
-  ].map(s => ({
-    ...s,
-    key: skinKey(s.rarity, s.cost, s.colors[0], s.colors[1])
-  }));
+  ].map(s => ({ ...s, key: skinKey(s.rarity, s.cost, s.colors[0], s.colors[1]) }));
 
-  // Ensure profile's default skin exists
   if(!SKINS.some(s => s.key === profile.skin)){
     profile.skin = SKINS[0].key;
     if(!profile.ownedSkins.includes(profile.skin)) profile.ownedSkins.push(profile.skin);
     saveProfile();
   }
-
-  function getSkin(){
-    return SKINS.find(s=>s.key===profile.skin) || SKINS[0];
-  }
-
-  function skinLabel(s){
-    // user requested: show colors instead of "name"
-    return `${s.colors[0]} / ${s.colors[1]}`;
-  }
-
-  function rarityChip(r){
-    return `<span class="chip rar ${RARITY_COLORS[r]}">${r.toUpperCase()}</span>`;
-  }
+  function getSkin(){ return SKINS.find(s=>s.key===profile.skin) || SKINS[0]; }
+  function skinLabel(s){ return `${s.colors[0]} / ${s.colors[1]}`; }
+  function rarityChip(r){ return `<span class="chip rar ${RARITY_COLORS[r]}">${r.toUpperCase()}</span>`; }
 
   function renderSkins(where){
     if(!where) return;
@@ -1090,9 +1054,7 @@
   // =========================
   // DAILY CRATE (no legendary skins)
   // =========================
-  function crateReady(){
-    return profile.lastCrateDate !== todayISO();
-  }
+  function crateReady(){ return profile.lastCrateDate !== todayISO(); }
   function syncCrateUI(){
     const ready = crateReady();
     const st = ready ? "Ready" : "Claimed";
@@ -1113,7 +1075,6 @@
     }
     return items[items.length-1];
   }
-
   function grantBuffToCart(key, amt=1){
     if(!(key in cart)) return false;
     cart[key] = clamp((cart[key]||0) + amt, 0, 99);
@@ -1123,10 +1084,6 @@
   function openDailyCrate(){
     if(!crateReady()) return toast("Already claimed today.");
 
-    // DROP TABLE:
-    // - Coins (common outcome)
-    // - Buffs (also common)
-    // - Skins (common/rare/epic only; no legendary)
     const drop = pickWeighted([
       { type:"coins", w: 45 },
       { type:"buff",  w: 40 },
@@ -1163,9 +1120,7 @@
     }
 
     if(drop.type === "skin"){
-      // eligible skins: common/rare/epic only
       const eligible = SKINS.filter(s => s.rarity !== "legendary");
-      // weight by rarity (common more likely)
       const rarityPick = pickWeighted([
         { rarity:"common", w: 70 },
         { rarity:"rare",   w: 24 },
@@ -1227,8 +1182,8 @@
       renderLeaderboard(lbListEl, list);
       renderLeaderboard(lbList2El, list);
     }catch{
-      lbStatusEl.textContent = "Couldn’t load leaderboard. Check table/RLS/RPC SQL.";
-      lbStatus2El.textContent = "Couldn’t load leaderboard. Check table/RLS/RPC SQL.";
+      lbStatusEl.textContent = "Leaderboard coming soon...";
+      lbStatus2El.textContent = "Leaderboard coming soon...";
     }
   }
 
@@ -1254,7 +1209,7 @@
   }
 
   // =========================
-  // GAME CORE
+  // GAME CORE (EASY START → GRADUAL RAMP)
   // =========================
   let dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
   let vw=1, vh=1;
@@ -1302,16 +1257,16 @@
   function roadW(){ return vw * 0.56; }
   function laneCenter(l){ return roadX() + laneW()*(l+0.5); }
 
-  // SPEED FIX: lower base speed and ramp
+  // Very easy early game (slow) + smooth ramp (addictive curve)
   const DIFF = {
-  baseSpeed: 170,   // slower start (was 200)
-  accel: 4.8,       // slower ramp (was 7)
-  spawnBase: 0.78,  // slightly fewer early spawns (was 0.85)
-  spawnRamp: 0.0010,
-  laneChangeRate: 0.065,
-  laneChangeSpeed: 3.4,
-};
-  
+    baseSpeed: 150,     // slower start
+    accel: 3.8,         // gentle speed ramp
+    spawnBase: 0.62,    // fewer obstacles early
+    spawnRamp: 0.00095, // gradual spawn increase
+    laneChangeRate: 0.055,
+    laneChangeSpeed: 3.1,
+  };
+
   const player = { x:0, y:0, w:0, h:0, vx:0, lane:1, targetX:null };
   const traffic=[], coins=[], pickups=[];
   const PICK_TYPES = ["shield","magnet","slowmo","nitro","invisibility"];
@@ -1335,7 +1290,7 @@
   let spawnT=0, coinT=0, pickT=0;
   let roadScroll=0;
 
-  // lane switching (fix fast movement feel): edge-triggered
+  // lane switching: edge-triggered (no spam)
   let prevLeft=false, prevRight=false;
 
   function rectHit(ax,ay,aw,ah, bx,by,bw,bh){
@@ -1386,7 +1341,6 @@
 
     invulnT = 0;
 
-    // clear cart (spent)
     for(const k in cart) cart[k]=0;
     renderShop(shopEl);
     renderShop(shop2El);
@@ -1396,7 +1350,7 @@
     inBonus=false; bonusT=0;
     bonusCollected = { coins:0, shield:0, magnet:0, slowmo:0, nitro:0, invisibility:0 };
 
-    nextBonusAt = Math.max(500, nextBonusAt);
+    nextBonusAt = 500;
 
     prevLeft=false; prevRight=false;
   }
@@ -1411,7 +1365,6 @@
   let countdown=null;
   function cinematicCountdown(onDone){ countdown = { t:0, phase:0, done:false, onDone }; }
 
-  // fixed start order (prevents top-left spawn)
   function startRun(){
     home.style.display="none";
     gameScreen.style.display="block";
@@ -1461,7 +1414,7 @@
     syncCrateUI();
   }
   function closeMenu(){
-    if(!running) return; // game over: keep overlay
+    if(!running) return;
     overlay.style.display="none";
     paused=false;
     playBgm();
@@ -1477,7 +1430,6 @@
     const h=w*1.75;
 
     if(traffic.some(o=>o.lane===lane && o.y < vh*0.20)) return;
-    if(lane === player.lane && traffic.some(o=>o.lane===lane && o.y < vh*0.35)) return;
 
     traffic.push({
       lane,
@@ -1485,8 +1437,8 @@
       targetLane: lane,
       y: -h,
       w, h,
-      rel: rand(0.90, 1.12),
-      cd: rand(0.8, 1.7),
+      rel: rand(0.86, 1.02), // calmer speed variance (slower overall early)
+      cd: rand(1.0, 1.9),    // fewer lane swaps early
       passed:false
     });
   }
@@ -1817,8 +1769,12 @@
 
     invulnT = Math.max(0, invulnT - dt);
 
+    // Core ramp
     speed += DIFF.accel * dt;
-    const spawnRate = DIFF.spawnBase + (Math.floor(score) * DIFF.spawnRamp);
+
+    // Addictive curve: super easy first ~20 seconds (soft spawns), then ramps
+    const easyWindow = clamp(score / 600, 0, 1); // reaches 1 around score ~600
+    const spawnRate = (DIFF.spawnBase + (Math.floor(score) * DIFF.spawnRamp)) * (0.65 + 0.35*easyWindow);
 
     if(!inBonus){
       buffMagnet = Math.max(0, buffMagnet - dt);
@@ -1826,36 +1782,44 @@
       buffInvisibility  = Math.max(0, buffInvisibility  - dt);
     }
 
+    // Nitro (slower boost)
     const nitroKey = (keys.has("arrowup") || keys.has("w"));
     nitroActive = nitroKey && nitro > 0.02 && !inBonus;
-    if(nitroActive) nitro = Math.max(0, nitro - dt*0.26);
+    if(nitroActive) nitro = Math.max(0, nitro - dt*0.22);
     else nitro = Math.min(1.8, nitro + dt*0.14);
 
     const leftNow = keys.has("arrowleft") || keys.has("a");
     const rightNow= keys.has("arrowright")|| keys.has("d");
     const drift   = keys.has("shift");
 
-    // EDGE-TRIGGERED steering (fix "too fast" lane spam)
+    // Edge-trigger steering (one lane per press)
     if(leftNow && !prevLeft) steer(-1);
     if(rightNow && !prevRight) steer(1);
     prevLeft = leftNow;
     prevRight = rightNow;
 
-    // smoother lateral motion (slower feel)
+    // Player movement feel: slower and less twitchy
     if(player.targetX!==null){
       const dx = player.targetX - player.x;
-      player.vx += dx * 18 * dt; // was 22
+      player.vx += dx * 13.2 * dt; // slower pull
       if(Math.abs(dx)<2.6){
         player.x = player.targetX;
         player.targetX=null;
         player.vx*=0.28;
       }
     }
-    player.vx *= Math.pow(0.0022, dt); // more damping (slower)
+    player.vx *= Math.pow(0.00155, dt); // more damping
     player.x += player.vx*dt;
     enforceRoadBarrier();
 
-    const effectiveSpeed = speed + (nitroActive ? 140 : 0); // was 160
+    // World speed (road/coins/pickups)
+    const effectiveSpeed = speed + (nitroActive ? 105 : 0);
+
+    // OBSTACLE speed: VERY slow early, gradually catches up
+    // starts at 0.55x and ramps to 1.00x by ~score 6000
+    const obstacleFactor = 0.55 + clamp(score / 6000, 0, 0.45);
+    const obstacleSpeed = effectiveSpeed * obstacleFactor;
+
     roadScroll += effectiveSpeed*dt;
     if(roadScroll>60) roadScroll-=60;
 
@@ -1866,28 +1830,32 @@
       if(bonusT <= 0) endBonus();
     }
 
+    // Spawning: easy early, ramps
     if(!inBonus){
-      spawnT += dt * spawnRate * (0.80 + effectiveSpeed/780);
+      spawnT += dt * spawnRate * (0.70 + effectiveSpeed/950);
       if(spawnT>=1){
         spawnT=0;
         spawnTraffic();
-        if(Math.random()<0.18) spawnTraffic();
+        if(score > 1200 && Math.random()<0.12) spawnTraffic(); // no double-spawn early
       }
     }
 
-    coinT += dt * (0.80 + effectiveSpeed/1050);
+    // Coins frequent (hooks dopamine)
+    coinT += dt * (0.86 + effectiveSpeed/1150);
     if(coinT>=1){
       coinT=0;
       spawnCoin();
-      if(Math.random()<0.32) spawnCoin();
+      if(Math.random()<0.34) spawnCoin();
     }
 
+    // Pickups steady
     pickT += dt * 0.33;
     if(pickT>=1){
       pickT=0;
       if(Math.random()<0.62) spawnPickup();
     }
 
+    // Move traffic (uses obstacleSpeed)
     const obstacleScale = (!inBonus && buffSlowmo>0) ? 0.20 : 1.0;
     for(let i=traffic.length-1;i>=0;i--){
       const t=traffic[i];
@@ -1897,24 +1865,26 @@
       }
 
       t.cd -= dt;
-      const laneChangeRate = DIFF.laneChangeRate + clamp(score/2600, 0, 0.10);
-      const laneChangeSpeed = DIFF.laneChangeSpeed + clamp(score/3400, 0, 2.2);
+      const laneChangeRate = DIFF.laneChangeRate + clamp(score/3200, 0, 0.09);
+      const laneChangeSpeed = DIFF.laneChangeSpeed + clamp(score/4200, 0, 2.0);
 
       if(t.cd<=0 && Math.random()<laneChangeRate){
         const dir = Math.random()<0.5 ? -1 : 1;
         const next = clamp(t.targetLane + dir, 0, laneCount-1);
         const safe = !traffic.some(o=>o!==t && o.targetLane===next && Math.abs(o.y - t.y) < t.h*1.1);
         if(safe) t.targetLane=next;
-        t.cd = rand(0.7, 1.6);
+        t.cd = rand(0.85, 1.9);
       }
 
       const tx=laneCenter(t.targetLane);
       t.x += (tx - t.x) * dt * laneChangeSpeed;
-      t.y += effectiveSpeed * dt * t.rel * obstacleScale;
+
+      t.y += obstacleSpeed * dt * t.rel * obstacleScale;
 
       if(t.y > vh + 200) traffic.splice(i,1);
     }
 
+    // Coins/pickups follow road speed (feels good even when obstacles slow)
     for(let i=coins.length-1;i>=0;i--){
       const c=coins[i];
       c.y += effectiveSpeed*dt*0.90;
@@ -1930,16 +1900,16 @@
       if(p.y > vh+80) pickups.splice(i,1);
     }
 
-    // scoring (kept similar, but speed is lower now)
-    score += dt * (26 + clamp(effectiveSpeed/45, 0, 12));
-    if(nitroActive) score += dt*8;
+    // Scoring tuned for "easy start → chase" (still rewarding)
+    score += dt * (24 + clamp(effectiveSpeed/55, 0, 10));
+    if(nitroActive) score += dt*7;
     if(drift && (leftNow||rightNow)) score += dt*5;
 
     if(!inBonus){
       for(const t of traffic){
         const d = distRect(player.x,player.y,player.w,player.h, t.x,t.y,t.w,t.h);
         if(d>0 && d<8){
-          if(Math.random()<0.12){
+          if(Math.random()<0.11){
             closeCalls++;
             score += 6;
           }
@@ -1947,6 +1917,7 @@
       }
     }
 
+    // Collect
     for(let i=coins.length-1;i>=0;i--){
       const c=coins[i];
       if(rectHit(player.x,player.y,player.w*0.92,player.h*0.92, c.x,c.y, c.r*2, c.r*2)){
@@ -1966,6 +1937,7 @@
       }
     }
 
+    // Collisions
     if(!inBonus && invulnT<=0){
       for(const t of traffic){
         if(rectHit(player.x,player.y,player.w,player.h, t.x,t.y,t.w,t.h)){
@@ -2054,9 +2026,8 @@
   // =========================
   // UI wiring
   // =========================
-  function goHow(){
-    document.getElementById("how").scrollIntoView({behavior:"smooth"});
-  }
+  function goHow(){ document.getElementById("how").scrollIntoView({behavior:"smooth"}); }
+
   feedbackBtn.addEventListener("click", ()=>openInstagramDM("daily__discipline.01"));
   fbBtn2.addEventListener("click", ()=>openInstagramDM("daily__discipline.01"));
   howBtn.addEventListener("click", goHow);
@@ -2086,11 +2057,7 @@
     if(paused) closeMenu(); else openMenu();
   });
 
-  resumeBtn.addEventListener("click", ()=>{
-    if(!running) return;
-    closeMenu();
-  });
-
+  resumeBtn.addEventListener("click", ()=>{ if(!running) return; closeMenu(); });
   restartBtn.addEventListener("click", ()=>restartRun());
 
   exitBtn.addEventListener("click", async ()=>{
@@ -2146,4 +2113,3 @@
 </script>
 </body>
 </html>
-
