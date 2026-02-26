@@ -59,24 +59,96 @@ window.addEventListener("keydown", (e) => {
 });
 window.addEventListener("keyup", (e) => keys.delete(e.code));
 
-// touch / drag
-let pointerDown = false;
-let pointerX0 = 0;
-let baseMove = 0;
-canvas.addEventListener("pointerdown", async (e) => {
-  pointerDown = true;
-  pointerX0 = e.clientX;
-  baseMove = input.moveX;
-  canvas.setPointerCapture(e.pointerId);
+// --- JOYSTICK (small + moveable + smooth/quick) ---
+const joy = document.getElementById("joystick");
+const joyKnob = joy.querySelector(".joy-knob");
+
+let joyActive = false;
+let joyCenter = { x: 90, y: window.innerHeight - 90 };
+let joyRadius = 34; // how far knob can move
+let joyValueX = 0;  // -1..1 target
+let joyPointerId = null;
+
+// Show joystick on touch devices (and still works with mouse if you want)
+const isTouch = matchMedia("(pointer: coarse)").matches;
+if (isTouch) joy.classList.remove("hidden");
+
+function setJoyPos(x, y) {
+  // keep it on screen
+  const pad = 60;
+  x = Math.max(pad, Math.min(window.innerWidth - pad, x));
+  y = Math.max(pad, Math.min(window.innerHeight - pad, y));
+  joyCenter = { x, y };
+  joy.style.left = (x - 45) + "px";
+  joy.style.top  = (y - 45) + "px";
+}
+
+function setKnob(dx, dy) {
+  const len = Math.hypot(dx, dy) || 1;
+  const cl = Math.min(joyRadius, len);
+  const nx = (dx / len) * cl;
+  const ny = (dy / len) * cl;
+
+  joyKnob.style.transform = `translate(${nx}px, ${ny}px) translate(-50%, -50%)`;
+
+  // map X to movement. Make it QUICK but still smooth.
+  joyValueX = clamp(nx / joyRadius, -1, 1);
+}
+
+function resetKnob() {
+  joyKnob.style.transform = `translate(-50%, -50%)`;
+  joyValueX = 0;
+}
+
+joy.addEventListener("pointerdown", async (e) => {
   await ensureAudio();
+  joyActive = true;
+  joyPointerId = e.pointerId;
+  joy.setPointerCapture(joyPointerId);
+
+  // Moveable joystick: place it where user touches
+  setJoyPos(e.clientX, e.clientY);
+  setKnob(0, 0);
 });
-canvas.addEventListener("pointermove", (e) => {
-  if (!pointerDown) return;
-  const dx = (e.clientX - pointerX0) / Math.max(220, window.innerWidth * 0.5);
-  input.moveX = clamp(baseMove + dx * 1.8, -1, 1);
+
+joy.addEventListener("pointermove", (e) => {
+  if (!joyActive || e.pointerId !== joyPointerId) return;
+
+  const dx = e.clientX - joyCenter.x;
+  const dy = e.clientY - joyCenter.y;
+  setKnob(dx, dy);
 });
-canvas.addEventListener("pointerup", () => pointerDown = false);
-canvas.addEventListener("pointercancel", () => pointerDown = false);
+
+joy.addEventListener("pointerup", (e) => {
+  if (e.pointerId !== joyPointerId) return;
+  joyActive = false;
+  joyPointerId = null;
+  resetKnob();
+});
+
+joy.addEventListener("pointercancel", () => {
+  joyActive = false;
+  joyPointerId = null;
+  resetKnob();
+});
+
+window.addEventListener("resize", () => {
+  // keep it in bounds on rotate
+  setJoyPos(joyCenter.x, joyCenter.y);
+});
+
+// Use joystick value to control input smoothly but quickly
+let moveTarget = 0;
+function applyJoystick(dt) {
+  // if joystick active, update target
+  if (isTouch) {
+    moveTarget = joyValueX;
+
+    // Quick response but smooth (lerp)
+    const follow = 1 - Math.exp(-16 * dt);
+    input.moveX = input.moveX + (moveTarget - input.moveX) * follow;
+  }
+}
 
 ui.btnHow.onclick = () => ui.how.classList.toggle("hidden");
 
