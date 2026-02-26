@@ -15,14 +15,14 @@
 <body class="home-mode">
   <div id="app">
 
-    <!-- 3D CANVAS (runs in Garage mode on Home; Gameplay mode after Play) -->
+    <!-- 3D CANVAS -->
     <canvas id="game"></canvas>
 
-    <!-- TOPBAR (restored + improved) -->
+    <!-- TOPBAR -->
     <div class="topbar">
       <div class="brand">
         <h1>NEON RACER 3D</h1>
-        <div class="sub">3D garage preview • Tap Play to start the run</div>
+        <div class="sub">3D universe • Tap Play to start the run</div>
       </div>
 
       <div class="actions">
@@ -43,19 +43,27 @@
         <div class="pill">Score <b id="score">0</b></div>
         <div class="pill">Combo <b id="combo">x1</b></div>
         <div class="pill">Run 🪙 <b id="coins">0</b></div>
+
+        <div class="pill">Lives ❤️ <b id="lives">2</b></div>
+        <div class="pill">Nitro ⚡ <b id="nitro">1</b></div>
+        <div class="pill">Drift 🌀 <b id="drift">0%</b></div>
+
+        <div class="pill" id="pillBonus">Bonus ⏱ <b id="bonus">—</b></div>
+        <div class="pill" id="pillGhost">Ghost 👻 <b id="ghost">OFF</b></div>
       </div>
+
       <div class="hudRight">
         <button id="btn-menu" class="menuBtn" title="Menu">☰</button>
       </div>
     </div>
 
-    <!-- HOME (restored full layout; game does NOT start until Play) -->
+    <!-- HOME -->
     <div id="home" class="home visible">
       <div class="hero">
         <div class="heroRow">
           <div>
             <p class="heroTitle">Race. Dodge. Collect. Flex your rank.</p>
-            <p class="muted">Start easy, get hooked, then chase the leaderboard. Combo multipliers + clean 3D feel.</p>
+            <p class="muted">Free movement, real 3D cars, starfield universe, lane-switching traffic AI, bonus rounds + revive.</p>
           </div>
           <div class="row">
             <button id="btn-play" class="btn primary">▶ Play</button>
@@ -63,91 +71,132 @@
             <button id="btn-feedback" class="btn">💬 Feedback</button>
           </div>
         </div>
-        <div class="chips">
-          <span class="chip">Lives per run: <b>1</b></span>
-          <span class="chip">Combo: <b>Near-miss + drift</b> → multiplier</span>
-          <span class="chip">Tip: <b>Skins</b> are cosmetic only</span>
-          <span class="chip">Daily: <b>Reward + Crate + Tasks</b></span>
-        </div>
-      </div>
 
-      <div class="card">
-        <h3>Player name</h3>
-        <p class="muted">Your name is stored on this device.</p>
-        <div class="row" style="margin-top:10px">
-          <input class="inp" id="playerName" maxlength="18" placeholder="Enter name (default: Gamer)" />
-          <button id="btn-save-name" class="btn">Save</button>
-          <button id="btn-claim-reward" class="btn">Daily Reward</button>
-        </div>
-        <p class="small" id="rewardInfo" style="margin-top:8px"></p>
-      </div>
+        <div class="heroGrid">
 
-      <div class="card">
-        <h3>Daily Crate</h3>
-        <p class="muted">Open once per day. Drops coins, buffs, or skins (Common/Rare/Epic only).</p>
-        <div class="row" style="margin-top:10px">
-          <button id="btn-crate" class="btn">🎁 Open Daily Crate</button>
-          <span class="chip">Status: <b id="crateStatus">Ready</b></span>
-        </div>
-        <p class="small" id="crateInfo" style="margin-top:8px"></p>
-      </div>
-
-      <div class="grid">
-        <div class="card">
-          <h3>Daily Tasks</h3>
-          <p class="muted">3 random missions each day. Complete and claim coins.</p>
-          <div id="missions" style="margin-top:10px; display:grid; gap:10px;"></div>
-        </div>
-
-        <div class="card">
-          <h3>Leaderboard (Top 10)</h3>
-          <p class="muted" id="lbStatus">Loading…</p>
-          <div class="lbList" id="leaderboard"></div>
-          <div class="row" style="margin-top:10px">
-            <button id="btn-submit" class="btn">Submit Best Score</button>
+          <!-- DAILY REWARD -->
+          <div class="card">
+            <h3>Daily Reward</h3>
+            <p class="muted">Claim once per day. Build streak for bigger rewards.</p>
+            <div class="row">
+              <button id="btn-reward" class="btn">🎁 Claim</button>
+              <span class="chip">Streak: <b id="rewardStreak">0</b>/7</span>
+              <span class="chip">Today: <b id="rewardAmt">0</b>🪙</span>
+            </div>
           </div>
+
+          <!-- DAILY CRATE -->
+          <div class="card">
+            <h3>Daily Crate</h3>
+            <p class="muted">Free daily roll. Unlock skins.</p>
+            <div class="row">
+              <button id="btn-crate" class="btn">📦 Open</button>
+              <span class="chip">Result: <b id="crateOut">—</b></span>
+            </div>
+          </div>
+
+          <!-- MISSIONS -->
+          <div class="card">
+            <h3>Daily Tasks</h3>
+            <p class="muted">3 tasks refresh daily. Earn coins for consistency.</p>
+            <div id="missions" class="missions"></div>
+            <div class="row">
+              <button id="btn-refresh-missions" class="btn small">↻ Refresh</button>
+              <span class="chip">Bonus: <b id="missionsBonus">0</b>🪙</span>
+            </div>
+          </div>
+
+          <!-- SHOP -->
+          <div class="card">
+            <h3>Shop</h3>
+            <p class="muted">Buy run-boosters. Applied automatically when you start.</p>
+            <div class="shop">
+              <div class="shopItem">
+                <div class="sTitle">Magnet</div><div class="muted small">+6s</div>
+                <button class="btn small" data-buy="magnet">Buy 120🪙</button>
+              </div>
+              <div class="shopItem">
+                <div class="sTitle">Shield</div><div class="muted small">+5s</div>
+                <button class="btn small" data-buy="shield">Buy 140🪙</button>
+              </div>
+              <div class="shopItem">
+                <div class="sTitle">Score x2</div><div class="muted small">+7s</div>
+                <button class="btn small" data-buy="scorex2">Buy 160🪙</button>
+              </div>
+              <div class="shopItem">
+                <div class="sTitle">Nitro</div><div class="muted small">+1 charge</div>
+                <button class="btn small" data-buy="nitro">Buy 180🪙</button>
+              </div>
+              <div class="shopItem">
+                <div class="sTitle">Slowmo</div><div class="muted small">+4s</div>
+                <button class="btn small" data-buy="slowmo">Buy 160🪙</button>
+              </div>
+              <div class="shopItem">
+                <div class="sTitle">Invisibility</div><div class="muted small">+4s</div>
+                <button class="btn small" data-buy="invis">Buy 180🪙</button>
+              </div>
+            </div>
+            <div class="row">
+              <span class="chip">Queued: <b id="shopQueued">—</b></span>
+              <button id="btn-clear-queued" class="btn small">Clear</button>
+            </div>
+          </div>
+
+          <!-- SKINS -->
+          <div class="card">
+            <h3>Skins</h3>
+            <p class="muted">Your car preview updates in the 3D garage.</p>
+            <div id="skins" class="skins"></div>
+          </div>
+
+          <!-- LEADERBOARD -->
+          <div class="card">
+            <h3>Leaderboard</h3>
+            <p class="muted">Submit your best. Challenge seeds can be shared.</p>
+            <div id="lb" class="lb"></div>
+            <div class="row">
+              <button id="btn-submit" class="btn small">Submit Best</button>
+              <button id="btn-refresh" class="btn small">Refresh</button>
+            </div>
+          </div>
+
         </div>
       </div>
+    </div>
 
-      <div class="card">
-        <h3>Shop (buy before you play)</h3>
-        <p class="muted">Buffs also spawn in-game. Shop buffs are queued for your next run.</p>
-        <div class="shopGrid" id="shop"></div>
-        <p class="small" id="shopInfo" style="margin-top:8px"></p>
-      </div>
-
-      <div class="card">
-        <h3>Skins</h3>
-        <p class="muted">Cosmetics only. Buy once, use forever. Your 3D garage preview updates instantly.</p>
-        <div class="shopGrid" id="skins"></div>
-      </div>
-
-      <div class="card" id="howPanel" style="display:none">
-        <h3>How to Play</h3>
-        <p class="muted">
-          Desktop: A/D or ←/→ steer, Space nitro, Shift drift. <br/>
-          Mobile: Use the joystick to move (left/right). <br/>
-          Avoid obstacles, collect coins and buffs. Near-miss = bonus + combo.
-        </p>
-      </div>
-
-      <div class="card">
-        <h3>Contact / Feedback</h3>
-        <p class="muted">Tap “Feedback” to message <b>@daily__discipline.01</b> via Instagram DM.</p>
-      </div>
-
-      <div class="card">
-        <h3>Privacy / Terms</h3>
-        <p class="muted">
-          We store player name, best score, coins (bank), daily tasks, crate state, shop buys, skins in localStorage.
-          Leaderboard stores your name + best score online (if enabled).
-        </p>
+    <!-- HOW TO PLAY -->
+    <div id="howPanel" class="modal">
+      <div class="panel">
+        <h2>How to Play</h2>
+        <ul>
+          <li><b>Move:</b> WASD / Arrow Keys / Joystick (mobile).</li>
+          <li><b>Nitro:</b> Space</li>
+          <li><b>Drift:</b> Hold Shift + steer</li>
+          <li><b>Goal:</b> Dodge traffic, collect coins, keep combo.</li>
+          <li><b>Bonus Round:</b> Coin-heavy section, no obstacle spawns.</li>
+          <li><b>Revive:</b> Once per run for 100 coins.</li>
+        </ul>
+        <div class="row">
+          <button id="btn-how-close" class="btn primary">OK</button>
+        </div>
       </div>
     </div>
 
     <!-- COUNTDOWN -->
     <div id="countdown" class="overlay">
       <div class="count">3</div>
+    </div>
+
+    <!-- MENU OVERLAY -->
+    <div id="menu" class="overlay">
+      <div class="panel">
+        <h2>Paused</h2>
+        <p class="sub muted">Resume or return home.</p>
+        <div class="row">
+          <button id="btn-resume" class="btn primary">Resume</button>
+          <button id="btn-home2" class="btn">Home</button>
+        </div>
+      </div>
     </div>
 
     <!-- GAME OVER -->
@@ -157,7 +206,8 @@
         <p class="sub">Score: <b id="finalScore">0</b> • Run Coins: <b id="finalCoins">0</b></p>
 
         <div class="row">
-          <button id="btn-restart" class="btn primary">Restart</button>
+          <button id="btn-revive" class="btn primary">Revive (100🪙)</button>
+          <button id="btn-restart" class="btn">Restart</button>
           <button id="btn-home" class="btn">Home</button>
         </div>
 
@@ -168,32 +218,19 @@
           <button id="btn-submit2" class="btn">Submit Best</button>
         </div>
 
-        <div id="shareOut" class="muted tiny"></div>
+        <div id="shareOut" class="shareOut"></div>
       </div>
     </div>
 
-    <!-- MENU (in-game) -->
-    <div id="menu" class="overlay">
-      <div class="panel wide">
-        <h2>Menu</h2>
-        <p class="muted" style="margin-top:0">Resume, restart, home, submit best score.</p>
-        <div class="row" style="margin-top:10px">
-          <button id="btn-resume" class="btn primary">▶ Resume</button>
-          <button id="btn-restart2" class="btn">🔁 Restart</button>
-          <button id="btn-home2" class="btn">🏠 Home</button>
-          <button id="btn-submit3" class="btn">Submit Best</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TOAST -->
+    <!-- Toast -->
     <div id="toast" class="toast"></div>
 
-    <!-- JOYSTICK -->
-    <div id="joystick" class="joy hidden">
+    <!-- Mobile Joystick -->
+    <div id="joy" class="joy hidden">
       <div class="joy-base"></div>
       <div class="joy-knob"></div>
     </div>
+
   </div>
 
   <script type="module" src="./js/main.js"></script>
