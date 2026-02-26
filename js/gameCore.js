@@ -109,7 +109,7 @@ export class GameCore {
     this.player.targetX = desiredX;
 
     // drift adds sideways responsiveness at higher speed
-    const responsiveness = 8 + this.player.drift.amount * 6;
+    const responsiveness = 14 + this.player.drift.amount * 8;
     this.player.x = damp(this.player.x, this.player.targetX, responsiveness, dt);
 
     // invulnerability
