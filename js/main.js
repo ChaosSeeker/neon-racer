@@ -72,6 +72,16 @@ let joyPointerId = null;
 // Show joystick on touch devices (and still works with mouse if you want)
 const isTouch = matchMedia("(pointer: coarse)").matches;
 if (isTouch) joy.classList.remove("hidden");
+if (isTouch) {
+  // Spawn joystick where user touches (left half of screen)
+  window.addEventListener("pointerdown", async (e) => {
+    if (ui.home.classList.contains("visible") || ui.gameover.classList.contains("visible")) return;
+    if (e.clientX > window.innerWidth * 0.65) return; // avoid right-side taps (buttons)
+    await ensureAudio();
+    setJoyPos(e.clientX, e.clientY);
+    joy.classList.remove("hidden");
+  }, { passive: true });
+}
 
 function setJoyPos(x, y) {
   // keep it on screen
