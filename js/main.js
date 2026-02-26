@@ -220,9 +220,15 @@ ui.btnHome.onclick = () => {
 ui.btnSubmit.onclick = () => submitScore();
 ui.btnSubmit2.onclick = () => submitScore();
 
-function showHome(v) { ui.home.classList.toggle("visible", !!v); }
-function showCountdown(v) { ui.countdown.classList.toggle("visible", !!v); }
-function showGameOver(v) { ui.gameover.classList.toggle("visible", !!v); }
+function showHome(v) {
+  ui.home.classList.toggle("visible", !!v);
+  if (isTouch) joy.classList.toggle("hidden", !!v); // hide joystick on home
+}
+
+function showGameOver(v) {
+  ui.gameover.classList.toggle("visible", !!v);
+  if (isTouch) joy.classList.toggle("hidden", !!v); // hide joystick on gameover
+}
 
 function toast(msg) {
   ui.toast.textContent = msg;
