@@ -276,23 +276,30 @@ export class GameCore {
       this.player.drift.amount = clamp01(this.player.drift.amount - dt * 1.6);
     }
 
-    // FREE movement: X and forward/back Z
-    const maxX = 3.2;
-    const maxZ = 2.0;     // how far back you can drag
-    const minZ = -5.5;    // how far forward you can push
+    // FREE movement: X and forward/back Z (NO auto-centering)
+const maxX = 3.2;
+const maxZ = 2.0;     // back limit
+const minZ = -5.5;    // forward limit
 
-    const desiredX = clamp(input.moveX || 0, -1, 1) * maxX;
-    const desiredZ = clamp(input.moveY || 0, -1, 1); // up = forward
-    const targetZ = lerp(maxZ, minZ, (desiredZ + 1) * 0.5); // map [-1..1] -> [maxZ..minZ]
+const dead = 0.06;
+const mxRaw = clamp(input.moveX || 0, -1, 1);
+const myRaw = clamp(input.moveY || 0, -1, 1);
 
-    this.player.targetX = desiredX;
-    this.player.targetZ = targetZ;
+// if no input, HOLD last target (do not snap back to center)
+if (Math.abs(mxRaw) > dead) {
+  this.player.targetX = mxRaw * maxX;
+}
+if (Math.abs(myRaw) > dead) {
+  const targetZ = lerp(maxZ, minZ, (myRaw + 1) * 0.5);
+  this.player.targetZ = targetZ;
+}
 
-    const responsiveness = 14 + this.player.drift.amount * 8;
-    this.player.x = damp(this.player.x, this.player.targetX, responsiveness, dt);
+// smoother / slower movement feel
+const xResponse = 9 + this.player.drift.amount * 4; // was too fast
+const zResponse = 7;                                // slower forward/back
 
-    // forward/back smoothing (a bit slower for control feel)
-    this.player.zOff = damp(this.player.zOff, this.player.targetZ, 10, dt);
+this.player.x = damp(this.player.x, this.player.targetX, xResponse, dt);
+this.player.zOff = damp(this.player.zOff, this.player.targetZ, zResponse, dt);
 
     // invulnerability
     this.player.invulnT = Math.max(0, this.player.invulnT - dt);
