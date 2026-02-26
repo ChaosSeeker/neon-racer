@@ -6,8 +6,8 @@ export const Leaderboard = {
   client: null,
 
   // Fill these to enable
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: "",
+  SUPABASE_URL: "https://dnyibstgahnjbkjokuxs.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_1PLhDg4aoFucc0-7qWH0KA_unYKueat",
   TABLE: "neon_racer_scores",
 
   async init() {
