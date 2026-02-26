@@ -89,7 +89,7 @@ function setKnob(dx, dy) {
   const nx = (dx / len) * cl;
   const ny = (dy / len) * cl;
 
-  joyKnob.style.transform = `translate(${nx}px, ${ny}px) translate(-50%, -50%)`;
+  joyKnob.style.transform = `translate(-50%, -50%) translate(${nx}px, ${ny}px)`;
 
   // map X to movement. Make it QUICK but still smooth.
   joyValueX = clamp(nx / joyRadius, -1, 1);
