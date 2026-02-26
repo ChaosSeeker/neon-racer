@@ -11,9 +11,9 @@ export class Renderer3D {
     this.renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-    this.camera = new THREE.PerspectiveCamera(65, 1, 0.1, 240);
-    this.camera.position.set(0, 4.2, 8.5);
-    this.camera.lookAt(0, 0.8, -18);
+    this.camera = new THREE.PerspectiveCamera(75, 1, 0.1, 260);
+    this.camera.position.set(0, 2.6, 6.6);
+    this.camera.lookAt(0, 0.6, -22);
 
     // lights
     const amb = new THREE.AmbientLight(0x7aa6ff, 0.35);
