@@ -155,7 +155,7 @@ function applyJoystick(dt) {
     moveTarget = joyValueX;
 
     // Quick response but smooth (lerp)
-    const follow = 1 - Math.exp(-16 * dt);
+    const follow = 1 - Math.exp(-24 * dt);
     input.moveX = input.moveX + (moveTarget - input.moveX) * follow;
   }
 }
