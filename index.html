@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Neon Racer 3D</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="home-mode">
+  <div id="app">
+
+    <!-- 3D CANVAS (runs in Garage mode on Home; Gameplay mode after Play) -->
+    <canvas id="game"></canvas>
+
+    <!-- TOPBAR (restored + improved) -->
+    <div class="topbar">
+      <div class="brand">
+        <h1>NEON RACER 3D</h1>
+        <div class="sub">3D garage preview • Tap Play to start the run</div>
+      </div>
+
+      <div class="actions">
+        <span class="chip">Player: <b id="chipPlayer">Gamer</b></span>
+        <span class="chip">Rank <b id="chipRank">Rookie</b></span>
+        <span class="chip">Bank 🪙 <b id="chipBank">0</b></span>
+        <span class="chip">Best <b id="chipBest">0</b></span>
+
+        <button id="btn-audio" class="btn small" title="Toggle audio">🔊</button>
+        <button id="btn-fullscreen" class="btn small" title="Fullscreen">⛶</button>
+        <button id="btn-play-top" class="btn primary small" title="Play">▶ Play</button>
+      </div>
+    </div>
+
+    <!-- HUD (in-game only) -->
+    <div id="hud" class="hud">
+      <div class="hudLeft">
+        <div class="pill">Score <b id="score">0</b></div>
+        <div class="pill">Combo <b id="combo">x1</b></div>
+        <div class="pill">Run 🪙 <b id="coins">0</b></div>
+      </div>
+      <div class="hudRight">
+        <button id="btn-menu" class="menuBtn" title="Menu">☰</button>
+      </div>
+    </div>
+
+    <!-- HOME (restored full layout; game does NOT start until Play) -->
+    <div id="home" class="home visible">
+      <div class="hero">
+        <div class="heroRow">
+          <div>
+            <p class="heroTitle">Race. Dodge. Collect. Flex your rank.</p>
+            <p class="muted">Start easy, get hooked, then chase the leaderboard. Combo multipliers + clean 3D feel.</p>
+          </div>
+          <div class="row">
+            <button id="btn-play" class="btn primary">▶ Play</button>
+            <button id="btn-how" class="btn">📘 How to Play</button>
+            <button id="btn-feedback" class="btn">💬 Feedback</button>
+          </div>
+        </div>
+        <div class="chips">
+          <span class="chip">Lives per run: <b>2</b></span>
+          <span class="chip">Combo: <b>Near-miss + drift</b> → multiplier</span>
+          <span class="chip">Tip: <b>Skins</b> are cosmetic only</span>
+          <span class="chip">Daily: <b>Reward + Crate + Tasks</b></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Player name</h3>
+        <p class="muted">Your name is stored on this device.</p>
+        <div class="row" style="margin-top:10px">
+          <input class="inp" id="playerName" maxlength="18" placeholder="Enter name (default: Gamer)" />
+          <button id="btn-save-name" class="btn">Save</button>
+          <button id="btn-claim-reward" class="btn">Daily Reward</button>
+        </div>
+        <p class="small" id="rewardInfo" style="margin-top:8px"></p>
+      </div>
+
+      <div class="card">
+        <h3>Daily Crate</h3>
+        <p class="muted">Open once per day. Drops coins, buffs, or skins (Common/Rare/Epic only).</p>
+        <div class="row" style="margin-top:10px">
+          <button id="btn-crate" class="btn">🎁 Open Daily Crate</button>
+          <span class="chip">Status: <b id="crateStatus">Ready</b></span>
+        </div>
+        <p class="small" id="crateInfo" style="margin-top:8px"></p>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Daily Tasks</h3>
+          <p class="muted">3 random missions each day. Complete and claim coins.</p>
+          <div id="missions" style="margin-top:10px; display:grid; gap:10px;"></div>
+        </div>
+
+        <div class="card">
+          <h3>Leaderboard (Top 10)</h3>
+          <p class="muted" id="lbStatus">Loading…</p>
+          <div class="lbList" id="leaderboard"></div>
+          <div class="row" style="margin-top:10px">
+            <button id="btn-submit" class="btn">Submit Best Score</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Shop (buy before you play)</h3>
+        <p class="muted">Buffs also spawn in-game. Shop buffs are queued for your next run.</p>
+        <div class="shopGrid" id="shop"></div>
+        <p class="small" id="shopInfo" style="margin-top:8px"></p>
+      </div>
+
+      <div class="card">
+        <h3>Skins</h3>
+        <p class="muted">Cosmetics only. Buy once, use forever. Your 3D garage preview updates instantly.</p>
+        <div class="shopGrid" id="skins"></div>
+      </div>
+
+      <div class="card" id="howPanel" style="display:none">
+        <h3>How to Play</h3>
+        <p class="muted">
+          Desktop: A/D or ←/→ steer, Space nitro, Shift drift. <br/>
+          Mobile: Use the joystick to move (left/right). <br/>
+          Avoid obstacles, collect coins and buffs. Near-miss = bonus + combo.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Contact / Feedback</h3>
+        <p class="muted">Tap “Feedback” to message <b>@daily__discipline.01</b> via Instagram DM.</p>
+      </div>
+
+      <div class="card">
+        <h3>Privacy / Terms</h3>
+        <p class="muted">
+          We store player name, best score, coins (bank), daily tasks, crate state, shop buys, skins in localStorage.
+          Leaderboard stores your name + best score online (if enabled).
+        </p>
+      </div>
+    </div>
+
+    <!-- COUNTDOWN -->
+    <div id="countdown" class="overlay">
+      <div class="count">3</div>
+    </div>
+
+    <!-- GAME OVER -->
+    <div id="gameover" class="overlay">
+      <div class="panel">
+        <h2>Game Over</h2>
+        <p class="sub">Score: <b id="finalScore">0</b> • Run Coins: <b id="finalCoins">0</b></p>
+
+        <div class="row">
+          <button id="btn-restart" class="btn primary">Restart</button>
+          <button id="btn-home" class="btn">Home</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <button id="btn-share" class="btn">Share Challenge</button>
+          <button id="btn-submit2" class="btn">Submit Best</button>
+        </div>
+
+        <div id="shareOut" class="muted tiny"></div>
+      </div>
+    </div>
+
+    <!-- MENU (in-game) -->
+    <div id="menu" class="overlay">
+      <div class="panel wide">
+        <h2>Menu</h2>
+        <p class="muted" style="margin-top:0">Resume, restart, home, submit best score.</p>
+        <div class="row" style="margin-top:10px">
+          <button id="btn-resume" class="btn primary">▶ Resume</button>
+          <button id="btn-restart2" class="btn">🔁 Restart</button>
+          <button id="btn-home2" class="btn">🏠 Home</button>
+          <button id="btn-submit3" class="btn">Submit Best</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="toast"></div>
+    <!-- Rotate-to-landscape overlay (mobile) -->
+    <div id="rotateOverlay" class="rotateOverlay" aria-hidden="true">
+      <div class="rotCard">
+        <div class="rotIcon">📱↻</div>
+        <h3>Rotate the phone to play</h3>
+        <p class="muted">Neon Racer is best in landscape for a wider road and better control.</p>
+        <button id="rotateOk" class="btn primary small" style="margin-top:10px">OK</button>
+      </div>
+    </div>
+
+
+    <!-- MOBILE CONTROLS -->
+    <div id="touchUi" class="touchUi hidden">
+      <div id="joystick" class="joy">
+        <div class="joy-base" id="joyBase"></div>
+        <div class="joy-knob" id="joyKnob"></div>
+      </div>
+
+      <div class="touchBtns">
+        <button id="btnNitro" class="touchBtn" aria-label="Nitro">⚡ Nitro</button>
+        <button id="btnDrift" class="touchBtn" aria-label="Drift">🌀 Drift</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const top = document.getElementById("btn-play-top");
+      const play = document.getElementById("btn-play");
+      if (top && play) top.addEventListener("click", () => play.click());
+    });
+  </script>
+</body>
+</html>
+
