@@ -870,7 +870,7 @@
   }
 
   function startBonus(){ inBonus=true; bonusT=12.0; hudBonus.style.display="inline-flex"; playSfx("bonus"); buffBackup = { shield:buffShield, magnet:buffMagnet, slowmo:buffSlowmo, invisibility:buffInvisibility }; buffShield=0; buffMagnet=0; buffSlowmo=0; buffInvisibility=0; traffic.length=0; }
-  function endBonus(){ inBonus=false; hudBonus.style.display="none"; profile.bankCoins += bonusCollected.coins; saveProfile(); syncHomeUI(); for(const t of PICK_TYPES){ const count = bonusCollected[t]||0; for(let i=0;i<count;i++) applyPickup(t); } bonusCollected = { coins:0, shield:0, magnet:0, slowmo:0, nitro:0, invisibility:0 }; if(buffBackup){ buffShield = Math.max(buffShield, buffBackup.shield); buffMagnet = Math.max(buffMagnet, buffBackup.magnet); buffSlowmo = Math.max(buffSlowmo, buffBackup.slowmo); buffInvisibility = Math.max(buffInvisibility, buffBackup.invisibility); buffBackup=null; } nextBonusAt = Math.floor(score) + 1000; }
+  function endBonus(){ inBonus=false; hudBonus.style.display="none"; for(const t of PICK_TYPES){ const count = bonusCollected[t]||0; for(let i=0;i<count;i++) applyPickup(t); } bonusCollected = { coins:0, shield:0, magnet:0, slowmo:0, nitro:0, invisibility:0 }; if(buffBackup){ buffShield = Math.max(buffShield, buffBackup.shield); buffMagnet = Math.max(buffMagnet, buffBackup.magnet); buffSlowmo = Math.max(buffSlowmo, buffBackup.slowmo); buffInvisibility = Math.max(buffInvisibility, buffBackup.invisibility); buffBackup=null; } nextBonusAt = Math.floor(score) + 1000; }
 
   function hitCrash(){
     if(invulnT>0) return; playSfx("crash"); hitStop = Math.max(hitStop, 0.10); startShake(1.0); combo = 0; comboTimer = 0; hudCombo.style.display="none";
