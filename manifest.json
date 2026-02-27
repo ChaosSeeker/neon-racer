@@ -1,9 +1,0 @@
-{
-  "name": "Neon Racer 2D",
-  "short_name": "Neon Racer",
-  "start_url": ".",
-  "display": "standalone",
-  "background_color": "#05060b",
-  "theme_color": "#05060b",
-  "icons": []
-}
