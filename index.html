@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Neon Racer</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json" />
+</head>
+<body>
+
+<div id="loading" class="overlay">Loading Neon Racer…</div>
+
+<!-- HOME -->
+<div id="home" class="screen hidden homeScreen">
+  <div class="homeBg"></div>
+
+  <header class="topBar">
+    <div class="logoText">
+      <span class="logoNeon">NEON</span><span class="logoRacer">RACER</span>
+    </div>
+
+    <div class="playerChip">
+      <img class="avatar" alt="" src="assets/avatar_placeholder.png" />
+      <div class="playerMeta">
+        <button id="editNameBtn" class="nameBtn" title="Edit name">
+          <span id="playerNameText">Player123</span>
+          <span class="namePencil">✎</span>
+        </button>
+        <div class="coinRow">
+          <span class="coinDot">●</span>
+          <span id="coinText">75</span>
+        </div>
+      </div>
+      <button id="settingsBtn" class="iconBtn" title="Settings">⚙</button>
+    </div>
+  </header>
+
+  <main class="homeMain">
+    <section class="centerCard">
+      <div class="cardHeader">
+        <div class="cardTitle">Rookie Racer</div>
+      </div>
+
+      <div class="carArea">
+        <canvas id="homeCarCanvas" width="520" height="240" aria-label="Car preview"></canvas>
+      </div>
+
+      <div class="statsGrid">
+        <div class="stat"><div class="statLabel">Speed</div><div class="bar"><div class="fill" style="width:72%"></div></div></div>
+        <div class="stat"><div class="statLabel">Accel</div><div class="bar"><div class="fill" style="width:78%"></div></div></div>
+        <div class="stat"><div class="statLabel">Handling</div><div class="bar"><div class="fill" style="width:82%"></div></div></div>
+        <div class="stat"><div class="statLabel">Nitro</div><div class="bar"><div class="fill" style="width:65%"></div></div></div>
+      </div>
+
+      <button id="playBtn" class="playBig">PLAY</button>
+    </section>
+
+    <aside class="leaderPanel" aria-label="Leaderboard">
+      <div class="leaderHeader">
+        <div class="leaderTitle">Leaderboard</div>
+        <div class="leaderSub">Top scores (local)</div>
+      </div>
+      <ol id="leaderList" class="leaderList"></ol>
+    </aside>
+  </main>
+
+  <section class="homeActions">
+    <button class="actionCard red" data-open="dailyRewardModal">
+      <div class="actionTitle">Daily Reward</div>
+      <div class="actionSub">Claim: +100</div>
+    </button>
+    <button class="actionCard green" data-open="dailyCrateModal">
+      <div class="actionTitle">Daily Crate</div>
+      <div class="actionSub">Free Open</div>
+    </button>
+    <button class="actionCard blue" data-open="dailyTasksModal">
+      <div class="actionTitle">Daily Tasks</div>
+      <div class="actionSub">3 New Missions</div>
+    </button>
+  </section>
+
+  <nav class="bottomNav">
+    <button class="navBtn" data-open="garageModal">Garage</button>
+    <button class="navBtn" data-open="shopModal">Shop</button>
+    <button class="navBtn" data-open="missionsModal">Missions</button>
+  </nav>
+</div>
+
+<!-- GAME -->
+<div id="game" class="screen hidden">
+  <canvas id="gameCanvas" aria-label="Neon Racer game"></canvas>
+
+  <div class="hud">
+    <div class="hudLeft">
+      <div class="hudLine"><span class="hudKey">Score</span> <span id="scoreText">0</span></div>
+      <div class="hudLine"><span class="hudKey">Best</span> <span id="bestText">0</span></div>
+    </div>
+    <div class="hudRight">
+      <button id="pauseBtn" class="hudBtn">Pause</button>
+      <button id="homeBtn" class="hudBtn">Home</button>
+    </div>
+  </div>
+
+  <div id="countdown" class="countdown hidden">3</div>
+
+  <div id="gameOver" class="overlay hidden">
+    <div class="modalCard">
+      <div class="modalTitle">Game Over</div>
+      <div class="modalText">Score: <b id="finalScoreText">0</b></div>
+      <div class="modalRow">
+        <button id="restartBtn" class="primary">Restart</button>
+        <button id="goHomeBtn">Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Moveable Joystick -->
+  <div id="joyRoot" class="joystickRoot">
+    <div id="joyBase" class="joyBase">
+      <div id="joyKnob" class="joyKnob"></div>
+    </div>
+    <div class="joyHint">Drag ring to move</div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div id="modalOverlay" class="overlay hidden">
+  <div class="modalCard wide">
+    <button id="modalClose" class="modalClose" aria-label="Close">✕</button>
+    <div id="modalTitle" class="modalTitle">Modal</div>
+    <div id="modalBody" class="modalBody">...</div>
+  </div>
+</div>
+
+<!-- Name edit popup -->
+<div id="nameOverlay" class="overlay hidden">
+  <div class="modalCard">
+    <div class="modalTitle">Edit Name</div>
+    <input id="nameInput" class="textInput" maxlength="16" placeholder="Enter name" />
+    <div class="modalRow">
+      <button id="saveNameBtn" class="primary">Save</button>
+      <button id="cancelNameBtn">Cancel</button>
+    </div>
+    <div class="modalHint">This name is saved for the local leaderboard.</div>
+  </div>
+</div>
+
+<script src="js/main2d.js"></script>
+</body>
+</html>
