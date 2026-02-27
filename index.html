@@ -1,0 +1,34 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Neon Racer 2D</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div id="loading">Loading Neon Racer...</div>
+
+<div id="home" class="screen hidden">
+  <h1>NEON RACER</h1>
+  <button id="playBtn">PLAY</button>
+  <button id="shopBtn">CARS</button>
+</div>
+
+<div id="shop" class="screen hidden">
+  <h2>Select Your Car</h2>
+  <div id="carList"></div>
+  <button onclick="UI.show('home')">Back</button>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<div id="joystick">
+  <div id="stick"></div>
+</div>
+
+<script src="js/main2d.js" defer></script>
+</body>
+</html>
