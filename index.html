@@ -1,0 +1,280 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#05060b" />
+  <title>Neon Racer 2D</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json" />
+</head>
+<body>
+  <!-- Boot / Loading -->
+  <div id="boot" class="boot">
+    <div class="bootCard">
+      <div class="logoGlow">NEON RACER</div>
+      <div class="bootSub">Booting…</div>
+      <div class="bootBar"><div class="bootBarFill" id="bootBarFill"></div></div>
+      <div class="bootHint">Tip: Drag the tiny “move” handle to reposition the joystick.</div>
+    </div>
+  </div>
+
+  <!-- Top HUD -->
+  <div id="hud" class="hud hidden">
+    <div class="hudLeft">
+      <div class="pill"><span class="pillLabel">SCORE</span><span id="hudScore" class="pillValue">0</span></div>
+      <div class="pill"><span class="pillLabel">COINS</span><span id="hudCoins" class="pillValue">0</span></div>
+      <div class="pill"><span class="pillLabel">COMBO</span><span id="hudCombo" class="pillValue">x1</span></div>
+    </div>
+    <div class="hudRight">
+      <div class="pill"><span class="pillLabel">HP</span><span id="hudHp" class="pillValue">♥</span></div>
+      <div class="pill"><span class="pillLabel">NITRO</span><span id="hudNitro" class="pillValue">1</span></div>
+      <button class="iconBtn" id="pauseBtn" aria-label="Pause">⏸</button>
+    </div>
+  </div>
+
+  <!-- Home Screen -->
+  <div id="home" class="screen">
+    <div class="homeWrap">
+      <div class="homeHeader">
+        <div class="homeTitle">NEON RACER</div>
+        <div class="homeTag">2D Premium Edition</div>
+      </div>
+
+      <div class="homeCards">
+        <div class="card hero">
+          <div class="heroTop">
+            <div class="heroLine">Fast. Neon. Addictive.</div>
+            <div class="heroSmall">Home-first flow • Daily rewards • Car stats • Leaderboard</div>
+          </div>
+          <div class="heroButtons">
+            <button class="btn primary" id="playBtn">Play</button>
+            <button class="btn" id="resumeBtn" disabled title="Start a run first">Resume</button>
+          </div>
+          <div class="heroMeta">
+            <div class="metaChip">Selected car: <b id="selectedCarName">Street Starter</b></div>
+            <div class="metaChip">Coins: <b id="homeCoins">0</b></div>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <button class="card tile" id="carsBtn">
+            <div class="tileTitle">Cars</div>
+            <div class="tileSub">7 unique stats</div>
+          </button>
+          <button class="card tile" id="dailyBtn">
+            <div class="tileTitle">Daily</div>
+            <div class="tileSub" id="dailyStatus">Reward ready</div>
+          </button>
+          <button class="card tile" id="tasksBtn">
+            <div class="tileTitle">Tasks</div>
+            <div class="tileSub" id="tasksStatus">3 available</div>
+          </button>
+          <button class="card tile" id="leaderboardBtn">
+            <div class="tileTitle">Leaderboard</div>
+            <div class="tileSub">Global / local</div>
+          </button>
+          <button class="card tile" id="settingsBtn">
+            <div class="tileTitle">Settings</div>
+            <div class="tileSub">Sound • Controls</div>
+          </button>
+          <button class="card tile" id="installBtn" style="display:none">
+            <div class="tileTitle">Install</div>
+            <div class="tileSub">Add to home</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="footerNote">Tip: Use joystick (mobile) or arrow keys (desktop). Tap Nitro for boost.</div>
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <canvas id="gameCanvas" class="gameCanvas hidden"></canvas>
+
+  <!-- Countdown -->
+  <div id="countdown" class="countdown hidden">3</div>
+
+  <!-- Pause Overlay -->
+  <div id="pauseOverlay" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modalTitle">Paused</div>
+      <div class="modalRow">
+        <button class="btn primary" id="resumePauseBtn">Resume</button>
+        <button class="btn" id="restartBtn">Restart</button>
+      </div>
+      <div class="modalRow">
+        <button class="btn ghost" id="homeBtn">Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Overlay -->
+  <div id="gameOverOverlay" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modalTitle">Game Over</div>
+      <div class="modalText">
+        Score: <b id="finalScore">0</b><br/>
+        Coins: <b id="finalCoins">0</b>
+      </div>
+
+      <div class="nameRow">
+        <label for="playerName">Name</label>
+        <input id="playerName" maxlength="16" placeholder="Enter name" />
+      </div>
+
+      <div class="modalRow">
+        <button class="btn primary" id="submitScoreBtn">Submit Score</button>
+        <button class="btn" id="playAgainBtn">Play Again</button>
+      </div>
+      <div class="modalRow">
+        <button class="btn ghost" id="goHomeBtn">Home</button>
+      </div>
+      <div class="modalSmall" id="submitStatus"></div>
+    </div>
+  </div>
+
+  <!-- Cars Modal -->
+  <div id="carsOverlay" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal wide">
+      <div class="modalTitle">Cars</div>
+      <div class="modalSmall">Each car changes gameplay stats.</div>
+      <div id="carsList" class="carsList"></div>
+      <div class="modalRow">
+        <button class="btn ghost" data-close="carsOverlay">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Daily Modal -->
+  <div id="dailyOverlay" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal wide">
+      <div class="modalTitle">Daily Hub</div>
+      <div class="dailyGrid">
+        <div class="card dailyCard">
+          <div class="tileTitle">Daily Reward</div>
+          <div class="tileSub">Claim once per day</div>
+          <button class="btn primary" id="claimDailyBtn">Claim</button>
+          <div class="modalSmall" id="dailyRewardStatus"></div>
+        </div>
+        <div class="card dailyCard">
+          <div class="tileTitle">Daily Crate</div>
+          <div class="tileSub">One crate per day</div>
+          <button class="btn primary" id="openCrateBtn">Open</button>
+          <div class="modalSmall" id="crateStatus"></div>
+        </div>
+      </div>
+      <div class="modalRow">
+        <button class="btn ghost" data-close="dailyOverlay">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tasks Modal -->
+  <div id="tasksOverlay" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal wide">
+      <div class="modalTitle">Daily Tasks</div>
+      <div class="modalSmall">Complete tasks to earn coins.</div>
+      <div id="tasksList" class="tasksList"></div>
+      <div class="modalRow">
+        <button class="btn ghost" data-close="tasksOverlay">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal -->
+  <div id="leaderboardOverlay" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal wide">
+      <div class="modalTitle">Leaderboard</div>
+      <div class="modalRow" style="gap:8px; flex-wrap:wrap">
+        <button class="btn" id="lbRefreshBtn">Refresh</button>
+        <button class="btn" id="lbModeBtn">Mode: Local</button>
+      </div>
+      <div id="leaderboardTable" class="lbTable"></div>
+      <div class="modalRow">
+        <button class="btn ghost" data-close="leaderboardOverlay">Close</button>
+      </div>
+      <div class="modalSmall">If Supabase is not configured, leaderboard runs in local mode automatically.</div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsOverlay" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal wide">
+      <div class="modalTitle">Settings</div>
+      <div class="settingsGrid">
+        <div class="settingRow">
+          <div>
+            <div class="settingName">Sound FX</div>
+            <div class="settingDesc">Coins, crashes, nitro</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="sfxToggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="settingRow">
+          <div>
+            <div class="settingName">Music</div>
+            <div class="settingDesc">Light synth ambience</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="musicToggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="settingRow">
+          <div>
+            <div class="settingName">Joystick sensitivity</div>
+            <div class="settingDesc">Lower = smoother</div>
+          </div>
+          <input id="sensRange" type="range" min="0.6" max="1.8" step="0.05" />
+        </div>
+        <div class="settingRow">
+          <div>
+            <div class="settingName">Reduced motion</div>
+            <div class="settingDesc">Less shake & flash</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="rmToggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="settingRow">
+          <div>
+            <div class="settingName">Vibration</div>
+            <div class="settingDesc">Mobile haptics</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="vibeToggle" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="modalRow">
+        <button class="btn ghost" data-close="settingsOverlay">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toastHost" class="toastHost" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Mobile Controls -->
+  <div id="mobileControls" class="mobileControls hidden">
+    <button class="mcBtn" id="nitroBtn">NITRO</button>
+  </div>
+
+  <!-- Joystick: small, transparent, movable -->
+  <div id="joystick" class="joystick hidden" aria-label="Joystick">
+    <div id="joyMove" class="joyMove" title="Drag to move">move</div>
+    <div id="joyBase" class="joyBase">
+      <div id="joyStick" class="joyStick"></div>
+    </div>
+  </div>
+
+  <script src="js/pwa.js" defer></script>
+  <script src="js/main2d.js" defer></script>
+</body>
+</html>
