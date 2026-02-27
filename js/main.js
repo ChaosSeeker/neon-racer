@@ -38,6 +38,7 @@ const ui = {
   btnFeedback: document.getElementById("btn-feedback"),
 
   // Topbar controls
+  btnEnv: document.getElementById("btn-env"),
   btnAudio: document.getElementById("btn-audio"),
   btnFullscreen: document.getElementById("btn-fullscreen"),
   btnPlayTop: document.getElementById("btn-play-top"),
@@ -182,8 +183,6 @@ function setLoadout(v) { setJSON(LS.shop, v); }
 
 // -------- Missions --------
 function genMissions() {
-  // Simple missions that can be completed based on best/run stats we track locally.
-  // You can expand later with real in-run hooks.
   const pool = [
     { id: "play1", text: "Play 1 run", reward: 60, type: "plays", target: 1 },
     { id: "play3", text: "Play 3 runs", reward: 120, type: "plays", target: 3 },
@@ -191,7 +190,6 @@ function genMissions() {
     { id: "score1500", text: "Score 1500+", reward: 140, type: "best", target: 1500 },
     { id: "bank500", text: "Reach 500 bank coins", reward: 150, type: "bank", target: 500 },
   ];
-  // pick 3 distinct
   const pick = [];
   while (pick.length < 3) {
     const m = pool[Math.floor(Math.random() * pool.length)];
@@ -216,7 +214,6 @@ function getMissions() {
 
 function setMissions(m) { setJSON(LS.missions, m); }
 
-// Track plays today (for missions)
 function playsKey() { return `nr_plays_${todayKey()}`; }
 function getPlaysToday() { return getNum(playsKey(), 0); }
 function incPlaysToday() { setNum(playsKey(), getPlaysToday() + 1); }
@@ -269,7 +266,7 @@ async function ensureAudio() {
   if (audio.ctx?.state === "suspended") await audio.ctx.resume();
 }
 
-// -------- Home widgets (shop/skins/missions/leaderboard) --------
+// -------- Home widgets --------
 function refreshTopbar() {
   const nm = getStr(LS.name, "Gamer");
   const bank = getNum(LS.bank, 0);
@@ -278,8 +275,6 @@ function refreshTopbar() {
   ui.chipBank.textContent = String(bank);
   ui.chipBest.textContent = String(best);
   ui.chipRank.textContent = rankFromBest(best);
-
-  // Also keep input in sync
   ui.playerName.value = nm || "Gamer";
 }
 
@@ -422,7 +417,6 @@ function refreshMissions() {
     btn.onclick = () => {
       const ms = getMissions();
       if (ms[idx].claimed) return;
-      // recompute safety
       const bankNow = getNum(LS.bank, 0);
       setNum(LS.bank, bankNow + ms[idx].reward);
       ms[idx].claimed = true;
@@ -498,7 +492,7 @@ async function submitBest() {
   }
 }
 
-// -------- Controls (keyboard + joystick) --------
+// -------- Controls --------
 let keys = new Set();
 window.addEventListener("keydown", (e) => {
   keys.add(e.code);
@@ -509,7 +503,6 @@ window.addEventListener("keyup", (e) => keys.delete(e.code));
 const joy = ui.joy;
 const joyKnob = ui.joyKnob;
 
-
 let joyActive = false;
 let joyCenter = { x: 78, y: window.innerHeight - 108 };
 let joyRadius = 44;
@@ -519,17 +512,13 @@ let joyPointerId = null;
 
 const isTouch = matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
 
-
 // -------- Landscape lock (mobile) --------
 let pausedByOrientation = false;
 
 function landscapeOK(){
-  // iOS/Android sometimes report swapped values during rotate; still safe.
   return window.innerWidth >= window.innerHeight;
 }
 
-
-// Try to lock landscape on mobile browsers (best effort; requires user gesture + often fullscreen)
 async function tryLockLandscape() {
   try {
     if (window.screen?.orientation?.lock) {
@@ -563,14 +552,11 @@ async function ensureLandscapeOrPrompt() {
   const isTouch = matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
   if (!isTouch) return true;
 
-  // Already landscape
   if (!isPortrait()) { showRotatePrompt(false); return true; }
 
-  // Best effort: fullscreen + lock
   await requestFullscreen(document.documentElement);
   const locked = await tryLockLandscape();
 
-  // If still portrait, show prompt and block starting the run
   if (isPortrait()) {
     showRotatePrompt(true);
     return false;
@@ -584,7 +570,7 @@ function updateLandscapeLock(){
   if (!isTouch) {
     document.body.classList.remove("landscape-lock");
     showRotatePrompt(false);
-pausedByOrientation = false;
+    pausedByOrientation = false;
     return true;
   }
 
@@ -592,11 +578,11 @@ pausedByOrientation = false;
   if (!ok) {
     document.body.classList.add("landscape-lock");
     showRotatePrompt(true);
-pausedByOrientation = true;
+    pausedByOrientation = true;
   } else {
     document.body.classList.remove("landscape-lock");
     showRotatePrompt(false);
-pausedByOrientation = false;
+    pausedByOrientation = false;
   }
   return ok;
 }
@@ -608,14 +594,12 @@ window.addEventListener("orientationchange", () => {
   setTimeout(updateLandscapeLock, 150);
 });
 
-
 function setJoyPos(x, y) {
   const pad = 86;
   x = Math.max(pad, Math.min(window.innerWidth - pad, x));
   y = Math.max(pad, Math.min(window.innerHeight - pad, y));
   joyCenter = { x, y };
 
-  // Position within touchUi
   if (ui.touchUi) {
     const rect = ui.touchUi.getBoundingClientRect();
     const lx = x - rect.left;
@@ -629,8 +613,8 @@ function setJoyPos(x, y) {
 }
 
 function setKnob(dx, dy) {
-    if (!joyKnob) return;
-const len = Math.hypot(dx, dy) || 1;
+  if (!joyKnob) return;
+  const len = Math.hypot(dx, dy) || 1;
   const cl = Math.min(joyRadius, len);
   const nx = (dx / len) * cl;
   const ny = (dy / len) * cl;
@@ -638,7 +622,6 @@ const len = Math.hypot(dx, dy) || 1;
   joyKnob.style.transform = `translate(-50%, -50%) translate(${nx}px, ${ny}px)`;
 
   joyValueX = clamp(nx / joyRadius, -1, 1);
-  // Invert Y: up should be +1 (forward), down should be -1 (back)
   joyValueY = clamp(-ny / joyRadius, -1, 1);
 }
 
@@ -654,13 +637,9 @@ function setTouchVisible(on) {
 }
 
 if (isTouch) {
-  // Start with a comfortable default spot
   setTouchVisible(false);
-
-  // Allow the player to "drop" joystick position with first touch on left half
   window.addEventListener("pointerdown", async (e) => {
     if (mode !== "run") return;
-    // ignore touches on UI buttons/right side
     if (e.clientX > window.innerWidth * 0.60) return;
     if (e.target && (ui.btnNitro?.contains(e.target) || ui.btnDrift?.contains(e.target))) return;
 
@@ -715,7 +694,7 @@ function bindTouchBtn(btn, onDown, onUp) {
 
 bindTouchBtn(ui.btnNitro, () => {
   nitroHold = true;
-  nitroPulseT = 0.12; // quick pulse so it triggers even if tap
+  nitroPulseT = 0.12; 
   ui.btnNitro.classList.add("on");
 }, () => {
   nitroHold = false;
@@ -731,7 +710,6 @@ bindTouchBtn(ui.btnDrift, () => {
 });
 
 function updateInput(dt) {
-  // Desktop: WASD / arrows. Space = nitro. Shift = drift.
   if (!isTouch) {
     let mx = input.moveX;
     let my = input.moveY;
@@ -753,19 +731,14 @@ function updateInput(dt) {
     return;
   }
 
-  // Touch: 4-way joystick + buttons.
-  // Smooth input so the car doesn't snap.
   const follow = 1 - Math.exp(-22 * dt);
   const targetX = joyActive ? joyValueX : 0;
   const targetY = joyActive ? joyValueY : 0;
   input.moveX = input.moveX + (targetX - input.moveX) * follow;
   input.moveY = input.moveY + (targetY - input.moveY) * follow;
 
-  // Nitro: tap/hold
   nitroPulseT = Math.max(0, nitroPulseT - dt);
   input.nitro = nitroHold || nitroPulseT > 0;
-
-  // Drift: hold; direction depends on current steering sign
   input.driftDir = driftHold ? (input.moveX < -0.10 ? -1 : input.moveX > 0.10 ? 1 : 0) : 0;
 }
 
@@ -791,8 +764,6 @@ function applyQueuedBuffsToRun() {
   const total = Object.values(loadout).reduce((a, b) => a + (b || 0), 0);
   if (total <= 0) return;
 
-  // We only apply if GameCore exposes compatible timers. If not, it safely does nothing.
-  // (This keeps code robust with your current GameCore.)
   try {
     if (game.player) {
       if (loadout.magnet) game.player.magnetT = Math.max(game.player.magnetT || 0, 6 * loadout.magnet);
@@ -809,16 +780,13 @@ function applyQueuedBuffsToRun() {
 
 async function play() {
   await ensureAudio();
-
-  // Do NOT start game update until countdown done
   setMode("countdown");
   ui.home.classList.remove("visible");
   document.body.classList.remove("home-mode");
-  renderer.setMode("home"); // keep garage view during countdown briefly if needed
+  renderer.setMode("home"); 
 
   await startCountdown();
 
-  // Now start gameplay
   game.start();
   applyQueuedBuffsToRun();
   incPlaysToday();
@@ -828,7 +796,6 @@ async function play() {
 }
 
 function endGame() {
-  // Update best + bank
   const runScore = Math.floor(game.score);
   const runCoins = Math.floor(game.coins);
 
@@ -872,6 +839,13 @@ ui.btnFeedback.onclick = () => {
   window.open("https://www.instagram.com/daily__discipline.01/", "_blank");
 };
 
+// Toggle City / Space Button
+ui.btnEnv.onclick = () => {
+  const newMode = renderer.toggleEnvironment();
+  ui.btnEnv.innerHTML = newMode === "space" ? "🌌 Space" : "🏙️ City";
+  toast(newMode === "space" ? "Space Mode" : "City Mode");
+};
+
 ui.btnAudio.onclick = async () => {
   await ensureAudio();
   const on = audio.toggle();
@@ -900,7 +874,7 @@ ui.btnClaimReward.onclick = () => {
   const last = getStr(LS.rewardDay, "");
   if (last === day) return toast("Already claimed today");
 
-  const reward = 60 + Math.floor(Math.random() * 91); // 60..150
+  const reward = 60 + Math.floor(Math.random() * 91); 
   setStr(LS.rewardDay, day);
   setNum(LS.bank, getNum(LS.bank, 0) + reward);
   ui.rewardInfo.textContent = `Claimed +${reward}🪙 today!`;
@@ -915,24 +889,21 @@ ui.btnCrate.onclick = () => {
   const last = getStr(LS.crateDay, "");
   if (last === day) return toast("Crate already opened today");
 
-  // Drop table (no legendary)
   const roll = Math.random();
   let msg = "";
   let bank = getNum(LS.bank, 0);
 
   if (roll < 0.55) {
-    const coins = 80 + Math.floor(Math.random() * 141); // 80..220
+    const coins = 80 + Math.floor(Math.random() * 141); 
     bank += coins;
     msg = `Crate: +${coins}🪙 coins (Common)`;
   } else if (roll < 0.88) {
-    // Buff
     const b = SHOP[Math.floor(Math.random() * SHOP.length)];
     const loadout = getLoadout();
     loadout[b.id] = (loadout[b.id] || 0) + 1;
     setLoadout(loadout);
     msg = `Crate: ${b.name} x1 (Rare)`;
   } else {
-    // Skin (Epic)
     const owned = getOwnedSkins();
     const candidates = SKINS.filter(s => !owned.has(s.id) && s.id !== "cyanPink");
     if (candidates.length) {
@@ -941,7 +912,7 @@ ui.btnCrate.onclick = () => {
       setOwnedSkins(owned);
       msg = `Crate: Skin unlocked — ${s.name} (Epic)`;
     } else {
-      const coins = 160 + Math.floor(Math.random() * 221); // fallback
+      const coins = 160 + Math.floor(Math.random() * 221);
       bank += coins;
       msg = `Crate: +${coins}🪙 coins (Epic duplicate → coins)`;
     }
@@ -1005,11 +976,10 @@ ui.btnRestart2.onclick = async () => {
 
 ui.btnHome2.onclick = backHome;
 
-// -------- Main loop: always renders (home = 3D garage; run = gameplay) --------
+// -------- Main loop --------
 function loop(now) {
   const dt = Math.min(0.033, (now - last) / 1000);
   last = now;
-  // show rotate prompt on touch devices if in portrait (no gameplay freeze)
   updateLandscapeLock();
 
   if (mode === "run") {
@@ -1050,7 +1020,6 @@ function loop(now) {
       endGame();
     }
   } else {
-    // 3D homepage garage preview
     renderer.render(dt);
   }
 
@@ -1061,7 +1030,6 @@ requestAnimationFrame(loop);
 
 // -------- Init --------
 (async () => {
-  // Load saved data
   const savedName = getStr(LS.name, "Gamer");
   if (!savedName) setStr(LS.name, "Gamer");
 
@@ -1069,16 +1037,12 @@ requestAnimationFrame(loop);
   if (!localStorage.getItem(LS.best)) setNum(LS.best, 0);
 
   ensureDailyMissions();
-
-  // Apply skin to 3D garage
   applySkinToRenderer();
 
-  // Leaderboard init
   const ok = await Leaderboard.init();
   ui.lbStatus.textContent = ok ? "Leaderboard: live" : "Leaderboard: coming soon";
   refreshLeaderboard();
 
-  // Refresh UI
   refreshTopbar();
   refreshRewardUI();
   refreshCrateRewardUI();
@@ -1086,7 +1050,6 @@ requestAnimationFrame(loop);
   refreshSkins();
   refreshMissions();
 
-  // Challenge link toast
   const url = new URL(location.href);
   if (url.searchParams.get("challenge") === "1") {
     toast("Challenge link loaded. Hit Play!");
