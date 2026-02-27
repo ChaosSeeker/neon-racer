@@ -54,9 +54,9 @@ export class Renderer3D {
     this.scene.add(this.starfield);
 
     // City background (toggle with universe)
-    this.city = this.makeCity();
-    this.city.visible = false;
-    this.scene.add(this.city);
+    //this.city = this.makeCity();
+    //this.city.visible = false;
+    //this.scene.add(this.city);
 
     this.envMode = "space";
     this._envSeg = -1;
