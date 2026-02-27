@@ -629,10 +629,27 @@
   const joy = { active:false, x:0, y:0, id:null, baseRect:null };
   function setStickPos(nx, ny){ joy.x = clamp(nx, -1, 1); joy.y = clamp(ny, -1, 1); const r = 28; const px = joy.x * r; const py = joy.y * r; joyStick.style.transform = `translate(-50%,-50%) translate(${px}px, ${py}px)`; }
   function resetStick(){ joy.active=false; joy.id=null; setStickPos(0,0); }
-  joyBase.addEventListener("pointerdown", (e)=>{ joy.active=true; joy.id=e.pointerId; joy.baseRect = joyBase.getBoundingClientRect(); joyBase.setPointerCapture(joy.id); handleJoyMove(e); });
-  joyBase.addEventListener("pointermove", (e)=>{ if(!joy.active || e.pointerId!==joy.id) return; handleJoyMove(e); });
-  joyBase.addEventListener("pointerup", (e)=>{ if(e.pointerId!==joy.id) return; resetStick(); });
-  joyBase.addEventListener("pointercancel", (e)=>{ if(e.pointerId!==joy.id) return; resetStick(); });
+  const joyWrap = document.getElementById("joystickWrap");
+  joyWrap.addEventListener("pointerdown", (e)=>{ 
+    joy.active=true; 
+    joy.id=e.pointerId; 
+    
+    // Snap the base to exactly where the user touched
+    const rWrap = joyWrap.getBoundingClientRect();
+    const tx = e.clientX - rWrap.left;
+    const ty = e.clientY - rWrap.top;
+    joyBase.style.left = `${tx - 50}px`; // center the 100px base
+    joyBase.style.top = `${ty - 50}px`;
+    joyBase.style.bottom = "auto";
+    
+    joyWrap.setPointerCapture(joy.id); 
+    joy.baseRect = joyBase.getBoundingClientRect(); 
+    handleJoyMove(e); 
+  });
+  joyWrap.addEventListener("pointermove", (e)=>{ if(!joy.active || e.pointerId!==joy.id) return; handleJoyMove(e); });
+  const endJoy = (e)=>{ if(e.pointerId!==joy.id) return; resetStick(); };
+  joyWrap.addEventListener("pointerup", endJoy);
+  joyWrap.addEventListener("pointercancel", endJoy);
   function handleJoyMove(e){ const r = joy.baseRect || joyBase.getBoundingClientRect(); const cx = r.left + r.width/2; const cy = r.top + r.height/2; const dx = e.clientX - cx; const dy = e.clientY - cy; const max = (r.width*0.5) - 18; const dist = Math.hypot(dx,dy); const nd = dist > 0 ? Math.min(1, dist/max) : 0; const nx = dist>0 ? (dx/dist)*nd : 0; const ny = dist>0 ? (dy/dist)*nd : 0; setStickPos(nx, ny); }
 
   const touch = { nitro:false, drift:false };
