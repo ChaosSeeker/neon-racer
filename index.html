@@ -963,7 +963,7 @@
 
     // Free Y Movement (Super Snappy)
     const fbAxis = clamp(-jy + (kUp?1:0) + (kDown?-1:0), -1, 1);
-    const fbSpeed = lerp(500, 700, clamp(score/4200, 0, 1));
+    const fbSpeed = lerp(350, 500, clamp(score/4200, 0, 1));
     const targetVy = fbAxis * fbSpeed;
     player.vy = lerp(player.vy, targetVy, 1 - Math.pow(0.00001, dt)); // Instant Stop/Go
     player.y -= player.vy * dt;
