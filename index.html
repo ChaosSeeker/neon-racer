@@ -951,7 +951,7 @@
     const yawTarget = driftWanted ? (steerAxis * (0.16 + driftSlip*0.14)) : (steerAxis * 0.06); driftLean = lerp(driftLean, yawTarget, 1 - Math.pow(0.0007, dt));
 
     // Player Movement (Super Snappy)
-    const steerSpeed = lerp(850, 1100, clamp(score/4200, 0, 1));
+    const steerSpeed = lerp(550, 750, clamp(score/4200, 0, 1));
     const traction = 1 - driftSlip*0.65;
     const response = driftWanted ? 0.75 : 1.0;
     const targetVx = steerAxis * steerSpeed;
