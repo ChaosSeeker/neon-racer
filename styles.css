@@ -1,0 +1,56 @@
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: black;
+  color: white;
+  text-align: center;
+  overflow: hidden;
+}
+
+.hidden { display: none; }
+
+.screen {
+  position: absolute;
+  width: 100%;
+  top: 20%;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 10px;
+  background: #0ff;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#gameCanvas {
+  background: #111;
+  display: none;
+}
+
+#loading {
+  position: absolute;
+  width: 100%;
+  top: 40%;
+}
+
+#joystick {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 70px;
+  height: 70px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  display: none;
+}
+
+#stick {
+  width: 30px;
+  height: 30px;
+  background: rgba(0,255,255,0.6);
+  border-radius: 50%;
+  margin: 20px;
+}
