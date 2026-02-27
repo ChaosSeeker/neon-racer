@@ -658,7 +658,7 @@
   bindHoldButton(nitroTouch, "nitro"); bindHoldButton(driftTouch, "drift");
 
   const laneCount=3; function laneW(){ return vw * 0.56 / laneCount; } function roadX(){ return vw * 0.22; } function roadW(){ return vw * 0.56; } function laneCenter(l){ return roadX() + laneW()*(l+0.5); }
-  const DIFF = { baseSpeed: 150, accel: 3.8, spawnBase: 0.62, spawnRamp: 0.00095, laneChangeRate: 0.055, laneChangeSpeed: 3.1 };
+  const DIFF = { baseSpeed: 90, accel: 2.0, spawnBase: 0.62, spawnRamp: 0.00095, laneChangeRate: 0.055, laneChangeSpeed: 3.1 };
 
   const player = { x:0, y:0, w:0, h:0, vx:0, vy:0 };
   const traffic=[], coins=[], pickups=[]; const PICK_TYPES = ["shield","magnet","slowmo","nitro","invisibility"];
