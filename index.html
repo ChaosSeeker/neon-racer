@@ -17,7 +17,7 @@
       --panel:#0b1230;
       --text:#eaf0ff; --muted:#9fb0e6;
       --a:#7cffea; --p:#ff6adf; --g:#ffd24d; --r:#ff4b5c;
-      --common:#9fb0e6; --rare:#7cffea; --epic:#ff6adf; --legend:#ffd24d;
+      --common:#9fb0e6; --rare:#7cffea; --epic:#ff6adf; --legend:#ffd24d; --mythic:#ff3333;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -67,6 +67,7 @@
     button:hover{background:rgba(255,255,255,.12)}
     button:active{transform:translateY(1px)}
     button:disabled{opacity:.55; cursor:not-allowed}
+    button.garage-btn { background: linear-gradient(135deg, rgba(124,255,234,.2), rgba(255,106,223,.2)); border-color: var(--a); }
 
     .home{
       flex:1;
@@ -102,10 +103,12 @@
       display:inline-flex; gap:6px; align-items:center;
     }
     .chip b{color:var(--text)}
+    .rar{ font-weight: 800; }
     .rar.common{color:var(--common)}
     .rar.rare{color:var(--rare)}
     .rar.epic{color:var(--epic)}
     .rar.legendary{color:var(--legend)}
+    .rar.mythic{color:var(--mythic); text-shadow: 0 0 6px rgba(255,51,51,0.6);}
 
     .grid{
       display:grid; grid-template-columns: 1.2fr 1fr; gap:12px;
@@ -160,7 +163,7 @@
       display:flex; flex-direction:column; gap:8px; min-height:126px;
     }
     .item .top{display:flex; justify-content:space-between; gap:8px; align-items:center;}
-    .item .name{font-weight:950}
+    .item .name{font-weight:950; display:flex; flex-direction:column;}
     .qty{
       display:inline-flex; min-width:26px; justify-content:center;
       padding:2px 8px; border-radius:999px; background:rgba(0,0,0,.25);
@@ -265,7 +268,7 @@
 
     .overlay{
       position:absolute; inset:0; display:none; place-items:center; padding:16px;
-      background:rgba(0,0,0,.60); backdrop-filter: blur(8px); z-index:30;
+      background:rgba(0,0,0,.75); backdrop-filter: blur(8px); z-index:30;
     }
     .modal{
       width:min(920px, 94vw); max-height: min(88vh, 900px); overflow:auto;
@@ -298,7 +301,7 @@
       <div class="sub">Tap Play to go fullscreen</div>
     </div>
     <div class="actions">
-      <span class="chip">Player: <b id="playerName">Gamer</b></span>
+      <button id="garageBtn" class="garage-btn">🚗 <span id="topPlayerName">Gamer</span>'s Garage</button>
       <span class="chip">Rank <b id="rankChip">Rookie</b></span>
       <span class="chip">Bank 🪙 <b id="bankCoins">0</b></span>
       <span class="chip">Best <b id="bestScore">0</b></span>
@@ -312,18 +315,17 @@
       <div class="heroRow">
         <div>
           <p class="heroTitle">Race. Dodge. Collect. Flex your rank.</p>
-          <p class="muted">Start easy, get hooked, then chase the leaderboard.</p>
+          <p class="muted">Now featuring Paint Skins, Legendary Tanks, and Mythical Rides.</p>
         </div>
         <div class="row">
           <button id="playBtn">▶ Play Fullscreen</button>
           <button id="howBtn">📘 How to Play</button>
-          <button id="feedbackBtn">💬 Feedback</button>
         </div>
       </div>
     </div>
 
     <div class="card">
-      <h3>Player name</h3>
+      <h3>Player Profile</h3>
       <div class="row" style="margin-top:10px">
         <input class="inp" id="nameInput" maxlength="18" placeholder="Enter name (default: Gamer)" />
         <button id="saveName">Save</button>
@@ -354,13 +356,18 @@
     </div>
 
     <div class="card">
-      <h3>Shop (buy before you play)</h3>
+      <h3>Item Shop (buy before you play)</h3>
       <div class="shopGrid" id="shop"></div>
     </div>
 
-    <div class="card">
-      <h3>Vehicles</h3>
-      <div class="shopGrid" id="skins"></div>
+    <div class="grid">
+      <div class="card">
+        <h3>Dealership (Vehicles)</h3>
+        <div class="shopGrid" id="skins"></div> </div>
+      <div class="card">
+        <h3>Paint Shop (Skins)</h3>
+        <div class="shopGrid" id="paintShop"></div>
+      </div>
     </div>
   </div>
 
@@ -376,7 +383,6 @@
           <div class="pill">Nitro <b id="hudNitro">100%</b></div>
           <div class="pill" id="hudCombo" style="display:none">🔥 Combo <b id="hudComboV">x1</b></div>
           <div class="pill" id="hudBonus" style="display:none">BONUS <b id="hudBonusT">12.0</b>s</div>
-          <div class="pill" id="hudGhost" style="display:none">👻 Ghost <b>ON</b></div>
           <div class="pill" id="hudDrift" style="display:none">🌀 Drift <b id="hudDriftV">0%</b></div>
         </div>
         <div class="hudRight">
@@ -430,18 +436,6 @@
                 <h3>Shop (next run)</h3>
                 <div class="shopGrid" id="shop2"></div>
               </div>
-              <div class="card" style="margin-top:12px; background:rgba(0,0,0,.18)">
-                <h3>Vehicles</h3>
-                <div class="shopGrid" id="skins2"></div>
-              </div>
-              <div class="card" style="margin-top:12px; background:rgba(0,0,0,.18)">
-                <h3>Daily Crate</h3>
-                <div class="row" style="margin-top:10px">
-                  <button id="crateBtn2">🎁 Open</button>
-                  <span class="chip">Status: <b id="crateStatus2">Ready</b></span>
-                </div>
-                <p class="small" id="crateInfo2" style="margin-top:8px"></p>
-              </div>
             </div>
           </div>
           <div class="card" style="margin-top:12px; background:rgba(0,0,0,.18)">
@@ -449,6 +443,28 @@
             <div id="missions2" style="margin-top:10px; display:grid; gap:10px;"></div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="garageOverlay">
+    <div class="modal" style="max-width: 800px;">
+      <h2><span id="garageModalName"></span>'s Garage</h2>
+      <p class="muted">Equip your owned Vehicles and Paint Skins here.</p>
+      
+      <div class="split" style="margin-top:15px;">
+        <div class="card" style="background:rgba(0,0,0,.18)">
+          <h3>Owned Vehicles</h3>
+          <div class="shopGrid" id="garageVehicles" style="grid-template-columns: 1fr;"></div>
+        </div>
+        <div class="card" style="background:rgba(0,0,0,.18)">
+          <h3>Owned Paint Skins</h3>
+          <div class="shopGrid" id="garagePaints" style="grid-template-columns: 1fr;"></div>
+        </div>
+      </div>
+      
+      <div class="row" style="margin-top:15px; justify-content:flex-end;">
+        <button id="closeGarageBtn">Close Garage</button>
       </div>
     </div>
   </div>
@@ -492,32 +508,32 @@
   const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d", { alpha:false });
 
-  const playerNameEl = document.getElementById("playerName"), bankCoinsEl = document.getElementById("bankCoins"), bestScoreEl = document.getElementById("bestScore"), rankChipEl = document.getElementById("rankChip");
+  const playerNameEl = document.getElementById("playerName"), topPlayerNameEl = document.getElementById("topPlayerName"), bankCoinsEl = document.getElementById("bankCoins"), bestScoreEl = document.getElementById("bestScore"), rankChipEl = document.getElementById("rankChip");
   const audioBtn = document.getElementById("audioBtn"), nameInput = document.getElementById("nameInput"), saveNameBtn = document.getElementById("saveName"), claimBonusBtn = document.getElementById("claimBonus"), bonusInfo = document.getElementById("bonusInfo");
-  const crateBtn = document.getElementById("crateBtn"), crateBtn2 = document.getElementById("crateBtn2"), crateStatus = document.getElementById("crateStatus"), crateStatus2 = document.getElementById("crateStatus2"), crateInfo = document.getElementById("crateInfo"), crateInfo2 = document.getElementById("crateInfo2");
+  const crateBtn = document.getElementById("crateBtn"), crateStatus = document.getElementById("crateStatus"), crateInfo = document.getElementById("crateInfo");
   const playBtn = document.getElementById("playBtn"), playFromTop = document.getElementById("playFromTop"), howBtn = document.getElementById("howBtn");
   const missionsEl = document.getElementById("missions"), missions2El = document.getElementById("missions2");
   const lbStatusEl = document.getElementById("lbStatus"), lbListEl = document.getElementById("lbList"), lbStatus2El = document.getElementById("lbStatus2"), lbList2El = document.getElementById("lbList2");
-  const shopEl = document.getElementById("shop"), shop2El = document.getElementById("shop2"), skinsEl = document.getElementById("skins"), skins2El = document.getElementById("skins2");
-  const hudScore = document.getElementById("hudScore"), hudBest = document.getElementById("hudBest"), hudRunCoins = document.getElementById("hudRunCoins"), hudLives = document.getElementById("hudLives"), hudRank = document.getElementById("hudRank"), hudNitro = document.getElementById("hudNitro"), hudBonus = document.getElementById("hudBonus"), hudBonusT = document.getElementById("hudBonusT"), hudCombo = document.getElementById("hudCombo"), hudComboV = document.getElementById("hudComboV"), hudGhost = document.getElementById("hudGhost"), hudDrift = document.getElementById("hudDrift"), hudDriftV = document.getElementById("hudDriftV");
+  const shopEl = document.getElementById("shop"), shop2El = document.getElementById("shop2"), skinsEl = document.getElementById("skins"), paintShopEl = document.getElementById("paintShop");
+  
+  // HUD Elements
+  const hudScore = document.getElementById("hudScore"), hudBest = document.getElementById("hudBest"), hudRunCoins = document.getElementById("hudRunCoins"), hudLives = document.getElementById("hudLives"), hudRank = document.getElementById("hudRank"), hudNitro = document.getElementById("hudNitro"), hudBonus = document.getElementById("hudBonus"), hudBonusT = document.getElementById("hudBonusT"), hudCombo = document.getElementById("hudCombo"), hudComboV = document.getElementById("hudComboV"), hudDrift = document.getElementById("hudDrift"), hudDriftV = document.getElementById("hudDriftV");
+  
   const menuBtn = document.getElementById("menuBtn"), overlay = document.getElementById("overlay"), resumeBtn = document.getElementById("resumeBtn"), restartBtn = document.getElementById("restartBtn"), exitBtn = document.getElementById("exitBtn");
   const reviveBtn = document.getElementById("reviveBtn"), reviveHint = document.getElementById("reviveHint"), menuBank = document.getElementById("menuBank"), menuBest = document.getElementById("menuBest");
   const joyBase = document.getElementById("joyBase"), joyStick = document.getElementById("joyStick"), nitroTouch = document.getElementById("nitroTouch"), driftTouch = document.getElementById("driftTouch");
   const toastEl = document.getElementById("toast"), toastTopEl = document.getElementById("toastTop");
+
+  // Garage Elements
+  const garageBtn = document.getElementById("garageBtn"), garageOverlay = document.getElementById("garageOverlay"), closeGarageBtn = document.getElementById("closeGarageBtn"), garageVehiclesEl = document.getElementById("garageVehicles"), garagePaintsEl = document.getElementById("garagePaints"), garageModalName = document.getElementById("garageModalName");
 
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const lerp=(a,b,t)=>a+(b-a)*t;
   const rand=(a,b)=>a+Math.random()*(b-a);
   const randi=(a,b)=>Math.floor(rand(a,b+1));
 
-  function toast(msg, ms=1500){
-    toastEl.textContent = msg; toastEl.style.display="block";
-    clearTimeout(toastEl._t); toastEl._t=setTimeout(()=>toastEl.style.display="none", ms);
-  }
-  function toastTop(msg, ms=1600){
-    toastTopEl.textContent = msg; toastTopEl.style.display="block";
-    clearTimeout(toastTopEl._t); toastTopEl._t=setTimeout(()=>toastTopEl.style.display="none", ms);
-  }
+  function toast(msg, ms=1500){ toastEl.textContent = msg; toastEl.style.display="block"; clearTimeout(toastEl._t); toastEl._t=setTimeout(()=>toastEl.style.display="none", ms); }
+  function toastTop(msg, ms=1600){ toastTopEl.textContent = msg; toastTopEl.style.display="block"; clearTimeout(toastTopEl._t); toastTopEl._t=setTimeout(()=>toastTopEl.style.display="none", ms); }
   function todayISO(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
   function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
 
@@ -532,8 +548,7 @@
   const Music = { tempo: 110, playing:false, nextTime:0, step:0, timer:null, bass:null, lead:null, hat:null };
 
   function ensureAudioContext(){
-    if(ac) return;
-    ac = new (window.AudioContext || window.webkitAudioContext)();
+    if(ac) return; ac = new (window.AudioContext || window.webkitAudioContext)();
     master = ac.createGain(); master.gain.value = settings.audioOn ? 1 : 0; master.connect(ac.destination);
     musicBus = ac.createGain(); sfxBus = ac.createGain();
     musicBus.gain.value = settings.musicVol; sfxBus.gain.value = settings.sfxVol;
@@ -551,10 +566,10 @@
       o.frequency.exponentialRampToValueAtTime(1320, now+0.1);
       g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.3, now+0.01); g.gain.exponentialRampToValueAtTime(0.0001, now+0.2);
       o.connect(g); o.start(now); o.stop(now+0.25);
-    } else if(type==="crash") {
-      const o = ac.createOscillator(); o.type="sawtooth"; o.frequency.setValueAtTime(150, now);
+    } else if(type==="crash" || type==="smash") {
+      const o = ac.createOscillator(); o.type="sawtooth"; o.frequency.setValueAtTime(type==="smash"? 100 : 150, now);
       o.frequency.exponentialRampToValueAtTime(40, now+0.3);
-      g.gain.setValueAtTime(0.4, now); g.gain.exponentialRampToValueAtTime(0.0001, now+0.3);
+      g.gain.setValueAtTime(type==="smash"? 0.6 : 0.4, now); g.gain.exponentialRampToValueAtTime(0.0001, now+0.3);
       o.connect(g); o.start(now); o.stop(now+0.35);
     }
   }
@@ -581,28 +596,52 @@
   function stopMusic(){ Music.playing=false; if(Music.timer) clearTimeout(Music.timer); Music.timer=null; try{ Music.bass?.o?.stop(); Music.lead?.o?.stop(); }catch{} }
   audioBtn.addEventListener("click", async ()=>{ ensureAudioContext(); if(ac.state === "suspended") await ac.resume().catch(()=>{}); setAudioEnabled(!settings.audioOn); toast(settings.audioOn ? "Audio ON" : "Muted"); });
 
-  const PROFILE_KEY="neon_racer_profile_v4";
+  const PROFILE_KEY="neon_racer_profile_v5";
   let _saveCooldown = 0;
   function saveProfile(){ localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); }
   function saveProfileThrottled(dt){ _saveCooldown -= dt; if(_saveCooldown <= 0){ _saveCooldown = 0.55; saveProfile(); } }
-  let profile = (() => { try{ return JSON.parse(localStorage.getItem(PROFILE_KEY)||"null"); }catch{ return null; } })() || { name:"Gamer", bestScore:0, bankCoins:0, streakDaysClaimed:0, lastBonusDate:null, missionsDate:null, missions:[], ownedSkins:[], skin:"", lastCrateDate:null, ghost:null };
   
-  // VEHICLE SYSTEM (Replaces old skins)
+  let profile = (() => { try{ return JSON.parse(localStorage.getItem(PROFILE_KEY)||"null"); }catch{ return null; } })();
+  if(!profile){
+    // try migrate from v4
+    const old = JSON.parse(localStorage.getItem("neon_racer_profile_v4")||"null");
+    profile = old || { name:"Gamer", bestScore:0, bankCoins:0, streakDaysClaimed:0, lastBonusDate:null, missionsDate:null, missions:[], ownedSkins:[], skin:"", ownedPaints:[], activePaint:"", lastCrateDate:null };
+  }
+  
+  // VEHICLE SYSTEM 
   const VEHICLES = [
-    { key:"v_sports", name:"Neon Dart", type:"sports", cost:0, hex:["#4df6ff","#ff5cd6"], speedMult: 1.0, steerMult: 1.0, driftMult: 1.0, armor: 0, rarity:"common" },
-    { key:"v_drifter", name:"Drift King", type:"sports", cost:1200, hex:["#ff3366","#ff9933"], speedMult: 1.05, steerMult: 1.25, driftMult: 1.8, armor: 0, rarity:"rare" },
-    { key:"v_suv", name:"Interceptor", type:"suv", cost:3000, hex:["#222222","#ff2e4d"], speedMult: 1.10, steerMult: 0.85, driftMult: 0.6, armor: 1, rarity:"epic" },
-    { key:"v_tank", name:"Rhino Tank", type:"tank", cost:6000, hex:["#556b2f","#8b4513"], speedMult: 0.85, steerMult: 0.65, driftMult: 0.1, armor: 2, rarity:"legendary" }
+    { key:"v_dart", name:"Neon Dart", type:"compact", cost:0, speedMult: 0.95, steerMult: 1.0, driftMult: 1.0, armor: 0, lives: 0, rarity:"common" },
+    { key:"v_swift", name:"Blue Swift", type:"compact", cost:800, speedMult: 1.0, steerMult: 1.1, driftMult: 0.8, armor: 0, lives: 0, rarity:"common" },
+    { key:"v_sports", name:"Velocity X", type:"sports", cost:1500, speedMult: 1.0, steerMult: 1.1, driftMult: 1.0, armor: 0, lives: 0, rarity:"rare" },
+    { key:"v_drifter", name:"Drift King", type:"muscle", cost:2500, speedMult: 1.05, steerMult: 1.25, driftMult: 1.8, armor: 0, lives: 0, rarity:"rare" },
+    { key:"v_suv", name:"Interceptor", type:"suv", cost:3800, speedMult: 1.10, steerMult: 0.85, driftMult: 0.6, armor: 1, lives: 0, rarity:"epic" },
+    { key:"v_phantom", name:"Phantom", type:"hyper", cost:5500, speedMult: 1.15, steerMult: 1.2, driftMult: 1.3, armor: 0, lives: 1, rarity:"epic" },
+    { key:"v_tank", name:"Rhino Tank", type:"tank", cost:9000, speedMult: 0.85, steerMult: 0.65, driftMult: 0.1, armor: 2, lives: 0, smash: 3, rarity:"legendary" },
+    { key:"v_aetherius", name:"Aetherius", type:"mythic", cost:18000, speedMult: 1.35, steerMult: 1.45, driftMult: 2.0, armor: 0, lives: 4, rarity:"mythic" }
   ];
-  const RARITY_ORDER = { common:0, rare:1, epic:2, legendary:3 };
+  const RARITY_ORDER = { common:0, rare:1, epic:2, legendary:3, mythic:4 };
 
-  // Migration from old skin format to new Vehicle format
-  if(!profile.ownedSkins) profile.ownedSkins = [];
-  if(!profile.ownedSkins.includes("v_sports")) profile.ownedSkins.push("v_sports");
-  if(!VEHICLES.some(v => v.key === profile.skin)) profile.skin = "v_sports";
+  const PAINT_SKINS = [
+    { key:"c_neon", name:"Neon Cyan", hex:["#4df6ff","#ff5cd6"], cost:0 },
+    { key:"c_blaze", name:"Solar Blaze", hex:["#ff3366","#ff9933"], cost:600 },
+    { key:"c_toxic", name:"Toxic Spill", hex:["#39ff14","#006600"], cost:1000 },
+    { key:"c_ruby", name:"Ruby Void", hex:["#ff0055","#330011"], cost:1500 },
+    { key:"c_gold", name:"Midas Touch", hex:["#ffd700","#cc5500"], cost:2500 },
+    { key:"c_abyss", name:"Deep Abyss", hex:["#111111","#4400ff"], cost:3500 },
+    { key:"c_synth", name:"Synthwave", hex:["#ff00ff","#00ffff"], cost:5000 }
+  ];
+
+  // Migration logic
+  if(!profile.ownedSkins || !Array.isArray(profile.ownedSkins)) profile.ownedSkins = ["v_dart"];
+  if(!profile.ownedSkins.includes("v_dart")) profile.ownedSkins.push("v_dart");
+  if(!VEHICLES.some(v => v.key === profile.skin)) profile.skin = "v_dart";
+  
+  if(!profile.ownedPaints) profile.ownedPaints = ["c_neon"];
+  if(!profile.activePaint) profile.activePaint = "c_neon";
   saveProfile();
 
-  function getSkin(){ return VEHICLES.find(s=>s.key===profile.skin) || VEHICLES[0]; }
+  function getActiveVehicle(){ return VEHICLES.find(s=>s.key===profile.skin) || VEHICLES[0]; }
+  function getActivePaint(){ return PAINT_SKINS.find(p=>p.key===profile.activePaint) || PAINT_SKINS[0]; }
 
   function dailyBonusForDay(n){ return 40 + n*10; }
   function bonusPreview(){ if(profile.streakDaysClaimed>=7) return "Daily reward: Completed ✅"; const d=profile.streakDaysClaimed+1; return `Daily reward: +${dailyBonusForDay(d)} coins (Day ${d}/7)`; }
@@ -619,54 +658,88 @@
   const SHOP = [ { key:"shield", name:"🛡 Shield", desc:"Blocks 1 crash. (Run)", base: 40, max:2 }, { key:"nitro", name:"🚀 Nitro+", desc:"Start with extra nitro.", base: 30, max:3 }, { key:"slowmo", name:"⏱ Slow-Motion", desc:"Obstacles 5× slower.", base: 40, max:3 }, { key:"invisibility", name:"👻 Invisibility", desc:"Phase through cars.", base: 60, max:2 }, { key:"extraLife", name:"❤️ Extra Life", desc:"Adds +1 life this run.", base: 100, max:2 }, { key:"magnet", name:"🧲 Magnet", desc:"Pulls ALL coins to you (7s).", base: 70, max:3 } ];
   function renderShop(where){ where.innerHTML=""; SHOP.forEach(it=>{ const qty=cart[it.key]||0; const cost=Math.round(it.base); const div=document.createElement("div"); div.className="item"; div.innerHTML=`<div class="top"><div class="name">${escapeHtml(it.name)}</div><span class="qty">${qty}</span></div><div class="small">${escapeHtml(it.desc)}</div><div class="row" style="margin-top:auto;justify-content:space-between"><button data-buy="${it.key}">Buy</button><span class="small">Cost: <b>${cost}</b> 🪙</span></div>`; where.appendChild(div); }); where.querySelectorAll("button[data-buy]").forEach(btn=>{ btn.addEventListener("click", ()=>{ const k=btn.getAttribute("data-buy"); const it=SHOP.find(x=>x.key===k); if(!it) return; const cost=Math.round(it.base); if(profile.bankCoins < cost) return toast("Not enough coins."); if((cart[k]||0) >= it.max) return toast("Max for this item reached."); profile.bankCoins -= cost; cart[k] = (cart[k]||0)+1; saveProfile(); syncHomeUI(); renderShop(shopEl); renderShop(shop2El); toast(`Bought ${it.name}`); }); }); }
 
-  function renderSkins(where){ where.innerHTML=""; const list = [...VEHICLES].sort((a,b)=>{ const ra = RARITY_ORDER[a.rarity] ?? 9; const rb = RARITY_ORDER[b.rarity] ?? 9; if(ra !== rb) return ra - rb; return a.cost - b.cost; }); list.forEach(s=>{ const owned = profile.ownedSkins.includes(s.key); const selected = profile.skin === s.key; const div=document.createElement("div"); div.className="item"; div.innerHTML=`<div class="top"><div class="swatch" style="flex:1"><span class="chip rar ${s.rarity}">${s.rarity.toUpperCase()}</span><span class="dot" style="background:${s.hex[0]}"></span><span class="dot" style="background:${s.hex[1]}"></span><span class="skinBar" style="background:linear-gradient(135deg, ${s.hex[0]}, ${s.hex[1]});"></span></div><span class="qty">${owned ? "OWNED" : (s.cost+" 🪙")}</span></div><div style="font-size:11px; color:var(--muted); margin-top:4px; display:grid; grid-template-columns: 1fr 1fr; gap:4px;"><span>🏎️ Spd: ${s.speedMult}x</span><span>🕹️ Hndl: ${s.steerMult}x</span><span>🌀 Drft: ${s.driftMult}x</span><span>🛡️ Arm: ${s.armor}</span></div><div class="row" style="margin-top:auto;justify-content:space-between"><button data-skin="${s.key}">${owned ? (selected ? "Selected" : "Select") : "Buy"}</button><span class="small">${selected ? "Using ✅" : (owned ? "Tap Select" : "")}</span></div>`; where.appendChild(div); }); where.querySelectorAll("button[data-skin]").forEach(btn=>{ btn.addEventListener("click", ()=>{ const k=btn.getAttribute("data-skin"); const s=VEHICLES.find(x=>x.key===k); if(!s) return; const owned = profile.ownedSkins.includes(k); if(!owned){ if(profile.bankCoins < s.cost) return toast("Not enough coins."); profile.bankCoins -= s.cost; profile.ownedSkins.push(k); toast("Vehicle unlocked!"); } profile.skin = k; saveProfile(); syncHomeUI(); renderSkins(skinsEl); renderSkins(skins2El); }); }); }
+  function renderVehicles(){ 
+    skinsEl.innerHTML=""; 
+    const list = [...VEHICLES].sort((a,b)=> (RARITY_ORDER[a.rarity] ?? 9) - (RARITY_ORDER[b.rarity] ?? 9) || a.cost - b.cost); 
+    list.forEach(s=>{ 
+      const owned = profile.ownedSkins.includes(s.key); const selected = profile.skin === s.key; 
+      let desc = s.rarity === "legendary" ? "Smash 3 Obstacles, +2 Armor" : (s.rarity==="mythic" ? "+4 Extra Lives! Ultra stats." : (s.lives > 0 ? `+${s.lives} Life` : `Arm: ${s.armor}`));
+      
+      const div=document.createElement("div"); div.className="item"; 
+      div.innerHTML=`<div class="top"><div class="name"><span class="rar ${s.rarity}">${s.name}</span><span class="small" style="text-transform:uppercase">${s.rarity}</span></div><span class="qty">${owned ? "OWNED" : (s.cost+" 🪙")}</span></div>
+      <div style="font-size:11px; color:var(--muted); margin-top:4px; display:grid; grid-template-columns: 1fr 1fr; gap:4px;">
+        <span>Spd: ${s.speedMult}x</span><span>Hndl: ${s.steerMult}x</span><span>Drft: ${s.driftMult}x</span><span>${desc}</span>
+      </div>
+      <div class="row" style="margin-top:auto;justify-content:space-between"><button data-vkey="${s.key}">${owned ? (selected ? "Selected" : "Equip") : "Buy"}</button><span class="small">${selected ? "Using ✅" : ""}</span></div>`; 
+      skinsEl.appendChild(div); 
+    }); 
+    skinsEl.querySelectorAll("button[data-vkey]").forEach(btn=>{ btn.addEventListener("click", ()=>{ const k=btn.getAttribute("data-vkey"); const s=VEHICLES.find(x=>x.key===k); if(!s) return; const owned = profile.ownedSkins.includes(k); if(!owned){ if(profile.bankCoins < s.cost) return toast("Not enough coins."); profile.bankCoins -= s.cost; profile.ownedSkins.push(k); toast("Vehicle unlocked!"); } profile.skin = k; saveProfile(); syncHomeUI(); renderVehicles(); renderGarage(); }); }); 
+  }
+
+  function renderPaints(){
+    paintShopEl.innerHTML="";
+    PAINT_SKINS.forEach(p=>{
+      const owned = profile.ownedPaints.includes(p.key); const selected = profile.activePaint === p.key;
+      const div=document.createElement("div"); div.className="item";
+      div.innerHTML=`<div class="top"><div class="name">${p.name}</div><span class="qty">${owned ? "OWNED" : (p.cost+" 🪙")}</span></div>
+      <div class="swatch" style="margin: 8px 0;"><span class="dot" style="background:${p.hex[0]}"></span><span class="dot" style="background:${p.hex[1]}"></span><span class="skinBar" style="background:linear-gradient(135deg, ${p.hex[0]}, ${p.hex[1]});"></span></div>
+      <div class="row" style="margin-top:auto;justify-content:space-between"><button data-pkey="${p.key}">${owned ? (selected ? "Applied" : "Apply") : "Buy"}</button><span class="small">${selected ? "Using ✅" : ""}</span></div>`;
+      paintShopEl.appendChild(div);
+    });
+    paintShopEl.querySelectorAll("button[data-pkey]").forEach(btn=>{ btn.addEventListener("click", ()=>{ const k=btn.getAttribute("data-pkey"); const p=PAINT_SKINS.find(x=>x.key===k); if(!p) return; const owned = profile.ownedPaints.includes(k); if(!owned){ if(profile.bankCoins < p.cost) return toast("Not enough coins."); profile.bankCoins -= p.cost; profile.ownedPaints.push(k); toast("Paint unlocked!"); } profile.activePaint = k; saveProfile(); syncHomeUI(); renderPaints(); renderGarage(); }); });
+  }
+
+  function renderGarage(){
+    garageVehiclesEl.innerHTML=""; garagePaintsEl.innerHTML="";
+    if(!topPlayerNameEl.textContent) topPlayerNameEl.textContent = profile.name || "Gamer";
+    garageModalName.textContent = profile.name || "Gamer";
+
+    // Show only owned vehicles
+    const vList = VEHICLES.filter(v => profile.ownedSkins.includes(v.key));
+    vList.forEach(s=>{ 
+      const selected = profile.skin === s.key;
+      const div=document.createElement("div"); div.className="item"; div.style.minHeight="auto";
+      div.innerHTML=`<div class="top"><div class="name"><span class="rar ${s.rarity}">${s.name}</span></div><button data-g-vkey="${s.key}">${selected ? "Selected ✅" : "Equip"}</button></div>`;
+      garageVehiclesEl.appendChild(div);
+    });
+
+    // Show only owned paints
+    const pList = PAINT_SKINS.filter(p => profile.ownedPaints.includes(p.key));
+    pList.forEach(p=>{
+      const selected = profile.activePaint === p.key;
+      const div=document.createElement("div"); div.className="item"; div.style.minHeight="auto";
+      div.innerHTML=`<div class="top"><div class="name">${p.name} <div class="skinBar" style="width:60px; height:6px; display:inline-block; margin-left:8px; background:linear-gradient(90deg, ${p.hex[0]}, ${p.hex[1]})"></div></div><button data-g-pkey="${p.key}">${selected ? "Applied ✅" : "Apply"}</button></div>`;
+      garagePaintsEl.appendChild(div);
+    });
+
+    garageVehiclesEl.querySelectorAll("button[data-g-vkey]").forEach(btn=>{ btn.addEventListener("click", ()=>{ profile.skin = btn.getAttribute("data-g-vkey"); saveProfile(); renderVehicles(); renderGarage(); }); });
+    garagePaintsEl.querySelectorAll("button[data-g-pkey]").forEach(btn=>{ btn.addEventListener("click", ()=>{ profile.activePaint = btn.getAttribute("data-g-pkey"); saveProfile(); renderPaints(); renderGarage(); }); });
+  }
+
+  garageBtn.addEventListener("click", ()=>{ renderGarage(); garageOverlay.style.display="grid"; });
+  closeGarageBtn.addEventListener("click", ()=>{ garageOverlay.style.display="none"; syncHomeUI(); });
 
   function crateReady(){ return profile.lastCrateDate !== todayISO(); }
-  function syncCrateUI(){ const ready = crateReady(); const st = ready ? "Ready" : "Claimed"; crateStatus.textContent = st; crateStatus2.textContent = st; crateBtn.disabled = !ready; crateBtn2.disabled = !ready; crateInfo.textContent = ready ? "Tap to open your daily crate!" : "Come back tomorrow for another crate."; crateInfo2.textContent = crateInfo.textContent; }
+  function syncCrateUI(){ const ready = crateReady(); const st = ready ? "Ready" : "Claimed"; crateStatus.textContent = st; crateBtn.disabled = !ready; crateInfo.textContent = ready ? "Tap to open your daily crate!" : "Come back tomorrow for another crate."; }
   function pickWeighted(items){ const total = items.reduce((s,x)=>s + x.w, 0); let r = Math.random() * total; for(const it of items){ r -= it.w; if(r <= 0) return it; } return items[items.length-1]; }
-  function openDailyCrate(){ if(!crateReady()) return toast("Already claimed today."); const drop = pickWeighted([ { type:"coins", w: 45 }, { type:"buff", w: 40 }, { type:"skin", w: 15 } ]); let msg = ""; if(drop.type === "coins"){ const amt = [120,150,180,220,260][randi(0,4)]; profile.bankCoins += amt; msg = `Daily Crate: +${amt} coins 🪙`; } if(drop.type === "buff"){ const buffDrop = pickWeighted([ { key:"shield", w: 18 }, { key:"nitro", w: 18 }, { key:"coinsSmall", w: 14 } ]); if(buffDrop.key === "coinsSmall"){ const amt = [60,80,100,120][randi(0,3)]; profile.bankCoins += amt; msg = `Daily Crate: +${amt} coins 🪙`; }else{ cart[buffDrop.key] = clamp((cart[buffDrop.key]||0) + 1, 0, 99); const name = SHOP.find(x=>x.key===buffDrop.key)?.name || buffDrop.key; msg = `Daily Crate: +1 ${name} (next run)`; } } if(drop.type === "skin"){ const eligible = VEHICLES.filter(s => s.rarity !== "legendary"); const rarityPick = pickWeighted([ { rarity:"common", w: 70 }, { rarity:"rare", w: 24 }, { rarity:"epic", w: 6 } ]); const pool = eligible.filter(s => s.rarity === rarityPick.rarity); const s = pool[randi(0, pool.length-1)]; const already = profile.ownedSkins.includes(s.key); if(already){ const comp = s.rarity==="common" ? 220 : (s.rarity==="rare" ? 450 : 800); profile.bankCoins += comp; msg = `Daily Crate: Duplicate vehicle → +${comp} coins 🪙`; }else{ profile.ownedSkins.push(s.key); msg = `Daily Crate: Vehicle unlocked! (${s.rarity.toUpperCase()})`; } } profile.lastCrateDate = todayISO(); saveProfile(); syncHomeUI(); renderShop(shopEl); renderShop(shop2El); renderSkins(skinsEl); renderSkins(skins2El); syncCrateUI(); playSfx("crate"); toast(msg, 2200); }
+  function openDailyCrate(){ if(!crateReady()) return toast("Already claimed today."); const drop = pickWeighted([ { type:"coins", w: 50 }, { type:"buff", w: 45 }, { type:"paint", w: 5 } ]); let msg = ""; if(drop.type === "coins"){ const amt = [120,150,180,220,260][randi(0,4)]; profile.bankCoins += amt; msg = `Daily Crate: +${amt} coins 🪙`; } if(drop.type === "buff"){ const buffDrop = pickWeighted([ { key:"shield", w: 18 }, { key:"nitro", w: 18 }, { key:"coinsSmall", w: 14 } ]); if(buffDrop.key === "coinsSmall"){ const amt = [60,80,100,120][randi(0,3)]; profile.bankCoins += amt; msg = `Daily Crate: +${amt} coins 🪙`; }else{ cart[buffDrop.key] = clamp((cart[buffDrop.key]||0) + 1, 0, 99); const name = SHOP.find(x=>x.key===buffDrop.key)?.name || buffDrop.key; msg = `Daily Crate: +1 ${name} (next run)`; } } if(drop.type === "paint"){ const eligible = PAINT_SKINS.filter(p => !profile.ownedPaints.includes(p.key)); if(eligible.length > 0) { const p = eligible[randi(0, eligible.length-1)]; profile.ownedPaints.push(p.key); msg = `Daily Crate: Paint unlocked! (${p.name})`; } else { profile.bankCoins += 500; msg = `Daily Crate: Duplicate Paint → +500 coins 🪙`; } } profile.lastCrateDate = todayISO(); saveProfile(); syncHomeUI(); renderShop(shopEl); renderShop(shop2El); renderPaints(); syncCrateUI(); playSfx("crate"); toast(msg, 2200); }
 
   function renderLeaderboard(where, list){ where.innerHTML=""; list.forEach((x,i)=>{ const row=document.createElement("div"); row.className="lbRow"; row.innerHTML=`<span>#${i+1} <b>${escapeHtml(x.name)}</b></span><span><b>${x.score}</b></span>`; where.appendChild(row); }); }
   async function syncLeaderboard(){ if(!sb){ lbStatusEl.textContent = "Leaderboard coming soon"; lbStatus2El.textContent = "Leaderboard coming soon"; lbListEl.innerHTML=""; lbList2El.innerHTML=""; return; } try{ lbStatusEl.textContent = "Loading…"; lbStatus2El.textContent = "Loading…"; const list = await lbTop10(); lbStatusEl.textContent = list.length ? "Live leaderboard:" : "No scores yet."; lbStatus2El.textContent = list.length ? "Live leaderboard:" : "No scores yet."; renderLeaderboard(lbListEl, list); renderLeaderboard(lbList2El, list); }catch(e){ lbStatusEl.textContent = "Leaderboard error (check policies/RLS)"; lbStatus2El.textContent = "Leaderboard error (check policies/RLS)"; lbListEl.innerHTML=""; lbList2El.innerHTML=""; } }
   async function submitScoreOnline(){ try{ if(sb){ await lbSubmit(profile.name || "Gamer", profile.bestScore || 0); } }catch{} }
 
-  function syncHomeUI(){ playerNameEl.textContent = profile.name || "Gamer"; bankCoinsEl.textContent = profile.bankCoins || 0; bestScoreEl.textContent = profile.bestScore || 0; bonusInfo.textContent = bonusPreview(); const r = rankFor(profile.bestScore||0); rankChipEl.textContent = r; menuBank.textContent = profile.bankCoins || 0; menuBest.textContent = profile.bestScore || 0; hudRank.textContent = r; }
+  function syncHomeUI(){ playerNameEl && (playerNameEl.textContent = profile.name || "Gamer"); topPlayerNameEl && (topPlayerNameEl.textContent = profile.name || "Gamer"); bankCoinsEl.textContent = profile.bankCoins || 0; bestScoreEl.textContent = profile.bestScore || 0; bonusInfo.textContent = bonusPreview(); const r = rankFor(profile.bestScore||0); rankChipEl.textContent = r; menuBank.textContent = profile.bankCoins || 0; menuBest.textContent = profile.bestScore || 0; hudRank.textContent = r; }
 
   let gameOverPanel = null;
   function ensureGameOverPanel(){ 
     if(gameOverPanel) return; 
     const modal = overlay.querySelector(".modal"); 
     const topCard = document.createElement("div"); 
-    topCard.className = "card"; 
-    topCard.style.background = "rgba(0,0,0,.18)"; 
-    topCard.style.marginBottom = "12px"; 
-    topCard.id = "gameOverPanel"; 
-    topCard.style.display = "none"; 
-    
-    topCard.innerHTML = `<h3 style="margin:0 0 6px;font-family:Orbitron,system-ui,sans-serif;letter-spacing:.6px">GAME OVER</h3><p class="muted" id="goLine" style="margin-top:0">—</p><div class="row" style="margin-top:10px"><button id="goRetry">▶ Play Again</button><button id="goSubmit">🏁 Submit Score</button><button id="goShare" style="background:linear-gradient(180deg, #ff6adf, #b84dff); border-color:#ff6adf;">📤 Share</button></div><p class="small" id="goHint" style="margin-top:10px"></p>`; 
-    
-    modal.prepend(topCard); 
-    gameOverPanel = topCard; 
-    
+    topCard.className = "card"; topCard.style.background = "rgba(0,0,0,.18)"; topCard.style.marginBottom = "12px"; topCard.id = "gameOverPanel"; topCard.style.display = "none"; 
+    topCard.innerHTML = `<h3 style="margin:0 0 6px;font-family:Orbitron,system-ui,sans-serif;letter-spacing:.6px">GAME OVER</h3><p class="muted" id="goLine" style="margin-top:0">—</p><div class="row" style="margin-top:10px"><button id="goRetry">▶ Play Again</button><button id="goSubmit">🏁 Submit Score</button></div><p class="small" id="goHint" style="margin-top:10px"></p>`; 
+    modal.prepend(topCard); gameOverPanel = topCard; 
     topCard.querySelector("#goRetry").addEventListener("click", ()=>restartRun()); 
-    topCard.querySelector("#goSubmit").addEventListener("click", async ()=>{ 
-      await submitScoreOnline(); 
-      await syncLeaderboard(); 
-      toast("Submitted!"); 
-    }); 
-    
-    topCard.querySelector("#goShare").addEventListener("click", async () => {
-      const currentScore = Math.floor(score);
-      const r = rankFor(profile.bestScore || 0);
-      const shareText = `I just scored ${currentScore} in Neon Highway Racer! My all-time best is ${profile.bestScore} (${r}). Can you beat me? 🏎️🔥`;
-      const shareUrl = window.location.href; 
-
-      if (navigator.share) {
-        try { await navigator.share({ title: 'Neon Highway Racer', text: shareText, url: shareUrl }); } catch (err) { console.log("Share cancelled or failed.", err); }
-      } else {
-        try { await navigator.clipboard.writeText(`${shareText} ${shareUrl}`); toast("Copied to clipboard! Paste it to your friends.", 2500); } catch (err) { toast("Sharing not supported on this browser."); }
-      }
-    });
+    topCard.querySelector("#goSubmit").addEventListener("click", async ()=>{ await submitScoreOnline(); await syncLeaderboard(); toast("Submitted!"); }); 
   }
 
   let dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1)); let vw=1, vh=1;
@@ -681,13 +754,7 @@
   function setStickPos(nx, ny){ joy.x = clamp(nx, -1, 1); joy.y = clamp(ny, -1, 1); const r = 28; const px = joy.x * r; const py = joy.y * r; joyStick.style.transform = `translate(-50%,-50%) translate(${px}px, ${py}px)`; }
   function resetStick(){ joy.active=false; joy.id=null; setStickPos(0,0); }
   const joyWrap = document.getElementById("joystickWrap");
-  joyWrap.addEventListener("pointerdown", (e)=>{ 
-    joy.active=true; joy.id=e.pointerId; 
-    const rWrap = joyWrap.getBoundingClientRect();
-    const tx = e.clientX - rWrap.left; const ty = e.clientY - rWrap.top;
-    joyBase.style.left = `${tx - 50}px`; joyBase.style.top = `${ty - 50}px`; joyBase.style.bottom = "auto";
-    joyWrap.setPointerCapture(joy.id); joy.baseRect = joyBase.getBoundingClientRect(); handleJoyMove(e); 
-  });
+  joyWrap.addEventListener("pointerdown", (e)=>{ joy.active=true; joy.id=e.pointerId; const rWrap = joyWrap.getBoundingClientRect(); const tx = e.clientX - rWrap.left; const ty = e.clientY - rWrap.top; joyBase.style.left = `${tx - 50}px`; joyBase.style.top = `${ty - 50}px`; joyBase.style.bottom = "auto"; joyWrap.setPointerCapture(joy.id); joy.baseRect = joyBase.getBoundingClientRect(); handleJoyMove(e); });
   joyWrap.addEventListener("pointermove", (e)=>{ if(!joy.active || e.pointerId!==joy.id) return; handleJoyMove(e); });
   const endJoy = (e)=>{ if(e.pointerId!==joy.id) return; resetStick(); };
   joyWrap.addEventListener("pointerup", endJoy); joyWrap.addEventListener("pointercancel", endJoy);
@@ -705,7 +772,7 @@
   const traffic=[], coins=[], pickups=[]; const PICK_TYPES = ["shield","magnet","slowmo","nitro","invisibility"];
 
   let running=false, paused=false;
-  let score=0, runCoins=0, lives=2, reviveUsed=false, runArmor=0;
+  let score=0, runCoins=0, lives=2, reviveUsed=false, runArmor=0, runSmash=0;
   let speed=DIFF.baseSpeed, nitro=1.0, nitroActive=false;
   let buffShield=0, buffMagnet=0, buffSlowmo=0, buffInvisibility=0, invulnT=0;
   let inBonus=false, bonusT=0, nextBonusAt=500;
@@ -732,8 +799,11 @@
   function layoutPlayer(){ player.w = clamp(vw*0.065, 36, 54); player.h = player.w * 1.75; player.y = vh*0.78; player.x = laneCenter(1); player.vx = 0; player.vy = 0; }
 
   function resetRunState(){
+    const activeVeh = getActiveVehicle();
     score=0; runCoins=0; passedCars=0; closeCalls=0;
-    lives = 2 + (cart.extraLife||0); reviveUsed=false; runArmor=getSkin().armor;
+    lives = 2 + (cart.extraLife||0) + (activeVeh.lives || 0); reviveUsed=false; 
+    runArmor=activeVeh.armor || 0; 
+    runSmash = activeVeh.smash || 0;
     speed=DIFF.baseSpeed; roadScroll=0; nitro = clamp(1.0 + (cart.nitro||0)*0.25, 0, 1.8);
     buffShield = (cart.shield||0); buffMagnet = (cart.magnet||0) * 7; buffSlowmo = (cart.slowmo||0) * 5; buffInvisibility = (cart.invisibility||0) * 6; invulnT = 0;
     for(const k in cart) cart[k]=0; renderShop(shopEl); renderShop(shop2El);
@@ -755,19 +825,20 @@
   }
 
   function exitToHome(){ running=false; paused=false; overlay.style.display="none"; gameScreen.style.display="none"; gameScreen.setAttribute("aria-hidden","true"); home.style.display="grid"; stopMusic(); syncHomeUI(); syncLeaderboard(); }
-  function openMenu(){ ensureGameOverPanel(); if(gameOverPanel) gameOverPanel.style.display = "none"; paused=true; overlay.style.display="grid"; stopMusic(); reviveBtn.disabled = true; reviveHint.textContent = ""; syncHomeUI(); renderMissions(missions2El); syncLeaderboard(); renderShop(shop2El); renderSkins(skins2El); syncCrateUI(); }
+  function openMenu(){ ensureGameOverPanel(); if(gameOverPanel) gameOverPanel.style.display = "none"; paused=true; overlay.style.display="grid"; stopMusic(); reviveBtn.disabled = true; reviveHint.textContent = ""; syncHomeUI(); renderMissions(missions2El); syncLeaderboard(); renderShop(shop2El); }
   function closeMenu(){ if(!running) return; overlay.style.display="none"; paused=false; if(settings.audioOn) startMusic(); }
   function togglePause(){ if(!running) return; if(paused) closeMenu(); else openMenu(); }
 
   function spawnTraffic(){
+    // Cap traffic in early game to make it easier
+    const maxTraffic = score < 3000 ? 2 : 4;
+    if (traffic.length >= maxTraffic) return;
+
     const lane=randi(0,laneCount-1); const w=clamp(vw*0.06, 34, 50); const h=w*1.75;
-    if(traffic.some(o=>o.lane===lane && o.y < vh*0.20)) return;
+    if(traffic.some(o=>o.lane===lane && o.y < vh*0.25)) return; // Prevents overlapping spawns
     traffic.push({ id: (Math.random()*1e9)|0, lane, x: laneCenter(lane), targetLane: lane, y: -h, w, h, rel: rand(0.86, 1.02), cd: rand(1.0, 1.9), passed:false });
   }
-  function spawnCoin(){
-    const lane=randi(0,laneCount-1); const val = Math.random()<0.07 ? 10 : (Math.random()<0.18 ? 5 : 1);
-    coins.push({ lane, x: laneCenter(lane), y: -30, r: clamp(vw*0.012, 8, 12), val });
-  }
+  function spawnCoin(){ const lane=randi(0,laneCount-1); const val = Math.random()<0.07 ? 10 : (Math.random()<0.18 ? 5 : 1); coins.push({ lane, x: laneCenter(lane), y: -30, r: clamp(vw*0.012, 8, 12), val }); }
   function spawnPickup(){ const lane=randi(0,laneCount-1); const type = PICK_TYPES[randi(0,PICK_TYPES.length-1)]; pickups.push({ lane, type, x: laneCenter(lane), y: -40, r: clamp(vw*0.014, 9, 14) }); }
 
   function roundRect(x,y,w,h,r){ const rr=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+rr,y); ctx.arcTo(x+w,y,x+w,y+h,rr); ctx.arcTo(x+w,y+h,x,y+h,rr); ctx.arcTo(x,y+h,x,y,rr); ctx.arcTo(x,y,x+w,y,rr); ctx.closePath(); }
@@ -785,18 +856,18 @@
   }
 
   function hexToRgba(hex, a){ const h = hex.replace("#",""); const r = parseInt(h.slice(0,2),16); const g = parseInt(h.slice(2,4),16); const b = parseInt(h.slice(4,6),16); return `rgba(${r},${g},${b},${a})`; }
-  function drawTrail(skin){
+  function drawTrail(activePaint){
     if(trail.length < 3) return;
     ctx.save();
     for(let i=trail.length-1;i>=1;i--){
       const a = trail[i]; const b = trail[i-1]; const t = i/(trail.length-1); const alpha = 0.12 + (1-t)*0.22;
       ctx.strokeStyle = `rgba(124,255,234,${alpha})`; ctx.lineWidth = 10*(1-t); ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
-      const col = (t<0.5) ? skin.hex[0] : skin.hex[1]; ctx.strokeStyle = hexToRgba(col, alpha*0.9); ctx.lineWidth = 6*(1-t); ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+      const col = (t<0.5) ? activePaint.hex[0] : activePaint.hex[1]; ctx.strokeStyle = hexToRgba(col, alpha*0.9); ctx.lineWidth = 6*(1-t); ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
     }
     ctx.restore();
   }
 
-  function drawCar(x,y,w,h,isPlayer,glowColor, vObj, extraAlpha=1, rot=0, driftSide=0){
+  function drawCar(x,y,w,h,isPlayer,glowColor, vObj, activePaint, extraAlpha=1, rot=0, driftSide=0){
     ctx.save();
     ctx.globalAlpha = extraAlpha;
     if(rot || driftSide){ ctx.translate(x,y); ctx.rotate(rot); ctx.translate(-x,-y); x += driftSide; }
@@ -806,135 +877,89 @@
 
     if(isPlayer) {
         const vType = vObj ? vObj.type : "sports";
-        const colors = (vObj && vObj.hex) ? vObj.hex : ["#4df6ff","#ff5cd6"];
+        const colors = activePaint.hex;
+
+        const bodyX=x-w/2, bodyY=y-h/2;
+        const bodyGrad=ctx.createLinearGradient(bodyX, bodyY, bodyX, bodyY+h);
+        bodyGrad.addColorStop(0, colors[0]); bodyGrad.addColorStop(1, colors[1]);
+        
+        ctx.shadowBlur = (vType === "mythic") ? 30 : 20;
+        ctx.shadowColor = (vType === "mythic") ? colors[0] : glowColor;
 
         if(vType === "tank") {
             ctx.fillStyle = "#111";
             roundRect(x-w*0.55, y-h*0.4, w*0.25, h*0.8, 4); ctx.fill(); 
             roundRect(x+w*0.30, y-h*0.4, w*0.25, h*0.8, 4); ctx.fill(); 
-            
-            const bodyGrad=ctx.createLinearGradient(x-w/2, y-h/2, x-w/2, y+h/2);
-            bodyGrad.addColorStop(0, colors[0]); bodyGrad.addColorStop(1, colors[1]);
             ctx.fillStyle = bodyGrad;
             roundRect(x-w*0.4, y-h*0.45, w*0.8, h*0.9, 8); ctx.fill();
-            
-            ctx.fillStyle = "#222";
-            ctx.beginPath(); ctx.arc(x, y+h*0.1, w*0.35, 0, Math.PI*2); ctx.fill();
-            
-            ctx.fillStyle = "#111";
-            ctx.fillRect(x-w*0.1, y-h*0.65, w*0.2, h*0.6);
-            
-            ctx.fillStyle="#ffffff";
-            roundRect(x-w*0.3, y-h*0.45, w*0.15, 6, 2); ctx.fill();
-            roundRect(x+w*0.15, y-h*0.45, w*0.15, 6, 2); ctx.fill();
-
+            ctx.fillStyle = "#222"; ctx.beginPath(); ctx.arc(x, y+h*0.1, w*0.35, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#111"; ctx.fillRect(x-w*0.1, y-h*0.65, w*0.2, h*0.6);
+            ctx.fillStyle="#ffffff"; roundRect(x-w*0.3, y-h*0.45, w*0.15, 6, 2); ctx.fill(); roundRect(x+w*0.15, y-h*0.45, w*0.15, 6, 2); ctx.fill();
         } else if(vType === "suv") {
-            const bodyGrad=ctx.createLinearGradient(x-w/2, y-h/2, x-w/2, y+h/2);
-            bodyGrad.addColorStop(0, colors[0]); bodyGrad.addColorStop(1, colors[1]);
             ctx.fillStyle = bodyGrad;
             roundRect(x-w*0.45, y-h*0.45, w*0.9, h*0.9, 8); ctx.fill();
+            ctx.fillStyle="#111522"; roundRect(x-w*0.4, y-h*0.2, w*0.8, h*0.5, 6); ctx.fill();
+            ctx.fillStyle="#334055"; roundRect(x-w*0.35, y-h*0.15, w*0.7, h*0.2, 4); ctx.fill(); 
+            ctx.fillStyle="#0a0a0a"; roundRect(x-w*0.55, y-h*0.35, w*0.15, h*0.25, 4); ctx.fill(); roundRect(x+w*0.4,  y-h*0.35, w*0.15, h*0.25, 4); ctx.fill();
+            ctx.fillStyle="#ffffff"; roundRect(x-w*0.4, y-h*0.45, w*0.25, h*0.1, 4); ctx.fill(); roundRect(x+w*0.15, y-h*0.45, w*0.25, h*0.1, 4); ctx.fill();
+        } else if(vType === "compact") {
+            ctx.fillStyle = bodyGrad;
+            roundRect(x-w*0.45, y-h*0.35, w*0.9, h*0.7, 12); ctx.fill();
+            ctx.fillStyle="#111522"; roundRect(x-w*0.35, y-h*0.1, w*0.7, h*0.3, 8); ctx.fill();
+            ctx.fillStyle="#ffffff"; roundRect(x-w*0.3, y-h*0.3, w*0.2, h*0.08, 4); ctx.fill(); roundRect(x+w*0.1, y-h*0.3, w*0.2, h*0.08, 4); ctx.fill();
+            ctx.fillStyle="#0a0a0a"; roundRect(x-w*0.5, y-h*0.2, w*0.15, h*0.15, 4); ctx.fill(); roundRect(x+w*0.35,  y-h*0.2, w*0.15, h*0.15, 4); ctx.fill();
+        } else if(vType === "muscle") {
+            ctx.fillStyle = bodyGrad;
+            roundRect(x-w*0.45, y-h*0.4, w*0.9, h*0.8, 4); ctx.fill();
+            ctx.fillStyle="#111522"; roundRect(x-w*0.35, y-h*0.1, w*0.7, h*0.3, 4); ctx.fill();
+            ctx.fillStyle="#222"; roundRect(x-w*0.2, y-h*0.4, w*0.4, h*0.15, 2); ctx.fill(); // Hood scoop
+            ctx.fillStyle="#ffffff"; roundRect(x-w*0.4, y-h*0.35, w*0.15, h*0.05, 2); ctx.fill(); roundRect(x+w*0.25, y-h*0.35, w*0.15, h*0.05, 2); ctx.fill();
+            ctx.fillStyle="#0a0a0a"; roundRect(x-w*0.5, y-h*0.25, w*0.15, h*0.2, 4); ctx.fill(); roundRect(x+w*0.35,  y-h*0.25, w*0.15, h*0.2, 4); ctx.fill();
+        } else if (vType === "hyper" || vType === "mythic") {
+            ctx.fillStyle = bodyGrad;
+            ctx.beginPath(); ctx.moveTo(x, y-h*0.5); ctx.lineTo(x+w*0.5, y); ctx.lineTo(x+w*0.4, y+h*0.4); ctx.lineTo(x-w*0.4, y+h*0.4); ctx.lineTo(x-w*0.5, y); ctx.closePath(); ctx.fill();
+            ctx.fillStyle="#111522"; ctx.beginPath(); ctx.moveTo(x, y-h*0.1); ctx.lineTo(x+w*0.3, y+h*0.1); ctx.lineTo(x-w*0.3, y+h*0.1); ctx.closePath(); ctx.fill();
+            ctx.fillStyle="#ffffff"; roundRect(x-w*0.2, y-h*0.3, w*0.1, h*0.1, 4); ctx.fill(); roundRect(x+w*0.1, y-h*0.3, w*0.1, h*0.1, 4); ctx.fill();
             
-            ctx.fillStyle="#111522"; 
-            roundRect(x-w*0.4, y-h*0.2, w*0.8, h*0.5, 6); ctx.fill();
-            ctx.fillStyle="#334055";
-            roundRect(x-w*0.35, y-h*0.15, w*0.7, h*0.2, 4); ctx.fill(); 
-            
-            ctx.fillStyle="#0a0a0a";
-            roundRect(x-w*0.55, y-h*0.35, w*0.15, h*0.25, 4); ctx.fill();
-            roundRect(x+w*0.4,  y-h*0.35, w*0.15, h*0.25, 4); ctx.fill();
-            roundRect(x-w*0.55, y+h*0.15, w*0.15, h*0.25, 4); ctx.fill();
-            roundRect(x+w*0.4,  y+h*0.15, w*0.15, h*0.25, 4); ctx.fill();
-            
-            ctx.fillStyle="#ffffff";
-            roundRect(x-w*0.4, y-h*0.45, w*0.25, h*0.1, 4); ctx.fill();
-            roundRect(x+w*0.15, y-h*0.45, w*0.25, h*0.1, 4); ctx.fill();
-            
+            if(vType === "mythic") {
+              ctx.shadowColor = colors[1]; ctx.shadowBlur = 15;
+              ctx.strokeStyle = colors[0]; ctx.lineWidth = 2;
+              ctx.beginPath(); ctx.moveTo(x-w*0.6, y+h*0.1); ctx.lineTo(x-w*0.8, y+h*0.3); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(x+w*0.6, y+h*0.1); ctx.lineTo(x+w*0.8, y+h*0.3); ctx.stroke();
+            }
         } else {
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = glowColor;
-
-            const bodyX=x-w/2, bodyY=y-h/2;
-            const bodyGrad=ctx.createLinearGradient(bodyX, bodyY, bodyX, bodyY+h);
-            bodyGrad.addColorStop(0, colors[0]); bodyGrad.addColorStop(1, colors[1]);
-            ctx.fillStyle=bodyGrad;
-            roundRect(bodyX, bodyY, w, h, w*0.25); ctx.fill();
-
+            // standard sports
+            ctx.fillStyle=bodyGrad; roundRect(bodyX, bodyY, w, h, w*0.25); ctx.fill();
             ctx.shadowBlur=0;
-            ctx.fillStyle="#111522"; 
-            roundRect(x-w*0.35, y-h*0.2, w*0.7, h*0.4, w*0.15); ctx.fill();
-            ctx.fillStyle="#334055";
-            roundRect(x-w*0.25, y-h*0.15, w*0.5, h*0.15, w*0.1); ctx.fill();
-            
-            ctx.fillStyle="#ffffff";
-            ctx.shadowBlur = 10; ctx.shadowColor = "#ffffff";
-            roundRect(x-w*0.4, y-h*0.45, w*0.2, h*0.1, 4); ctx.fill();
-            roundRect(x+w*0.2, y-h*0.45, w*0.2, h*0.1, 4); ctx.fill();
-            
+            ctx.fillStyle="#111522"; roundRect(x-w*0.35, y-h*0.2, w*0.7, h*0.4, w*0.15); ctx.fill();
+            ctx.fillStyle="#334055"; roundRect(x-w*0.25, y-h*0.15, w*0.5, h*0.15, w*0.1); ctx.fill();
+            ctx.fillStyle="#ffffff"; ctx.shadowBlur = 10; ctx.shadowColor = "#ffffff"; roundRect(x-w*0.4, y-h*0.45, w*0.2, h*0.1, 4); ctx.fill(); roundRect(x+w*0.2, y-h*0.45, w*0.2, h*0.1, 4); ctx.fill();
             ctx.shadowBlur = 0;
-            ctx.fillStyle="#ff2e4d";
-            roundRect(x-w*0.4, y+h*0.35, w*0.25, h*0.08, 2); ctx.fill();
-            roundRect(x+w*0.15, y+h*0.35, w*0.25, h*0.08, 2); ctx.fill();
-            
-            ctx.fillStyle="#0a0a0a";
-            roundRect(x-w*0.55, y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
-            roundRect(x+w*0.4,  y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
-            roundRect(x-w*0.55, y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
-            roundRect(x+w*0.4,  y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
-            
-            ctx.fillStyle="#222";
-            roundRect(x-w*0.45, y+h*0.42, w*0.9, h*0.06, 2); ctx.fill();
+            ctx.fillStyle="#ff2e4d"; roundRect(x-w*0.4, y+h*0.35, w*0.25, h*0.08, 2); ctx.fill(); roundRect(x+w*0.15, y+h*0.35, w*0.25, h*0.08, 2); ctx.fill();
+            ctx.fillStyle="#0a0a0a"; roundRect(x-w*0.55, y-h*0.3, w*0.15, h*0.2, 4); ctx.fill(); roundRect(x+w*0.4,  y-h*0.3, w*0.15, h*0.2, 4); ctx.fill(); roundRect(x-w*0.55, y+h*0.1, w*0.15, h*0.2, 4); ctx.fill(); roundRect(x+w*0.4,  y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
         }
 
-        const bodyX=x-w/2, bodyY=y-h/2;
+        ctx.shadowBlur = 0;
         if(buffInvisibility>0 && !inBonus){
-            ctx.globalAlpha = extraAlpha*0.4;
-            ctx.strokeStyle="rgba(124,255,234,.95)";
-            ctx.lineWidth=3;
-            roundRect(bodyX-4, bodyY-4, w+8, h+8, w*0.25);
-            ctx.stroke();
-            ctx.globalAlpha = extraAlpha;
+            ctx.globalAlpha = extraAlpha*0.4; ctx.strokeStyle="rgba(124,255,234,.95)"; ctx.lineWidth=3; roundRect(bodyX-4, bodyY-4, w+8, h+8, w*0.25); ctx.stroke(); ctx.globalAlpha = extraAlpha;
         }
 
         if(invulnT>0){
-            ctx.globalAlpha = extraAlpha*0.6;
-            ctx.strokeStyle="rgba(255,210,77,.95)";
-            ctx.lineWidth=3;
-            roundRect(bodyX-6, bodyY-6, w+12, h+12, w*0.25);
-            ctx.stroke();
-            ctx.globalAlpha = extraAlpha;
+            ctx.globalAlpha = extraAlpha*0.6; ctx.strokeStyle="rgba(255,210,77,.95)"; ctx.lineWidth=3; roundRect(bodyX-6, bodyY-6, w+12, h+12, w*0.25); ctx.stroke(); ctx.globalAlpha = extraAlpha;
         }
     } else {
         const bodyX=x-w/2, bodyY=y-h/2;
-        ctx.fillStyle="rgba(20,20,30,.95)"; 
-        roundRect(bodyX, bodyY, w, h, w*0.15); ctx.fill();
-
-        ctx.fillStyle=glowColor;
-        roundRect(x-w*0.4, y-h*0.4, w*0.8, h*0.8, w*0.1); ctx.fill();
-
-        ctx.fillStyle="#000";
-        roundRect(x-w*0.3, y-h*0.25, w*0.6, h*0.2, 4); ctx.fill(); 
-        roundRect(x-w*0.3, y+h*0.05, w*0.6, h*0.15, 4); ctx.fill();
-
-        ctx.fillStyle="#ff4444";
-        ctx.fillRect(x-w*0.4, y+h*0.4, w*0.2, 4);
-        ctx.fillRect(x+w*0.2, y+h*0.4, w*0.2, 4);
-
-        ctx.fillStyle="#000";
-        roundRect(x-w*0.55, y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
-        roundRect(x+w*0.4,  y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
-        roundRect(x-w*0.55, y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
-        roundRect(x+w*0.4,  y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
+        ctx.fillStyle="rgba(20,20,30,.95)"; roundRect(bodyX, bodyY, w, h, w*0.15); ctx.fill();
+        ctx.fillStyle=glowColor; roundRect(x-w*0.4, y-h*0.4, w*0.8, h*0.8, w*0.1); ctx.fill();
+        ctx.fillStyle="#000"; roundRect(x-w*0.3, y-h*0.25, w*0.6, h*0.2, 4); ctx.fill(); roundRect(x-w*0.3, y+h*0.05, w*0.6, h*0.15, 4); ctx.fill();
+        ctx.fillStyle="#ff4444"; ctx.fillRect(x-w*0.4, y+h*0.4, w*0.2, 4); ctx.fillRect(x+w*0.2, y+h*0.4, w*0.2, 4);
+        ctx.fillStyle="#000"; roundRect(x-w*0.55, y-h*0.3, w*0.15, h*0.2, 4); ctx.fill(); roundRect(x+w*0.4,  y-h*0.3, w*0.15, h*0.2, 4); ctx.fill(); roundRect(x-w*0.55, y+h*0.1, w*0.15, h*0.2, 4); ctx.fill(); roundRect(x+w*0.4,  y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
     }
-
     ctx.restore();
   }
 
-  function drawCoin(c){
-    ctx.save(); ctx.shadowBlur=18; ctx.shadowColor="rgba(255,210,77,0.95)"; ctx.fillStyle="rgba(255,210,77,.92)"; ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; ctx.fillStyle="rgba(0,0,0,.25)"; ctx.beginPath(); ctx.arc(c.x,c.y,c.r*0.55,0,Math.PI*2); ctx.fill(); ctx.fillStyle="rgba(255,255,255,.95)"; ctx.font="900 11px system-ui, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(String(c.val)+"x", c.x, c.y+0.5); ctx.restore();
-  }
-  function drawPickup(p){
-    ctx.save(); ctx.shadowBlur=18; ctx.shadowColor="rgba(124,255,234,.85)"; ctx.fillStyle="rgba(124,255,234,.18)"; ctx.beginPath(); ctx.arc(p.x,p.y,p.r*1.25,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; ctx.fillStyle="rgba(0,0,0,.35)"; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); ctx.fillStyle="rgba(255,255,255,.95)"; ctx.font="900 14px system-ui, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; const map={shield:"🛡",magnet:"🧲",slowmo:"⏱",nitro:"🚀",invisibility:"👻"}; ctx.fillText(map[p.type]||"⭐", p.x, p.y+0.5); ctx.restore();
-  }
+  function drawCoin(c){ ctx.save(); ctx.shadowBlur=18; ctx.shadowColor="rgba(255,210,77,0.95)"; ctx.fillStyle="rgba(255,210,77,.92)"; ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; ctx.fillStyle="rgba(0,0,0,.25)"; ctx.beginPath(); ctx.arc(c.x,c.y,c.r*0.55,0,Math.PI*2); ctx.fill(); ctx.fillStyle="rgba(255,255,255,.95)"; ctx.font="900 11px system-ui, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(String(c.val)+"x", c.x, c.y+0.5); ctx.restore(); }
+  function drawPickup(p){ ctx.save(); ctx.shadowBlur=18; ctx.shadowColor="rgba(124,255,234,.85)"; ctx.fillStyle="rgba(124,255,234,.18)"; ctx.beginPath(); ctx.arc(p.x,p.y,p.r*1.25,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; ctx.fillStyle="rgba(0,0,0,.35)"; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); ctx.fillStyle="rgba(255,255,255,.95)"; ctx.font="900 14px system-ui, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; const map={shield:"🛡",magnet:"🧲",slowmo:"⏱",nitro:"🚀",invisibility:"👻"}; ctx.fillText(map[p.type]||"⭐", p.x, p.y+0.5); ctx.restore(); }
 
   function applyPickup(type){
     if(inBonus){ bonusCollected[type] = (bonusCollected[type]||0) + 1; return; }
@@ -966,10 +991,14 @@
 
   function syncHUD(){
     hudScore.textContent = Math.floor(score); hudBest.textContent = profile.bestScore || 0; hudRunCoins.textContent = runCoins; 
-    hudLives.textContent = lives + (runArmor > 0 ? ` (+${runArmor} Arm)` : ""); 
+    
+    let lifeStr = lives.toString();
+    if(runArmor > 0) lifeStr += ` (+${runArmor} Arm)`;
+    if(runSmash > 0) lifeStr += ` [💥${runSmash}]`;
+    hudLives.textContent = lifeStr; 
+    
     hudRank.textContent = rankFor(profile.bestScore||0); hudNitro.textContent = `${Math.round((nitro/1.8)*100)}%`; if(inBonus) hudBonusT.textContent = bonusT.toFixed(1);
     if(combo>0){ hudCombo.style.display="inline-flex"; hudComboV.textContent = `x${comboMult().toFixed(2)}`; }else{ hudCombo.style.display="none"; }
-    hudGhost.style.display = "none"; 
     if(driftSlip>0.05){ hudDrift.style.display="inline-flex"; hudDriftV.textContent = `${Math.round(driftSlip*100)}%`; }else{ hudDrift.style.display="none"; }
     menuBank.textContent = profile.bankCoins || 0; menuBest.textContent = profile.bestScore || 0;
   }
@@ -986,9 +1015,12 @@
     if(hitStop > 0){ hitStop = Math.max(0, hitStop - dt); return; }
     if(countdown && !countdown.done){ countdown.t += dt; if(countdown.t > 0.9){ countdown.phase++; countdown.t=0; if(countdown.phase>=4){ countdown.done=true; countdown.onDone?.(); } } return; }
 
-    const activeVeh = getSkin();
-
-    invulnT = Math.max(0, invulnT - dt); speed += DIFF.accel * dt; const easyWindow = clamp(score / 600, 0, 1); const spawnRate = (DIFF.spawnBase + (Math.floor(score) * DIFF.spawnRamp)) * (0.65 + 0.35*easyWindow);
+    const activeVeh = getActiveVehicle();
+    invulnT = Math.max(0, invulnT - dt); speed += DIFF.accel * dt; 
+    
+    const easyWindow = score < 3000 ? 0.3 : clamp((score - 3000) / 4000, 0, 1);
+    const spawnRate = (DIFF.spawnBase + (Math.floor(score) * DIFF.spawnRamp * 0.5)) * (0.4 + 0.6 * easyWindow);
+    
     if(!inBonus){ buffMagnet = Math.max(0, buffMagnet - dt); buffSlowmo = Math.max(0, buffSlowmo - dt); buffInvisibility = Math.max(0, buffInvisibility - dt); }
 
     const kLeft  = keys.has("arrowleft") || keys.has("a"); const kRight = keys.has("arrowright")|| keys.has("d"); const kUp = keys.has("arrowup") || keys.has("w"); const kDown = keys.has("arrowdown") || keys.has("s"); const kNitro = keys.has("arrowup") || keys.has("w"); const kDrift = keys.has("shift");
@@ -1001,7 +1033,7 @@
     decayCombo(dt);
     if(!inBonus && Math.floor(score) >= nextBonusAt) startBonus(); if(inBonus){ bonusT -= dt; hudBonusT.textContent = bonusT.toFixed(1); if(bonusT <= 0) endBonus(); }
 
-    if(!inBonus){ spawnT += dt * spawnRate * (0.70 + effectiveSpeed/950); if(spawnT>=1){ spawnT=0; spawnTraffic(); if(score > 1200 && Math.random()<0.12) spawnTraffic(); } }
+    if(!inBonus){ spawnT += dt * spawnRate * (0.70 + effectiveSpeed/950); if(spawnT>=1){ spawnT=0; spawnTraffic(); } }
     coinT += dt * (0.86 + effectiveSpeed/1150); if(coinT>=1){ coinT=0; spawnCoin(); if(Math.random()<0.34) spawnCoin(); }
     pickT += dt * 0.33; if(pickT>=1){ pickT=0; if(Math.random()<0.62) spawnPickup(); }
 
@@ -1026,8 +1058,7 @@
     player.vy = lerp(player.vy, targetVy, 1 - Math.pow(0.00001, dt)); 
     player.y -= player.vy * dt;
 
-    const minY = vh*0.20; 
-    const maxY = vh*0.90;
+    const minY = vh*0.20; const maxY = vh*0.90;
     player.y = clamp(player.y, minY, maxY);
     enforceRoadBarrier();
 
@@ -1044,7 +1075,7 @@
     const obstacleFactor = 0.55 + clamp(score / 6000, 0, 0.45); const obstacleSpeed = effectiveSpeed * obstacleFactor; const obstacleScale = (!inBonus && buffSlowmo>0) ? 0.20 : 1.0;
     for(let i=traffic.length-1;i>=0;i--){
       const t=traffic[i]; if(!t.passed && t.y > player.y + player.h*0.6){ t.passed=true; passedCars++; }
-      t.cd -= dt; const laneChangeRate = DIFF.laneChangeRate + clamp(score/3200, 0, 0.09); const laneChangeSpeed = DIFF.laneChangeSpeed + clamp(score/4200, 0, 2.0);
+      t.cd -= dt; const laneChangeRate = (DIFF.laneChangeRate * 0.25) + clamp(score/8000, 0, 0.05); const laneChangeSpeed = DIFF.laneChangeSpeed + clamp(score/4200, 0, 1.5);
       if(t.cd<=0 && Math.random()<laneChangeRate){ const dir = Math.random()<0.5 ? -1 : 1; const next = clamp(t.targetLane + dir, 0, laneCount-1); const safe = !traffic.some(o=>o!==t && o.targetLane===next && Math.abs(o.y - t.y) < t.h*1.1); if(safe) t.targetLane=next; t.cd = rand(0.85, 1.9); }
       const tx=laneCenter(t.targetLane); t.x += (tx - t.x) * dt * laneChangeSpeed; t.y += obstacleSpeed * dt * t.rel * obstacleScale; if(t.y > vh + 220) traffic.splice(i,1);
     }
@@ -1061,7 +1092,11 @@
 
     for(let i=pickups.length-1;i>=0;i--){ const p=pickups[i]; p.y += effectiveSpeed*dt*0.88; p.x += (laneCenter(p.lane) - p.x)*dt*2.0; if(p.y > vh+90) pickups.splice(i,1); }
 
-    const mult = comboMult(); let gain = dt * (24 + clamp(effectiveSpeed/55, 0, 10)); if(nitroActive) gain += dt*7; if(driftWanted && driftSlip > 0.15) gain += dt*(7 + driftSlip*6); score += gain * mult;
+    const mult = comboMult(); 
+    let gain = dt * (24 + clamp(effectiveSpeed/55, 0, 10)); 
+    if(nitroActive) gain += dt*7; 
+    if(driftWanted && driftSlip > 0.15) gain += dt*(7 + driftSlip*6); 
+    score += (gain * mult) * 0.4; // 60% Slower progression
 
     if(!inBonus){
       for(const t of traffic){ const d = distRect(player.x,player.y,player.w,player.h, t.x,t.y,t.w,t.h); if(d>0 && d<8){ if(t.id !== lastNearMissId && Math.random()<0.16){ lastNearMissId = t.id; closeCalls++; addCombo(2); score += 10 * mult; toastTop("🔥 Near miss! +Combo"); } } }
@@ -1074,19 +1109,17 @@
       for(let i=traffic.length-1; i>=0; i--){ 
         const t = traffic[i];
         if(rectHit(player.x,player.y,player.w,player.h, t.x,t.y,t.w,t.h)){ 
-          if(runArmor > 0) {
-            runArmor--;
-            traffic.splice(i, 1);
-            playSfx("crash");
-            startShake(1.5);
-            addSmoke(t.x, t.y, 0, 0, 2.5);
-            for(let k=0; k<8; k++) addSpark(t.x, t.y, rand(-150,150), rand(50,200));
-            invulnT = 0.6; 
-            toast("Armor blocked crash! (" + runArmor + " left)");
-            score += 100;
-          } else {
-            hitCrash(); 
+          if(runSmash > 0 && activeVeh.type === "tank"){
+            runSmash--;
+            traffic.splice(i, 1); playSfx("smash"); startShake(1.5);
+            addSmoke(t.x, t.y, 0, 0, 2.5); for(let k=0; k<8; k++) addSpark(t.x, t.y, rand(-150,150), rand(50,200));
+            toast(`TANK SMASH! (${runSmash} left)`); score += 100;
           }
+          else if(runArmor > 0) {
+            runArmor--; traffic.splice(i, 1); playSfx("crash"); startShake(1.5);
+            addSmoke(t.x, t.y, 0, 0, 2.5); for(let k=0; k<8; k++) addSpark(t.x, t.y, rand(-150,150), rand(50,200));
+            invulnT = 0.6; toast("Armor blocked crash! (" + runArmor + " left)"); score += 100;
+          } else { hitCrash(); }
           break; 
         } 
       } 
@@ -1094,7 +1127,6 @@
 
     updateMissionsProgress();
     const sc=Math.floor(score); if(sc > (profile.bestScore||0)){ profile.bestScore=sc; saveProfileThrottled(dt); } saveProfileThrottled(dt);
-    
     if(nitroActive || Math.abs(player.vx) > 100 || mult > 1.2){ if(Math.random() < 0.70) addTrailPoint(); }else if(Math.random() < 0.25){ addTrailPoint(); }
 
     for(let i=smokes.length-1;i>=0;i--){ const s = smokes[i]; s.life -= dt*1.4; s.x += s.vx*dt; s.y += s.vy*dt; s.vy += 14*dt; if(s.life<=0) smokes.splice(i,1); }
@@ -1107,7 +1139,7 @@
     ctx.save();
     if(shakeT > 0){ shakeT = Math.max(0, shakeT - (dt || (1/60))); const p = (shakeT/0.18); const mag = (2 + 8*p) * shakePow; ctx.translate(rand(-mag, mag), rand(-mag, mag)); if(shakeT<=0){ shakePow = 0; } }
 
-    drawRoad(); const activeVeh = getSkin(); drawWarp(nitroActive ? 1 : 0);
+    drawRoad(); const activeVeh = getActiveVehicle(); const activePaint = getActivePaint(); drawWarp(nitroActive ? 1 : 0);
 
     if(skids.length){ ctx.save(); ctx.strokeStyle = "rgba(255,255,255,.22)"; ctx.lineWidth = 3; for(const s of skids){ ctx.globalAlpha = 0.12 + s.life*0.35; ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); ctx.stroke(); } ctx.restore(); }
     for(const s of smokes){ ctx.save(); const size = 10 + (1-s.life)*28*s.size; ctx.globalAlpha = 0.10 + s.life*0.25; ctx.fillStyle = "rgba(255,255,255,.35)"; ctx.beginPath(); ctx.arc(s.x, s.y, size, 0, Math.PI*2); ctx.fill(); ctx.restore(); }
@@ -1115,11 +1147,11 @@
 
     for(const c of coins) drawCoin(c);
     for(const p of pickups) drawPickup(p);
-    for(const t of traffic){ drawCar(t.x, t.y, t.w, t.h, false, "rgba(255,106,223,.60)", null, 1, 0, 0); }
+    for(const t of traffic){ drawCar(t.x, t.y, t.w, t.h, false, "rgba(255,106,223,.60)", null, null, 1, 0, 0); }
 
-    drawTrail(activeVeh);
+    drawTrail(activePaint);
     const driftSide = driftSlip * (player.vx * 0.004);
-    drawCar(player.x, player.y, player.w, player.h, true, "rgba(124,255,234,.95)", activeVeh, 1, driftLean, driftSide);
+    drawCar(player.x, player.y, player.w, player.h, true, "rgba(124,255,234,.95)", activeVeh, activePaint, 1, driftLean, driftSide);
 
     if(countdown && !countdown.done){ ctx.save(); ctx.fillStyle="rgba(0,0,0,.35)"; ctx.fillRect(0,0,vw,vh); ctx.fillStyle="rgba(255,255,255,.95)"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font = "900 64px Orbitron, system-ui, sans-serif"; const text = (countdown.phase===0) ? "3" : (countdown.phase===1) ? "2" : (countdown.phase===2) ? "1" : "GO!"; ctx.fillText(text, vw/2, vh/2); ctx.restore(); }
     ctx.restore();
@@ -1129,13 +1161,13 @@
 
   function restartRun(){ resizeCanvas(); layoutPlayer(); resetRunState(); running=true; paused=false; countdown=null; cinematicCountdown(()=>{}); syncHUD(); closeMenu(); }
 
-  reviveBtn.addEventListener("click", async ()=>{ if(reviveUsed) return; if(profile.bankCoins < 100) return toast("Not enough coins."); profile.bankCoins -= 100; reviveUsed=true; saveProfile(); lives = 1; runArmor = getSkin().armor; running=true; paused=false; overlay.style.display="none"; invulnT = 1.6; hitStop = 0; toast("Revived!"); syncHomeUI(); syncHUD(); if(settings.audioOn) startMusic(); });
+  reviveBtn.addEventListener("click", async ()=>{ if(reviveUsed) return; if(profile.bankCoins < 100) return toast("Not enough coins."); profile.bankCoins -= 100; reviveUsed=true; saveProfile(); lives = 1; runArmor = getActiveVehicle().armor || 0; running=true; paused=false; overlay.style.display="none"; invulnT = 1.6; hitStop = 0; toast("Revived!"); syncHomeUI(); syncHUD(); if(settings.audioOn) startMusic(); });
 
   function goHow(){ document.getElementById("howBtn").scrollIntoView({behavior:"smooth"}); }
 
   saveNameBtn.addEventListener("click", ()=>{ const nm = (nameInput.value||"").trim().slice(0,18); profile.name = nm || "Gamer"; saveProfile(); syncHomeUI(); toast("Name saved!"); });
   claimBonusBtn.addEventListener("click", ()=>{ const r = claimDailyBonus(); syncHomeUI(); toast(r.msg); });
-  crateBtn.addEventListener("click", ()=>openDailyCrate()); crateBtn2.addEventListener("click", ()=>openDailyCrate());
+  crateBtn.addEventListener("click", ()=>openDailyCrate()); 
   playBtn.addEventListener("click", ()=>startRun()); playFromTop.addEventListener("click", ()=>startRun());
   menuBtn.addEventListener("click", ()=>{ if(!running && paused) return; if(paused) closeMenu(); else openMenu(); });
   resumeBtn.addEventListener("click", ()=>{ if(!running) return; closeMenu(); }); restartBtn.addEventListener("click", ()=>restartRun());
@@ -1144,7 +1176,7 @@
   document.addEventListener("visibilitychange", ()=>{ if(document.hidden){ stopMusic(); if(running && !paused) openMenu(); }else{ if(running && !paused && settings.audioOn) startMusic(); } });
 
   ensureDailyMissions(); syncHomeUI(); bonusInfo.textContent = bonusPreview(); nameInput.value = (profile.name && profile.name !== "Gamer") ? profile.name : "";
-  renderMissions(missionsEl); renderMissions(missions2El); renderShop(shopEl); renderShop(shop2El); renderSkins(skinsEl); renderSkins(skins2El);
+  renderMissions(missionsEl); renderMissions(missions2El); renderShop(shopEl); renderShop(shop2El); renderVehicles(); renderPaints();
   syncCrateUI(); syncLeaderboard(); resizeCanvas(); layoutPlayer(); requestAnimationFrame(loop);
 })();
 </script>
