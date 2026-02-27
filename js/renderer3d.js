@@ -54,9 +54,9 @@ export class Renderer3D {
     this.scene.add(this.starfield);
 
     // City background (toggle with universe)
-    //this.city = this.makeCity();
-    //this.city.visible = false;
-    //this.scene.add(this.city);
+    this.city = this.makeCity();
+    this.city.visible = false;
+    this.scene.add(this.city);
 
     this.envMode = "space";
     this._envSeg = -1;
@@ -182,8 +182,6 @@ export class Renderer3D {
   sync(state) {
     if (!state) return;
 
-    this.updateEnvironment(state);
-
     // Player
     this.playerMesh.position.set(state.player.x, 0, state.player.zOff || 0);
     this.playerMesh.rotation.y = 0 + (state.player.drift.amount * 0.28) * (state.player.drift.direction || 0);
@@ -241,7 +239,6 @@ export class Renderer3D {
     const targetX = state.player.x * 0.22;
     const targetZ = (state.player.zOff || 0) * 0.20;
 
-    // Slight camera roll while drifting/steering
     const rollTarget = clamp(state.player.x * -0.03, -0.16, 0.16) + (state.player.drift.amount * (state.player.drift.direction || 0)) * 0.10;
     this.camRoll = lerp(this.camRoll, rollTarget, 0.08);
 
@@ -296,7 +293,7 @@ export class Renderer3D {
     this.renderer.render(this.scene, this.activeCam);
   }
 
-  // --------- Mesh builders (Cars look real, not blocks) ----------
+  // --------- Mesh builders ----------
 
   makeCarMesh({ kind = "car", body, glow, ghost = false } = {}) {
     const g = new THREE.Group();
@@ -342,17 +339,15 @@ export class Renderer3D {
       opacity: ghost ? 0.3 : 1.0,
     });
 
-    // Main chassis: capsule (rounded edges!)
     const chassisGeo = new THREE.CapsuleGeometry(0.50, 1.25, 8, 16);
     const chassis = new THREE.Mesh(chassisGeo, matBody);
     chassis.userData.matRole = "body";
-    chassis.rotation.z = Math.PI / 2; // lay it down
+    chassis.rotation.z = Math.PI / 2;
     chassis.position.set(0, 0.35, 0);
     chassis.castShadow = !ghost;
     chassis.receiveShadow = true;
     g.add(chassis);
 
-    // Cabin
     const cabinGeo = new THREE.CapsuleGeometry(0.34, 0.65, 8, 16);
     const cabin = new THREE.Mesh(cabinGeo, matGlass);
     cabin.rotation.z = Math.PI / 2;
@@ -360,14 +355,12 @@ export class Renderer3D {
     cabin.castShadow = !ghost;
     g.add(cabin);
 
-    // Hood stripe glow
     const stripeGeo = new THREE.BoxGeometry(0.18, 0.06, 1.20);
     const stripe = new THREE.Mesh(stripeGeo, matGlow);
     stripe.userData.matRole = "glow";
     stripe.position.set(0, 0.56, 0.15);
     g.add(stripe);
 
-    // Lights (emissive)
     const lightGeo = new THREE.BoxGeometry(0.55, 0.08, 0.10);
     const front = new THREE.Mesh(lightGeo, matGlow);
     front.userData.matRole = "light";
@@ -381,7 +374,6 @@ export class Renderer3D {
     rear.position.z = 0.72;
     g.add(rear);
 
-    // Wheels
     const wheelGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.10, 14);
     const wheelPositions = [
       [-0.42, 0.22, -0.48],
@@ -398,7 +390,6 @@ export class Renderer3D {
       g.add(w);
     }
 
-    // Under glow disc
     const glowGeo = new THREE.CircleGeometry(0.75, 18);
     const under = new THREE.Mesh(glowGeo, new THREE.MeshStandardMaterial({
       color: 0x000000,
@@ -488,13 +479,12 @@ export class Renderer3D {
     const col = new Float32Array(count * 3);
 
     for (let i = 0; i < count; i++) {
-      // sphere-ish distribution
       const r = 130 + Math.random() * 80;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
 
       const x = r * Math.sin(phi) * Math.cos(theta);
-      const y = r * Math.cos(phi) * 0.65; // flatter
+      const y = r * Math.cos(phi) * 0.65;
       const z = r * Math.sin(phi) * Math.sin(theta) - 40;
 
       pos[i * 3 + 0] = x;
@@ -538,7 +528,6 @@ export class Renderer3D {
     road.receiveShadow = true;
     g.add(road);
 
-    // neon edge strips
     const edgeMat = new THREE.MeshStandardMaterial({
       color: 0x080a12,
       emissive: new THREE.Color(0x7cffea),
@@ -624,6 +613,75 @@ export class Renderer3D {
         g.add(p);
       }
     }
+    return g;
+  }
+
+  toggleEnvironment() {
+    if (this.envMode === "space") {
+      this.envMode = "city";
+      this.starfield.visible = false;
+      this.city.visible = true;
+    } else {
+      this.envMode = "space";
+      this.starfield.visible = true;
+      this.city.visible = false;
+    }
+    return this.envMode;
+  }
+
+  makeCity() {
+    const g = new THREE.Group();
+
+    // Dark, slightly reflective material for the building structures
+    const bldgMat = new THREE.MeshStandardMaterial({
+      color: 0x05060a,
+      metalness: 0.8,
+      roughness: 0.2
+    });
+
+    // Neon accent colors
+    const neonColors = [0xff4dff, 0x7cffea, 0x4b6bff];
+
+    // Generate 60 random buildings
+    const count = 60;
+    for (let i = 0; i < count; i++) {
+      const width = 3 + Math.random() * 5;
+      const depth = 3 + Math.random() * 5;
+      const height = 15 + Math.random() * 40;
+
+      const geo = new THREE.BoxGeometry(width, height, depth);
+      const bldg = new THREE.Mesh(geo, bldgMat);
+
+      // Place them on either the left or right side of the track
+      const isLeft = Math.random() > 0.5;
+      const xOffset = 25 + Math.random() * 40;
+      const x = isLeft ? -xOffset : xOffset;
+      
+      const z = 10 - Math.random() * 160; 
+
+      bldg.position.set(x, height / 2 - 2, z);
+
+      // Add a glowing neon wireframe to the edges
+      const edgeGeo = new THREE.EdgesGeometry(geo);
+      const edgeColor = neonColors[Math.floor(Math.random() * neonColors.length)];
+      const edgeMat = new THREE.LineBasicMaterial({
+        color: edgeColor,
+        transparent: true,
+        opacity: 0.65
+      });
+      const edges = new THREE.LineSegments(edgeGeo, edgeMat);
+      
+      bldg.add(edges);
+      g.add(bldg);
+    }
+
+    // Add a distant glowing horizon grid
+    const grid = new THREE.GridHelper(200, 40, 0xff4dff, 0x4b6bff);
+    grid.position.set(0, -0.1, -60);
+    grid.material.transparent = true;
+    grid.material.opacity = 0.15;
+    g.add(grid);
+
     return g;
   }
 
