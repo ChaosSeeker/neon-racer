@@ -616,7 +616,58 @@
   function syncHomeUI(){ playerNameEl.textContent = profile.name || "Gamer"; bankCoinsEl.textContent = profile.bankCoins || 0; bestScoreEl.textContent = profile.bestScore || 0; bonusInfo.textContent = bonusPreview(); const r = rankFor(profile.bestScore||0); rankChipEl.textContent = r; menuBank.textContent = profile.bankCoins || 0; menuBest.textContent = profile.bestScore || 0; hudRank.textContent = r; }
 
   let gameOverPanel = null;
-  function ensureGameOverPanel(){ if(gameOverPanel) return; const modal = overlay.querySelector(".modal"); const topCard = document.createElement("div"); topCard.className = "card"; topCard.style.background = "rgba(0,0,0,.18)"; topCard.style.marginBottom = "12px"; topCard.id = "gameOverPanel"; topCard.style.display = "none"; topCard.innerHTML = `<h3 style="margin:0 0 6px;font-family:Orbitron,system-ui,sans-serif;letter-spacing:.6px">GAME OVER</h3><p class="muted" id="goLine" style="margin-top:0">—</p><div class="row" style="margin-top:10px"><button id="goRetry">▶ Play Again</button><button id="goSubmit">🏁 Submit Score</button></div><p class="small" id="goHint" style="margin-top:10px"></p>`; modal.prepend(topCard); gameOverPanel = topCard; topCard.querySelector("#goRetry").addEventListener("click", ()=>restartRun()); topCard.querySelector("#goSubmit").addEventListener("click", async ()=>{ await submitScoreOnline(); await syncLeaderboard(); toast("Submitted!"); }); }
+  function ensureGameOverPanel(){ 
+    if(gameOverPanel) return; 
+    const modal = overlay.querySelector(".modal"); 
+    const topCard = document.createElement("div"); 
+    topCard.className = "card"; 
+    topCard.style.background = "rgba(0,0,0,.18)"; 
+    topCard.style.marginBottom = "12px"; 
+    topCard.id = "gameOverPanel"; 
+    topCard.style.display = "none"; 
+    
+    // Added the <button id="goShare">📤 Share</button> to the HTML
+    topCard.innerHTML = `<h3 style="margin:0 0 6px;font-family:Orbitron,system-ui,sans-serif;letter-spacing:.6px">GAME OVER</h3><p class="muted" id="goLine" style="margin-top:0">—</p><div class="row" style="margin-top:10px"><button id="goRetry">▶ Play Again</button><button id="goSubmit">🏁 Submit Score</button><button id="goShare" style="background:linear-gradient(180deg, #ff6adf, #b84dff); border-color:#ff6adf;">📤 Share</button></div><p class="small" id="goHint" style="margin-top:10px"></p>`; 
+    
+    modal.prepend(topCard); 
+    gameOverPanel = topCard; 
+    
+    topCard.querySelector("#goRetry").addEventListener("click", ()=>restartRun()); 
+    topCard.querySelector("#goSubmit").addEventListener("click", async ()=>{ 
+      await submitScoreOnline(); 
+      await syncLeaderboard(); 
+      toast("Submitted!"); 
+    }); 
+    
+    // --- NEW WEB SHARE API LOGIC ---
+    topCard.querySelector("#goShare").addEventListener("click", async () => {
+      const currentScore = Math.floor(score);
+      const r = rankFor(profile.bestScore || 0);
+      const shareText = `I just scored ${currentScore} in Neon Highway Racer! My all-time best is ${profile.bestScore} (${r}). Can you beat me? 🏎️🔥`;
+      const shareUrl = window.location.href; // Shares the exact URL the game is hosted on
+
+      if (navigator.share) {
+        // Triggers the native mobile share sheet (WhatsApp, iMessage, Instagram, etc.)
+        try {
+          await navigator.share({
+            title: 'Neon Highway Racer',
+            text: shareText,
+            url: shareUrl
+          });
+        } catch (err) {
+          console.log("Share cancelled or failed.", err);
+        }
+      } else {
+        // Fallback for desktop browsers: Copy to clipboard
+        try {
+          await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+          toast("Copied to clipboard! Paste it to your friends.", 2500);
+        } catch (err) {
+          toast("Sharing not supported on this browser.");
+        }
+      }
+    });
+  }
 
   let dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1)); let vw=1, vh=1;
   function resizeCanvas(){ dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1)); const rect = canvas.getBoundingClientRect(); vw = Math.max(1, rect.width); vh = Math.max(1, rect.height); canvas.width = Math.floor(vw * dpr); canvas.height = Math.floor(vh * dpr); ctx.setTransform(dpr,0,0,dpr,0,0); }
