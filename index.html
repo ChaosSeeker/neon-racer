@@ -208,17 +208,17 @@
       flex:1; width:100%; height:100%; display:block; touch-action:none; background:#050814;
     }
 
-    /* Smaller, tighter joystick */
+    /* Floating Moveable joystick */
     .joystickWrap{
       position:absolute;
       left: 0; bottom: 0;
       z-index:12;
-      width:50vw; height:80vh; /* Covers the left half of the screen */
+      width:50vw; height:80vh;
       pointer-events:auto; display:none; user-select:none; touch-action:none;
     }
     .joyBase{
       width:100px; height:100px;
-      position:absolute; left:40px; bottom:40px; /* Default position */
+      position:absolute; left:40px; bottom:40px;
       border-radius:999px; border:1px solid rgba(255,255,255,.18);
       background:radial-gradient(circle at 35% 30%, rgba(124,255,234,.18), rgba(255,106,223,.10) 55%, rgba(0,0,0,.25) 100%);
       box-shadow:0 18px 55px rgba(0,0,0,.45); backdrop-filter: blur(10px);
@@ -359,7 +359,7 @@
     </div>
 
     <div class="card">
-      <h3>Skins</h3>
+      <h3>Vehicles</h3>
       <div class="shopGrid" id="skins"></div>
     </div>
   </div>
@@ -431,7 +431,7 @@
                 <div class="shopGrid" id="shop2"></div>
               </div>
               <div class="card" style="margin-top:12px; background:rgba(0,0,0,.18)">
-                <h3>Skins</h3>
+                <h3>Vehicles</h3>
                 <div class="shopGrid" id="skins2"></div>
               </div>
               <div class="card" style="margin-top:12px; background:rgba(0,0,0,.18)">
@@ -551,6 +551,11 @@
       o.frequency.exponentialRampToValueAtTime(1320, now+0.1);
       g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.3, now+0.01); g.gain.exponentialRampToValueAtTime(0.0001, now+0.2);
       o.connect(g); o.start(now); o.stop(now+0.25);
+    } else if(type==="crash") {
+      const o = ac.createOscillator(); o.type="sawtooth"; o.frequency.setValueAtTime(150, now);
+      o.frequency.exponentialRampToValueAtTime(40, now+0.3);
+      g.gain.setValueAtTime(0.4, now); g.gain.exponentialRampToValueAtTime(0.0001, now+0.3);
+      o.connect(g); o.start(now); o.stop(now+0.35);
     }
   }
 
@@ -580,8 +585,24 @@
   let _saveCooldown = 0;
   function saveProfile(){ localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); }
   function saveProfileThrottled(dt){ _saveCooldown -= dt; if(_saveCooldown <= 0){ _saveCooldown = 0.55; saveProfile(); } }
-  let profile = (() => { try{ return JSON.parse(localStorage.getItem(PROFILE_KEY)||"null"); }catch{ return null; } })() || { name:"Gamer", bestScore:0, bankCoins:0, streakDaysClaimed:0, lastBonusDate:null, missionsDate:null, missions:[], ownedSkins:["common_500_c0_d0"], skin:"common_500_c0_d0", lastCrateDate:null, ghost:null };
-  profile.ownedSkins ||= ["common_500_c0_d0"]; profile.skin ||= "common_500_c0_d0";
+  let profile = (() => { try{ return JSON.parse(localStorage.getItem(PROFILE_KEY)||"null"); }catch{ return null; } })() || { name:"Gamer", bestScore:0, bankCoins:0, streakDaysClaimed:0, lastBonusDate:null, missionsDate:null, missions:[], ownedSkins:[], skin:"", lastCrateDate:null, ghost:null };
+  
+  // VEHICLE SYSTEM (Replaces old skins)
+  const VEHICLES = [
+    { key:"v_sports", name:"Neon Dart", type:"sports", cost:0, hex:["#4df6ff","#ff5cd6"], speedMult: 1.0, steerMult: 1.0, driftMult: 1.0, armor: 0, rarity:"common" },
+    { key:"v_drifter", name:"Drift King", type:"sports", cost:1200, hex:["#ff3366","#ff9933"], speedMult: 1.05, steerMult: 1.25, driftMult: 1.8, armor: 0, rarity:"rare" },
+    { key:"v_suv", name:"Interceptor", type:"suv", cost:3000, hex:["#222222","#ff2e4d"], speedMult: 1.10, steerMult: 0.85, driftMult: 0.6, armor: 1, rarity:"epic" },
+    { key:"v_tank", name:"Rhino Tank", type:"tank", cost:6000, hex:["#556b2f","#8b4513"], speedMult: 0.85, steerMult: 0.65, driftMult: 0.1, armor: 2, rarity:"legendary" }
+  ];
+  const RARITY_ORDER = { common:0, rare:1, epic:2, legendary:3 };
+
+  // Migration from old skin format to new Vehicle format
+  if(!profile.ownedSkins) profile.ownedSkins = [];
+  if(!profile.ownedSkins.includes("v_sports")) profile.ownedSkins.push("v_sports");
+  if(!VEHICLES.some(v => v.key === profile.skin)) profile.skin = "v_sports";
+  saveProfile();
+
+  function getSkin(){ return VEHICLES.find(s=>s.key===profile.skin) || VEHICLES[0]; }
 
   function dailyBonusForDay(n){ return 40 + n*10; }
   function bonusPreview(){ if(profile.streakDaysClaimed>=7) return "Daily reward: Completed ✅"; const d=profile.streakDaysClaimed+1; return `Daily reward: +${dailyBonusForDay(d)} coins (Day ${d}/7)`; }
@@ -598,16 +619,12 @@
   const SHOP = [ { key:"shield", name:"🛡 Shield", desc:"Blocks 1 crash. (Run)", base: 40, max:2 }, { key:"nitro", name:"🚀 Nitro+", desc:"Start with extra nitro.", base: 30, max:3 }, { key:"slowmo", name:"⏱ Slow-Motion", desc:"Obstacles 5× slower.", base: 40, max:3 }, { key:"invisibility", name:"👻 Invisibility", desc:"Phase through cars.", base: 60, max:2 }, { key:"extraLife", name:"❤️ Extra Life", desc:"Adds +1 life this run.", base: 100, max:2 }, { key:"magnet", name:"🧲 Magnet", desc:"Pulls ALL coins to you (7s).", base: 70, max:3 } ];
   function renderShop(where){ where.innerHTML=""; SHOP.forEach(it=>{ const qty=cart[it.key]||0; const cost=Math.round(it.base); const div=document.createElement("div"); div.className="item"; div.innerHTML=`<div class="top"><div class="name">${escapeHtml(it.name)}</div><span class="qty">${qty}</span></div><div class="small">${escapeHtml(it.desc)}</div><div class="row" style="margin-top:auto;justify-content:space-between"><button data-buy="${it.key}">Buy</button><span class="small">Cost: <b>${cost}</b> 🪙</span></div>`; where.appendChild(div); }); where.querySelectorAll("button[data-buy]").forEach(btn=>{ btn.addEventListener("click", ()=>{ const k=btn.getAttribute("data-buy"); const it=SHOP.find(x=>x.key===k); if(!it) return; const cost=Math.round(it.base); if(profile.bankCoins < cost) return toast("Not enough coins."); if((cart[k]||0) >= it.max) return toast("Max for this item reached."); profile.bankCoins -= cost; cart[k] = (cart[k]||0)+1; saveProfile(); syncHomeUI(); renderShop(shopEl); renderShop(shop2El); toast(`Bought ${it.name}`); }); }); }
 
-  const RARITY_ORDER = { common:0, rare:1, epic:2, legendary:3 };
-  const SKINS = [ { rarity:"common", cost:500, hex:["#4df6ff","#ff5cd6"], key:"common_500_c0_d0" }, { rarity:"common", cost:600, hex:["#33ff99","#6f7bff"], key:"common_600_c1_d1" }, { rarity:"rare", cost:1200, hex:["#00fff0","#ff2bd6"], key:"rare_1200_c5_d5" }, { rarity:"epic", cost:2500, hex:["#b84dff","#4df6ff"], key:"epic_2500_c10_d10" }, { rarity:"legendary", cost:5000, hex:["#111111","#ffd24d"], key:"legendary_5000_c18_d18" } ];
-  if(!SKINS.some(s => s.key === profile.skin)){ profile.skin = SKINS[0].key; if(!profile.ownedSkins.includes(profile.skin)) profile.ownedSkins.push(profile.skin); saveProfile(); }
-  function getSkin(){ return SKINS.find(s=>s.key===profile.skin) || SKINS[0]; }
-  function renderSkins(where){ where.innerHTML=""; const list = [...SKINS].sort((a,b)=>{ const ra = RARITY_ORDER[a.rarity] ?? 9; const rb = RARITY_ORDER[b.rarity] ?? 9; if(ra !== rb) return ra - rb; return a.cost - b.cost; }); list.forEach(s=>{ const owned = profile.ownedSkins.includes(s.key); const selected = profile.skin === s.key; const div=document.createElement("div"); div.className="item"; div.innerHTML=`<div class="top"><div class="swatch" style="flex:1"><span class="chip rar ${s.rarity}">${s.rarity.toUpperCase()}</span><span class="dot" style="background:${s.hex[0]}"></span><span class="dot" style="background:${s.hex[1]}"></span><span class="skinBar" style="background:linear-gradient(135deg, ${s.hex[0]}, ${s.hex[1]});"></span></div><span class="qty">${owned ? "OWNED" : (s.cost+" 🪙")}</span></div><div class="row" style="margin-top:auto;justify-content:space-between"><button data-skin="${s.key}">${owned ? (selected ? "Selected" : "Select") : "Buy"}</button><span class="small">${selected ? "Using ✅" : (owned ? "Tap Select" : "")}</span></div>`; where.appendChild(div); }); where.querySelectorAll("button[data-skin]").forEach(btn=>{ btn.addEventListener("click", ()=>{ const k=btn.getAttribute("data-skin"); const s=SKINS.find(x=>x.key===k); if(!s) return; const owned = profile.ownedSkins.includes(k); if(!owned){ if(profile.bankCoins < s.cost) return toast("Not enough coins."); profile.bankCoins -= s.cost; profile.ownedSkins.push(k); toast("Skin unlocked!"); } profile.skin = k; saveProfile(); syncHomeUI(); renderSkins(skinsEl); renderSkins(skins2El); }); }); }
+  function renderSkins(where){ where.innerHTML=""; const list = [...VEHICLES].sort((a,b)=>{ const ra = RARITY_ORDER[a.rarity] ?? 9; const rb = RARITY_ORDER[b.rarity] ?? 9; if(ra !== rb) return ra - rb; return a.cost - b.cost; }); list.forEach(s=>{ const owned = profile.ownedSkins.includes(s.key); const selected = profile.skin === s.key; const div=document.createElement("div"); div.className="item"; div.innerHTML=`<div class="top"><div class="swatch" style="flex:1"><span class="chip rar ${s.rarity}">${s.rarity.toUpperCase()}</span><span class="dot" style="background:${s.hex[0]}"></span><span class="dot" style="background:${s.hex[1]}"></span><span class="skinBar" style="background:linear-gradient(135deg, ${s.hex[0]}, ${s.hex[1]});"></span></div><span class="qty">${owned ? "OWNED" : (s.cost+" 🪙")}</span></div><div style="font-size:11px; color:var(--muted); margin-top:4px; display:grid; grid-template-columns: 1fr 1fr; gap:4px;"><span>🏎️ Spd: ${s.speedMult}x</span><span>🕹️ Hndl: ${s.steerMult}x</span><span>🌀 Drft: ${s.driftMult}x</span><span>🛡️ Arm: ${s.armor}</span></div><div class="row" style="margin-top:auto;justify-content:space-between"><button data-skin="${s.key}">${owned ? (selected ? "Selected" : "Select") : "Buy"}</button><span class="small">${selected ? "Using ✅" : (owned ? "Tap Select" : "")}</span></div>`; where.appendChild(div); }); where.querySelectorAll("button[data-skin]").forEach(btn=>{ btn.addEventListener("click", ()=>{ const k=btn.getAttribute("data-skin"); const s=VEHICLES.find(x=>x.key===k); if(!s) return; const owned = profile.ownedSkins.includes(k); if(!owned){ if(profile.bankCoins < s.cost) return toast("Not enough coins."); profile.bankCoins -= s.cost; profile.ownedSkins.push(k); toast("Vehicle unlocked!"); } profile.skin = k; saveProfile(); syncHomeUI(); renderSkins(skinsEl); renderSkins(skins2El); }); }); }
 
   function crateReady(){ return profile.lastCrateDate !== todayISO(); }
   function syncCrateUI(){ const ready = crateReady(); const st = ready ? "Ready" : "Claimed"; crateStatus.textContent = st; crateStatus2.textContent = st; crateBtn.disabled = !ready; crateBtn2.disabled = !ready; crateInfo.textContent = ready ? "Tap to open your daily crate!" : "Come back tomorrow for another crate."; crateInfo2.textContent = crateInfo.textContent; }
   function pickWeighted(items){ const total = items.reduce((s,x)=>s + x.w, 0); let r = Math.random() * total; for(const it of items){ r -= it.w; if(r <= 0) return it; } return items[items.length-1]; }
-  function openDailyCrate(){ if(!crateReady()) return toast("Already claimed today."); const drop = pickWeighted([ { type:"coins", w: 45 }, { type:"buff", w: 40 }, { type:"skin", w: 15 } ]); let msg = ""; if(drop.type === "coins"){ const amt = [120,150,180,220,260][randi(0,4)]; profile.bankCoins += amt; msg = `Daily Crate: +${amt} coins 🪙`; } if(drop.type === "buff"){ const buffDrop = pickWeighted([ { key:"shield", w: 18 }, { key:"nitro", w: 18 }, { key:"coinsSmall", w: 14 } ]); if(buffDrop.key === "coinsSmall"){ const amt = [60,80,100,120][randi(0,3)]; profile.bankCoins += amt; msg = `Daily Crate: +${amt} coins 🪙`; }else{ cart[buffDrop.key] = clamp((cart[buffDrop.key]||0) + 1, 0, 99); const name = SHOP.find(x=>x.key===buffDrop.key)?.name || buffDrop.key; msg = `Daily Crate: +1 ${name} (next run)`; } } if(drop.type === "skin"){ const eligible = SKINS.filter(s => s.rarity !== "legendary"); const rarityPick = pickWeighted([ { rarity:"common", w: 70 }, { rarity:"rare", w: 24 }, { rarity:"epic", w: 6 } ]); const pool = eligible.filter(s => s.rarity === rarityPick.rarity); const s = pool[randi(0, pool.length-1)]; const already = profile.ownedSkins.includes(s.key); if(already){ const comp = s.rarity==="common" ? 220 : (s.rarity==="rare" ? 450 : 800); profile.bankCoins += comp; msg = `Daily Crate: Duplicate skin → +${comp} coins 🪙`; }else{ profile.ownedSkins.push(s.key); msg = `Daily Crate: Skin unlocked! (${s.rarity.toUpperCase()})`; } } profile.lastCrateDate = todayISO(); saveProfile(); syncHomeUI(); renderShop(shopEl); renderShop(shop2El); renderSkins(skinsEl); renderSkins(skins2El); syncCrateUI(); playSfx("crate"); toast(msg, 2200); }
+  function openDailyCrate(){ if(!crateReady()) return toast("Already claimed today."); const drop = pickWeighted([ { type:"coins", w: 45 }, { type:"buff", w: 40 }, { type:"skin", w: 15 } ]); let msg = ""; if(drop.type === "coins"){ const amt = [120,150,180,220,260][randi(0,4)]; profile.bankCoins += amt; msg = `Daily Crate: +${amt} coins 🪙`; } if(drop.type === "buff"){ const buffDrop = pickWeighted([ { key:"shield", w: 18 }, { key:"nitro", w: 18 }, { key:"coinsSmall", w: 14 } ]); if(buffDrop.key === "coinsSmall"){ const amt = [60,80,100,120][randi(0,3)]; profile.bankCoins += amt; msg = `Daily Crate: +${amt} coins 🪙`; }else{ cart[buffDrop.key] = clamp((cart[buffDrop.key]||0) + 1, 0, 99); const name = SHOP.find(x=>x.key===buffDrop.key)?.name || buffDrop.key; msg = `Daily Crate: +1 ${name} (next run)`; } } if(drop.type === "skin"){ const eligible = VEHICLES.filter(s => s.rarity !== "legendary"); const rarityPick = pickWeighted([ { rarity:"common", w: 70 }, { rarity:"rare", w: 24 }, { rarity:"epic", w: 6 } ]); const pool = eligible.filter(s => s.rarity === rarityPick.rarity); const s = pool[randi(0, pool.length-1)]; const already = profile.ownedSkins.includes(s.key); if(already){ const comp = s.rarity==="common" ? 220 : (s.rarity==="rare" ? 450 : 800); profile.bankCoins += comp; msg = `Daily Crate: Duplicate vehicle → +${comp} coins 🪙`; }else{ profile.ownedSkins.push(s.key); msg = `Daily Crate: Vehicle unlocked! (${s.rarity.toUpperCase()})`; } } profile.lastCrateDate = todayISO(); saveProfile(); syncHomeUI(); renderShop(shopEl); renderShop(shop2El); renderSkins(skinsEl); renderSkins(skins2El); syncCrateUI(); playSfx("crate"); toast(msg, 2200); }
 
   function renderLeaderboard(where, list){ where.innerHTML=""; list.forEach((x,i)=>{ const row=document.createElement("div"); row.className="lbRow"; row.innerHTML=`<span>#${i+1} <b>${escapeHtml(x.name)}</b></span><span><b>${x.score}</b></span>`; where.appendChild(row); }); }
   async function syncLeaderboard(){ if(!sb){ lbStatusEl.textContent = "Leaderboard coming soon"; lbStatus2El.textContent = "Leaderboard coming soon"; lbListEl.innerHTML=""; lbList2El.innerHTML=""; return; } try{ lbStatusEl.textContent = "Loading…"; lbStatus2El.textContent = "Loading…"; const list = await lbTop10(); lbStatusEl.textContent = list.length ? "Live leaderboard:" : "No scores yet."; lbStatus2El.textContent = list.length ? "Live leaderboard:" : "No scores yet."; renderLeaderboard(lbListEl, list); renderLeaderboard(lbList2El, list); }catch(e){ lbStatusEl.textContent = "Leaderboard error (check policies/RLS)"; lbStatus2El.textContent = "Leaderboard error (check policies/RLS)"; lbListEl.innerHTML=""; lbList2El.innerHTML=""; } }
@@ -626,7 +643,6 @@
     topCard.id = "gameOverPanel"; 
     topCard.style.display = "none"; 
     
-    // Added the <button id="goShare">📤 Share</button> to the HTML
     topCard.innerHTML = `<h3 style="margin:0 0 6px;font-family:Orbitron,system-ui,sans-serif;letter-spacing:.6px">GAME OVER</h3><p class="muted" id="goLine" style="margin-top:0">—</p><div class="row" style="margin-top:10px"><button id="goRetry">▶ Play Again</button><button id="goSubmit">🏁 Submit Score</button><button id="goShare" style="background:linear-gradient(180deg, #ff6adf, #b84dff); border-color:#ff6adf;">📤 Share</button></div><p class="small" id="goHint" style="margin-top:10px"></p>`; 
     
     modal.prepend(topCard); 
@@ -639,32 +655,16 @@
       toast("Submitted!"); 
     }); 
     
-    // --- NEW WEB SHARE API LOGIC ---
     topCard.querySelector("#goShare").addEventListener("click", async () => {
       const currentScore = Math.floor(score);
       const r = rankFor(profile.bestScore || 0);
       const shareText = `I just scored ${currentScore} in Neon Highway Racer! My all-time best is ${profile.bestScore} (${r}). Can you beat me? 🏎️🔥`;
-      const shareUrl = window.location.href; // Shares the exact URL the game is hosted on
+      const shareUrl = window.location.href; 
 
       if (navigator.share) {
-        // Triggers the native mobile share sheet (WhatsApp, iMessage, Instagram, etc.)
-        try {
-          await navigator.share({
-            title: 'Neon Highway Racer',
-            text: shareText,
-            url: shareUrl
-          });
-        } catch (err) {
-          console.log("Share cancelled or failed.", err);
-        }
+        try { await navigator.share({ title: 'Neon Highway Racer', text: shareText, url: shareUrl }); } catch (err) { console.log("Share cancelled or failed.", err); }
       } else {
-        // Fallback for desktop browsers: Copy to clipboard
-        try {
-          await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-          toast("Copied to clipboard! Paste it to your friends.", 2500);
-        } catch (err) {
-          toast("Sharing not supported on this browser.");
-        }
+        try { await navigator.clipboard.writeText(`${shareText} ${shareUrl}`); toast("Copied to clipboard! Paste it to your friends.", 2500); } catch (err) { toast("Sharing not supported on this browser."); }
       }
     });
   }
@@ -682,25 +682,15 @@
   function resetStick(){ joy.active=false; joy.id=null; setStickPos(0,0); }
   const joyWrap = document.getElementById("joystickWrap");
   joyWrap.addEventListener("pointerdown", (e)=>{ 
-    joy.active=true; 
-    joy.id=e.pointerId; 
-    
-    // Snap the base to exactly where the user touched
+    joy.active=true; joy.id=e.pointerId; 
     const rWrap = joyWrap.getBoundingClientRect();
-    const tx = e.clientX - rWrap.left;
-    const ty = e.clientY - rWrap.top;
-    joyBase.style.left = `${tx - 50}px`; // center the 100px base
-    joyBase.style.top = `${ty - 50}px`;
-    joyBase.style.bottom = "auto";
-    
-    joyWrap.setPointerCapture(joy.id); 
-    joy.baseRect = joyBase.getBoundingClientRect(); 
-    handleJoyMove(e); 
+    const tx = e.clientX - rWrap.left; const ty = e.clientY - rWrap.top;
+    joyBase.style.left = `${tx - 50}px`; joyBase.style.top = `${ty - 50}px`; joyBase.style.bottom = "auto";
+    joyWrap.setPointerCapture(joy.id); joy.baseRect = joyBase.getBoundingClientRect(); handleJoyMove(e); 
   });
   joyWrap.addEventListener("pointermove", (e)=>{ if(!joy.active || e.pointerId!==joy.id) return; handleJoyMove(e); });
   const endJoy = (e)=>{ if(e.pointerId!==joy.id) return; resetStick(); };
-  joyWrap.addEventListener("pointerup", endJoy);
-  joyWrap.addEventListener("pointercancel", endJoy);
+  joyWrap.addEventListener("pointerup", endJoy); joyWrap.addEventListener("pointercancel", endJoy);
   function handleJoyMove(e){ const r = joy.baseRect || joyBase.getBoundingClientRect(); const cx = r.left + r.width/2; const cy = r.top + r.height/2; const dx = e.clientX - cx; const dy = e.clientY - cy; const max = (r.width*0.5) - 18; const dist = Math.hypot(dx,dy); const nd = dist > 0 ? Math.min(1, dist/max) : 0; const nx = dist>0 ? (dx/dist)*nd : 0; const ny = dist>0 ? (dy/dist)*nd : 0; setStickPos(nx, ny); }
 
   const touch = { nitro:false, drift:false };
@@ -715,7 +705,7 @@
   const traffic=[], coins=[], pickups=[]; const PICK_TYPES = ["shield","magnet","slowmo","nitro","invisibility"];
 
   let running=false, paused=false;
-  let score=0, runCoins=0, lives=2, reviveUsed=false;
+  let score=0, runCoins=0, lives=2, reviveUsed=false, runArmor=0;
   let speed=DIFF.baseSpeed, nitro=1.0, nitroActive=false;
   let buffShield=0, buffMagnet=0, buffSlowmo=0, buffInvisibility=0, invulnT=0;
   let inBonus=false, bonusT=0, nextBonusAt=500;
@@ -743,7 +733,7 @@
 
   function resetRunState(){
     score=0; runCoins=0; passedCars=0; closeCalls=0;
-    lives = 2 + (cart.extraLife||0); reviveUsed=false;
+    lives = 2 + (cart.extraLife||0); reviveUsed=false; runArmor=getSkin().armor;
     speed=DIFF.baseSpeed; roadScroll=0; nitro = clamp(1.0 + (cart.nitro||0)*0.25, 0, 1.8);
     buffShield = (cart.shield||0); buffMagnet = (cart.magnet||0) * 7; buffSlowmo = (cart.slowmo||0) * 5; buffInvisibility = (cart.invisibility||0) * 6; invulnT = 0;
     for(const k in cart) cart[k]=0; renderShop(shopEl); renderShop(shop2El);
@@ -806,102 +796,95 @@
     ctx.restore();
   }
 
-  // OVERHAULED Solid and Distinct rendering for Player vs Obstacles
-  function drawCar(x,y,w,h,isPlayer,glowColor, skinHex, extraAlpha=1, rot=0, driftSide=0){
+  function drawCar(x,y,w,h,isPlayer,glowColor, vObj, extraAlpha=1, rot=0, driftSide=0){
     ctx.save();
     ctx.globalAlpha = extraAlpha;
     if(rot || driftSide){ ctx.translate(x,y); ctx.rotate(rot); ctx.translate(-x,-y); x += driftSide; }
 
-    // Drop Shadow
     ctx.fillStyle="rgba(0,0,0,.35)";
-    ctx.beginPath();
-    ctx.ellipse(x, y+h*0.12, w*0.52, h*0.10, 0, 0, Math.PI*2);
-    ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x, y+h*0.12, w*0.52, h*0.10, 0, 0, Math.PI*2); ctx.fill();
 
     if(isPlayer) {
-        // --- PLAYER CAR (Sleek, Solid, Detailed) ---
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = glowColor;
+        const vType = vObj ? vObj.type : "sports";
+        const colors = (vObj && vObj.hex) ? vObj.hex : ["#4df6ff","#ff5cd6"];
 
-        const bodyX=x-w/2, bodyY=y-h/2;
-        const colors = (skinHex && skinHex.length>=2) ? skinHex : ["#4df6ff","#ff5cd6"];
+        if(vType === "tank") {
+            ctx.fillStyle = "#111";
+            roundRect(x-w*0.55, y-h*0.4, w*0.25, h*0.8, 4); ctx.fill(); 
+            roundRect(x+w*0.30, y-h*0.4, w*0.25, h*0.8, 4); ctx.fill(); 
+            
+            const bodyGrad=ctx.createLinearGradient(x-w/2, y-h/2, x-w/2, y+h/2);
+            bodyGrad.addColorStop(0, colors[0]); bodyGrad.addColorStop(1, colors[1]);
+            ctx.fillStyle = bodyGrad;
+            roundRect(x-w*0.4, y-h*0.45, w*0.8, h*0.9, 8); ctx.fill();
+            
+            ctx.fillStyle = "#222";
+            ctx.beginPath(); ctx.arc(x, y+h*0.1, w*0.35, 0, Math.PI*2); ctx.fill();
+            
+            ctx.fillStyle = "#111";
+            ctx.fillRect(x-w*0.1, y-h*0.65, w*0.2, h*0.6);
+            
+            ctx.fillStyle="#ffffff";
+            roundRect(x-w*0.3, y-h*0.45, w*0.15, 6, 2); ctx.fill();
+            roundRect(x+w*0.15, y-h*0.45, w*0.15, 6, 2); ctx.fill();
 
-        // Solid Body Gradient (Vertical)
-        const bodyGrad=ctx.createLinearGradient(bodyX, bodyY, bodyX, bodyY+h);
-        bodyGrad.addColorStop(0, colors[0]);
-        bodyGrad.addColorStop(1, colors[1]);
-        ctx.fillStyle=bodyGrad;
-        roundRect(bodyX, bodyY, w, h, w*0.25);
-        ctx.fill();
+        } else if(vType === "suv") {
+            const bodyGrad=ctx.createLinearGradient(x-w/2, y-h/2, x-w/2, y+h/2);
+            bodyGrad.addColorStop(0, colors[0]); bodyGrad.addColorStop(1, colors[1]);
+            ctx.fillStyle = bodyGrad;
+            roundRect(x-w*0.45, y-h*0.45, w*0.9, h*0.9, 8); ctx.fill();
+            
+            ctx.fillStyle="#111522"; 
+            roundRect(x-w*0.4, y-h*0.2, w*0.8, h*0.5, 6); ctx.fill();
+            ctx.fillStyle="#334055";
+            roundRect(x-w*0.35, y-h*0.15, w*0.7, h*0.2, 4); ctx.fill(); 
+            
+            ctx.fillStyle="#0a0a0a";
+            roundRect(x-w*0.55, y-h*0.35, w*0.15, h*0.25, 4); ctx.fill();
+            roundRect(x+w*0.4,  y-h*0.35, w*0.15, h*0.25, 4); ctx.fill();
+            roundRect(x-w*0.55, y+h*0.15, w*0.15, h*0.25, 4); ctx.fill();
+            roundRect(x+w*0.4,  y+h*0.15, w*0.15, h*0.25, 4); ctx.fill();
+            
+            ctx.fillStyle="#ffffff";
+            roundRect(x-w*0.4, y-h*0.45, w*0.25, h*0.1, 4); ctx.fill();
+            roundRect(x+w*0.15, y-h*0.45, w*0.25, h*0.1, 4); ctx.fill();
+            
+        } else {
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = glowColor;
 
-        ctx.shadowBlur=0;
+            const bodyX=x-w/2, bodyY=y-h/2;
+            const bodyGrad=ctx.createLinearGradient(bodyX, bodyY, bodyX, bodyY+h);
+            bodyGrad.addColorStop(0, colors[0]); bodyGrad.addColorStop(1, colors[1]);
+            ctx.fillStyle=bodyGrad;
+            roundRect(bodyX, bodyY, w, h, w*0.25); ctx.fill();
 
-        // Dark solid roof/windshield
-        ctx.fillStyle="#111522"; 
-        roundRect(x-w*0.35, y-h*0.2, w*0.7, h*0.4, w*0.15);
-        ctx.fill();
+            ctx.shadowBlur=0;
+            ctx.fillStyle="#111522"; 
+            roundRect(x-w*0.35, y-h*0.2, w*0.7, h*0.4, w*0.15); ctx.fill();
+            ctx.fillStyle="#334055";
+            roundRect(x-w*0.25, y-h*0.15, w*0.5, h*0.15, w*0.1); ctx.fill();
+            
+            ctx.fillStyle="#ffffff";
+            ctx.shadowBlur = 10; ctx.shadowColor = "#ffffff";
+            roundRect(x-w*0.4, y-h*0.45, w*0.2, h*0.1, 4); ctx.fill();
+            roundRect(x+w*0.2, y-h*0.45, w*0.2, h*0.1, 4); ctx.fill();
+            
+            ctx.shadowBlur = 0;
+            ctx.fillStyle="#ff2e4d";
+            roundRect(x-w*0.4, y+h*0.35, w*0.25, h*0.08, 2); ctx.fill();
+            roundRect(x+w*0.15, y+h*0.35, w*0.25, h*0.08, 2); ctx.fill();
+            
+            ctx.fillStyle="#0a0a0a";
+            roundRect(x-w*0.55, y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
+            roundRect(x+w*0.4,  y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
+            roundRect(x-w*0.55, y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
+            roundRect(x+w*0.4,  y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
+            
+            ctx.fillStyle="#222";
+            roundRect(x-w*0.45, y+h*0.42, w*0.9, h*0.06, 2); ctx.fill();
+        }
 
-        // Windshield Highlight
-        ctx.fillStyle="#334055";
-        roundRect(x-w*0.25, y-h*0.15, w*0.5, h*0.15, w*0.1);
-        ctx.fill();
-
-        // Headlights
-        ctx.fillStyle="#ffffff";
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = "#ffffff";
-        roundRect(x-w*0.4, y-h*0.45, w*0.2, h*0.1, 4); ctx.fill();
-        roundRect(x+w*0.2, y-h*0.45, w*0.2, h*0.1, 4); ctx.fill();
-        ctx.shadowBlur = 0;
-
-        // Taillights
-        ctx.fillStyle="#ff2e4d";
-        roundRect(x-w*0.4, y+h*0.35, w*0.25, h*0.08, 2); ctx.fill();
-        roundRect(x+w*0.15, y+h*0.35, w*0.25, h*0.08, 2); ctx.fill();
-
-        // Wheels
-        ctx.fillStyle="#0a0a0a";
-        roundRect(x-w*0.55, y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
-        roundRect(x+w*0.4,  y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
-        roundRect(x-w*0.55, y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
-        roundRect(x+w*0.4,  y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
-
-        // Spoiler
-        ctx.fillStyle="#222";
-        roundRect(x-w*0.45, y+h*0.42, w*0.9, h*0.06, 2); ctx.fill();
-
-    } else {
-        // --- OBSTACLE CAR (Boxy, darker base, simple) ---
-        const bodyX=x-w/2, bodyY=y-h/2;
-        ctx.fillStyle="rgba(20,20,30,.95)"; // Dark solid base
-        roundRect(bodyX, bodyY, w, h, w*0.15);
-        ctx.fill();
-
-        // Top Color Shell
-        ctx.fillStyle=glowColor;
-        roundRect(x-w*0.4, y-h*0.4, w*0.8, h*0.8, w*0.1);
-        ctx.fill();
-
-        // Simple Windshields
-        ctx.fillStyle="#000";
-        roundRect(x-w*0.3, y-h*0.25, w*0.6, h*0.2, 4); ctx.fill(); // Front
-        roundRect(x-w*0.3, y+h*0.05, w*0.6, h*0.15, 4); ctx.fill(); // Rear
-
-        // Taillights
-        ctx.fillStyle="#ff4444";
-        ctx.fillRect(x-w*0.4, y+h*0.4, w*0.2, 4);
-        ctx.fillRect(x+w*0.2, y+h*0.4, w*0.2, 4);
-
-        // Wheels
-        ctx.fillStyle="#000";
-        roundRect(x-w*0.55, y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
-        roundRect(x+w*0.4,  y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
-        roundRect(x-w*0.55, y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
-        roundRect(x+w*0.4,  y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
-    }
-
-    // Invulnerability Overlays (Player Only)
-    if(isPlayer) {
         const bodyX=x-w/2, bodyY=y-h/2;
         if(buffInvisibility>0 && !inBonus){
             ctx.globalAlpha = extraAlpha*0.4;
@@ -920,6 +903,27 @@
             ctx.stroke();
             ctx.globalAlpha = extraAlpha;
         }
+    } else {
+        const bodyX=x-w/2, bodyY=y-h/2;
+        ctx.fillStyle="rgba(20,20,30,.95)"; 
+        roundRect(bodyX, bodyY, w, h, w*0.15); ctx.fill();
+
+        ctx.fillStyle=glowColor;
+        roundRect(x-w*0.4, y-h*0.4, w*0.8, h*0.8, w*0.1); ctx.fill();
+
+        ctx.fillStyle="#000";
+        roundRect(x-w*0.3, y-h*0.25, w*0.6, h*0.2, 4); ctx.fill(); 
+        roundRect(x-w*0.3, y+h*0.05, w*0.6, h*0.15, 4); ctx.fill();
+
+        ctx.fillStyle="#ff4444";
+        ctx.fillRect(x-w*0.4, y+h*0.4, w*0.2, 4);
+        ctx.fillRect(x+w*0.2, y+h*0.4, w*0.2, 4);
+
+        ctx.fillStyle="#000";
+        roundRect(x-w*0.55, y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
+        roundRect(x+w*0.4,  y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
+        roundRect(x-w*0.55, y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
+        roundRect(x+w*0.4,  y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
     }
 
     ctx.restore();
@@ -961,7 +965,9 @@
   function updateMissionsProgress(){ for(const m of profile.missions){ if(m.type==="passCars") m.progress = Math.max(m.progress, passedCars); if(m.type==="collectCoins") m.progress = Math.max(m.progress, runCoins); if(m.type==="closeCalls") m.progress = Math.max(m.progress, closeCalls); } }
 
   function syncHUD(){
-    hudScore.textContent = Math.floor(score); hudBest.textContent = profile.bestScore || 0; hudRunCoins.textContent = runCoins; hudLives.textContent = lives; hudRank.textContent = rankFor(profile.bestScore||0); hudNitro.textContent = `${Math.round((nitro/1.8)*100)}%`; if(inBonus) hudBonusT.textContent = bonusT.toFixed(1);
+    hudScore.textContent = Math.floor(score); hudBest.textContent = profile.bestScore || 0; hudRunCoins.textContent = runCoins; 
+    hudLives.textContent = lives + (runArmor > 0 ? ` (+${runArmor} Arm)` : ""); 
+    hudRank.textContent = rankFor(profile.bestScore||0); hudNitro.textContent = `${Math.round((nitro/1.8)*100)}%`; if(inBonus) hudBonusT.textContent = bonusT.toFixed(1);
     if(combo>0){ hudCombo.style.display="inline-flex"; hudComboV.textContent = `x${comboMult().toFixed(2)}`; }else{ hudCombo.style.display="none"; }
     hudGhost.style.display = "none"; 
     if(driftSlip>0.05){ hudDrift.style.display="inline-flex"; hudDriftV.textContent = `${Math.round(driftSlip*100)}%`; }else{ hudDrift.style.display="none"; }
@@ -980,6 +986,8 @@
     if(hitStop > 0){ hitStop = Math.max(0, hitStop - dt); return; }
     if(countdown && !countdown.done){ countdown.t += dt; if(countdown.t > 0.9){ countdown.phase++; countdown.t=0; if(countdown.phase>=4){ countdown.done=true; countdown.onDone?.(); } } return; }
 
+    const activeVeh = getSkin();
+
     invulnT = Math.max(0, invulnT - dt); speed += DIFF.accel * dt; const easyWindow = clamp(score / 600, 0, 1); const spawnRate = (DIFF.spawnBase + (Math.floor(score) * DIFF.spawnRamp)) * (0.65 + 0.35*easyWindow);
     if(!inBonus){ buffMagnet = Math.max(0, buffMagnet - dt); buffSlowmo = Math.max(0, buffSlowmo - dt); buffInvisibility = Math.max(0, buffInvisibility - dt); }
 
@@ -987,7 +995,8 @@
     const jx = joy.x; const jy = joy.y; const steerAxis = clamp((kLeft?-1:0) + (kRight?1:0) + jx, -1, 1); const nitroAxis = kNitro || touch.nitro; const driftAxis = kDrift || touch.drift;
 
     nitroActive = nitroAxis && nitro > 0.02 && !inBonus; if(nitroActive) nitro = Math.max(0, nitro - dt*0.22); else nitro = Math.min(1.8, nitro + dt*0.14);
-    const effectiveSpeed = speed + (nitroActive ? 105 : 0);
+    
+    const effectiveSpeed = (speed + (nitroActive ? 105 : 0)) * activeVeh.speedMult;
     roadScroll += effectiveSpeed*dt; if(roadScroll>60) roadScroll-=60;
     decayCombo(dt);
     if(!inBonus && Math.floor(score) >= nextBonusAt) startBonus(); if(inBonus){ bonusT -= dt; hudBonusT.textContent = bonusT.toFixed(1); if(bonusT <= 0) endBonus(); }
@@ -997,29 +1006,26 @@
     pickT += dt * 0.33; if(pickT>=1){ pickT=0; if(Math.random()<0.62) spawnPickup(); }
 
     const driftWanted = driftAxis && !inBonus && Math.abs(steerAxis) > 0.05;
-    const driftTargetSlip = driftWanted ? clamp(Math.abs(steerAxis) * (0.55 + clamp(effectiveSpeed/650,0,0.45)), 0, 1) : 0;
+    const driftTargetSlip = driftWanted ? clamp(Math.abs(steerAxis) * (0.55 + clamp(effectiveSpeed/650,0,0.45)), 0, 1) * activeVeh.driftMult : 0;
     driftSlip = lerp(driftSlip, driftTargetSlip, 1 - Math.pow(0.0008, dt)); driftHeat = lerp(driftHeat, driftWanted ? driftSlip : 0, 1 - Math.pow(0.0007, dt));
     const yawTarget = driftWanted ? (steerAxis * (0.16 + driftSlip*0.14)) : (steerAxis * 0.06); driftLean = lerp(driftLean, yawTarget, 1 - Math.pow(0.0007, dt));
 
-    // Player Movement (Super Snappy)
-    const steerSpeed = lerp(550, 750, clamp(score/4200, 0, 1));
+    const steerSpeed = lerp(550, 750, clamp(score/4200, 0, 1)) * activeVeh.steerMult;
     const traction = 1 - driftSlip*0.65;
     const response = driftWanted ? 0.75 : 1.0;
     const targetVx = steerAxis * steerSpeed;
-    const smooth = 1 - Math.pow(0.00001, dt * response); // Instant Reflex
+    const smooth = 1 - Math.pow(0.00001, dt * response);
     player.vx = lerp(player.vx, targetVx, smooth);
     
     const slipPush = driftWanted ? (steerAxis * steerSpeed * 0.28 * driftSlip) : 0; player.vx += slipPush * dt * 8; player.vx *= (0.985 + traction*0.01);
     player.x += player.vx * dt;
 
-    // Free Y Movement (Super Snappy)
     const fbAxis = clamp(-jy + (kUp?1:0) + (kDown?-1:0), -1, 1);
-    const fbSpeed = lerp(350, 500, clamp(score/4200, 0, 1));
+    const fbSpeed = lerp(350, 500, clamp(score/4200, 0, 1)) * activeVeh.speedMult;
     const targetVy = fbAxis * fbSpeed;
-    player.vy = lerp(player.vy, targetVy, 1 - Math.pow(0.00001, dt)); // Instant Stop/Go
+    player.vy = lerp(player.vy, targetVy, 1 - Math.pow(0.00001, dt)); 
     player.y -= player.vy * dt;
 
-    // Expanded Y Clamping for Free Movement
     const minY = vh*0.20; 
     const maxY = vh*0.90;
     player.y = clamp(player.y, minY, maxY);
@@ -1064,7 +1070,27 @@
     for(let i=coins.length-1;i>=0;i--){ const c=coins[i]; if(rectHit(player.x,player.y,player.w*0.92,player.h*0.92, c.x,c.y, c.r*2, c.r*2)){ coins.splice(i,1); runCoins += c.val; playSfx("coin"); if(!inBonus && Math.random()<0.10) addCombo(1); } }
     for(let i=pickups.length-1;i>=0;i--){ const p=pickups[i]; if(rectHit(player.x,player.y,player.w*0.92,player.h*0.92, p.x,p.y, p.r*2, p.r*2)){ pickups.splice(i,1); applyPickup(p.type); playSfx("pickup"); if(!inBonus) addCombo(1); } }
 
-    if(!inBonus && invulnT<=0){ for(const t of traffic){ if(rectHit(player.x,player.y,player.w,player.h, t.x,t.y,t.w,t.h)){ hitCrash(); break; } } }
+    if(!inBonus && invulnT<=0){ 
+      for(let i=traffic.length-1; i>=0; i--){ 
+        const t = traffic[i];
+        if(rectHit(player.x,player.y,player.w,player.h, t.x,t.y,t.w,t.h)){ 
+          if(runArmor > 0) {
+            runArmor--;
+            traffic.splice(i, 1);
+            playSfx("crash");
+            startShake(1.5);
+            addSmoke(t.x, t.y, 0, 0, 2.5);
+            for(let k=0; k<8; k++) addSpark(t.x, t.y, rand(-150,150), rand(50,200));
+            invulnT = 0.6; 
+            toast("Armor blocked crash! (" + runArmor + " left)");
+            score += 100;
+          } else {
+            hitCrash(); 
+          }
+          break; 
+        } 
+      } 
+    }
 
     updateMissionsProgress();
     const sc=Math.floor(score); if(sc > (profile.bestScore||0)){ profile.bestScore=sc; saveProfileThrottled(dt); } saveProfileThrottled(dt);
@@ -1081,7 +1107,7 @@
     ctx.save();
     if(shakeT > 0){ shakeT = Math.max(0, shakeT - (dt || (1/60))); const p = (shakeT/0.18); const mag = (2 + 8*p) * shakePow; ctx.translate(rand(-mag, mag), rand(-mag, mag)); if(shakeT<=0){ shakePow = 0; } }
 
-    drawRoad(); const skin = getSkin(); drawWarp(nitroActive ? 1 : 0);
+    drawRoad(); const activeVeh = getSkin(); drawWarp(nitroActive ? 1 : 0);
 
     if(skids.length){ ctx.save(); ctx.strokeStyle = "rgba(255,255,255,.22)"; ctx.lineWidth = 3; for(const s of skids){ ctx.globalAlpha = 0.12 + s.life*0.35; ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); ctx.stroke(); } ctx.restore(); }
     for(const s of smokes){ ctx.save(); const size = 10 + (1-s.life)*28*s.size; ctx.globalAlpha = 0.10 + s.life*0.25; ctx.fillStyle = "rgba(255,255,255,.35)"; ctx.beginPath(); ctx.arc(s.x, s.y, size, 0, Math.PI*2); ctx.fill(); ctx.restore(); }
@@ -1091,9 +1117,9 @@
     for(const p of pickups) drawPickup(p);
     for(const t of traffic){ drawCar(t.x, t.y, t.w, t.h, false, "rgba(255,106,223,.60)", null, 1, 0, 0); }
 
-    drawTrail(skin);
+    drawTrail(activeVeh);
     const driftSide = driftSlip * (player.vx * 0.004);
-    drawCar(player.x, player.y, player.w, player.h, true, "rgba(124,255,234,.95)", skin.hex, 1, driftLean, driftSide);
+    drawCar(player.x, player.y, player.w, player.h, true, "rgba(124,255,234,.95)", activeVeh, 1, driftLean, driftSide);
 
     if(countdown && !countdown.done){ ctx.save(); ctx.fillStyle="rgba(0,0,0,.35)"; ctx.fillRect(0,0,vw,vh); ctx.fillStyle="rgba(255,255,255,.95)"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font = "900 64px Orbitron, system-ui, sans-serif"; const text = (countdown.phase===0) ? "3" : (countdown.phase===1) ? "2" : (countdown.phase===2) ? "1" : "GO!"; ctx.fillText(text, vw/2, vh/2); ctx.restore(); }
     ctx.restore();
@@ -1103,7 +1129,7 @@
 
   function restartRun(){ resizeCanvas(); layoutPlayer(); resetRunState(); running=true; paused=false; countdown=null; cinematicCountdown(()=>{}); syncHUD(); closeMenu(); }
 
-  reviveBtn.addEventListener("click", async ()=>{ if(reviveUsed) return; if(profile.bankCoins < 100) return toast("Not enough coins."); profile.bankCoins -= 100; reviveUsed=true; saveProfile(); lives = 1; running=true; paused=false; overlay.style.display="none"; invulnT = 1.6; hitStop = 0; toast("Revived!"); syncHomeUI(); syncHUD(); if(settings.audioOn) startMusic(); });
+  reviveBtn.addEventListener("click", async ()=>{ if(reviveUsed) return; if(profile.bankCoins < 100) return toast("Not enough coins."); profile.bankCoins -= 100; reviveUsed=true; saveProfile(); lives = 1; runArmor = getSkin().armor; running=true; paused=false; overlay.style.display="none"; invulnT = 1.6; hitStop = 0; toast("Revived!"); syncHomeUI(); syncHUD(); if(settings.audioOn) startMusic(); });
 
   function goHow(){ document.getElementById("howBtn").scrollIntoView({behavior:"smooth"}); }
 
