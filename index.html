@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Neon Highway Racer: Mythic Edition</title>
+  <title>Neon Highway Racer</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,339 +13,1139 @@
 
   <style>
     :root{
-      --bg:#02040a;
+      --bg:#060814;
       --panel:#0b1230;
       --text:#eaf0ff; --muted:#9fb0e6;
       --a:#7cffea; --p:#ff6adf; --g:#ffd24d; --r:#ff4b5c;
-      --common:#9fb0e6; --rare:#7cffea; --epic:#ff6adf; --legend:#ffd24d; --mythic:#ff3333;
+      --common:#9fb0e6; --rare:#7cffea; --epic:#ff6adf; --legend:#ffd24d;
     }
     *{box-sizing:border-box}
-    html,body{height:100%; margin:0; font-family: 'Orbitron', sans-serif;}
+    html,body{height:100%}
     body{
-      background: radial-gradient(circle at 50% 0%, #1a2a7a 0%, var(--bg) 75%);
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background: radial-gradient(1200px 700px at 50% 15%, #1a2a7a 0%, var(--bg) 60%);
       color:var(--text);
       overflow:hidden;
     }
 
-    /* AAA Homepage Styling */
     .app{height:100%; display:flex; flex-direction:column;}
+    .topbar{
+      padding:12px 14px;
+      background:rgba(11,18,48,.78);
+      border-bottom:1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(10px);
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+    }
+    .brand{display:flex; flex-direction:column; gap:2px;}
+    .brand h1{
+      margin:0;
+      font-family:"Orbitron", system-ui, sans-serif;
+      font-weight:900;
+      letter-spacing:.8px;
+      font-size:16px;
+      line-height:1.15;
+    }
+    .brand .sub{font-size:12px; color:var(--muted)}
+    .actions{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    button{
+      cursor:pointer;
+      color:var(--text);
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:900;
+      font-size:13px;
+      transition:.15s transform,.15s background;
+      user-select:none;
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      justify-content:center;
+    }
+    button:hover{background:rgba(255,255,255,.12)}
+    button:active{transform:translateY(1px)}
+    button:disabled{opacity:.55; cursor:not-allowed}
+
     .home{
-      flex:1; overflow:auto; padding:30px; display:grid; gap:25px; align-content:start;
-      background: linear-gradient(rgba(2,4,10,0.8), rgba(2,4,10,0.8)), url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+      flex:1;
+      overflow:auto;
+      padding:14px;
+      display:grid;
+      gap:12px;
+      align-content:start;
     }
     .hero{
-      border: 2px solid var(--a);
-      background: linear-gradient(135deg, rgba(124,255,234,0.15), rgba(255,106,223,0.1));
-      border-radius:30px; padding:50px; text-align:center;
-      box-shadow: 0 0 60px rgba(124,255,234,0.2);
+      border:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(135deg, rgba(124,255,234,.12), rgba(255,106,223,.10));
+      border-radius:18px;
+      padding:14px;
+      box-shadow:0 18px 60px rgba(0,0,0,.35);
     }
-    .hero h1 { font-size: 52px; margin: 0; letter-spacing: 4px; text-shadow: 0 0 20px var(--a); }
-    .hero .muted { font-size: 18px; margin-bottom: 25px; }
+    .heroRow{display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;}
+    .heroTitle{
+      font-family:"Orbitron", system-ui, sans-serif;
+      font-weight:900;
+      font-size:18px;
+      margin:0;
+      letter-spacing:1px;
+    }
+    .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+    .chip{
+      background:rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:999px;
+      padding:8px 10px;
+      font-size:12px;
+      color:var(--muted);
+      display:inline-flex; gap:6px; align-items:center;
+    }
+    .chip b{color:var(--text)}
+    .rar.common{color:var(--common)}
+    .rar.rare{color:var(--rare)}
+    .rar.epic{color:var(--epic)}
+    .rar.legendary{color:var(--legend)}
 
-    .topbar{
-      padding:15px 25px; background:rgba(11,18,48,.9); border-bottom:1px solid rgba(255,255,255,.1);
-      backdrop-filter: blur(15px); display:flex; justify-content:space-between; align-items:center;
+    .grid{
+      display:grid; grid-template-columns: 1.2fr 1fr; gap:12px;
     }
-    
-    button{
-      cursor:pointer; color:#000; background:var(--a); border:none; border-radius:12px;
-      padding:12px 24px; font-weight:900; font-family:'Orbitron'; transition:0.2s;
+    .card{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(11,18,48,.55);
+      border-radius:18px;
+      padding:12px;
+      backdrop-filter: blur(10px);
+      box-shadow:0 12px 40px rgba(0,0,0,.25);
     }
-    button:hover{ transform: scale(1.05); box-shadow: 0 0 15px var(--a); }
-    button:disabled{ opacity:0.4; cursor:not-allowed; }
-
-    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:20px; }
-    .card{ border:1px solid rgba(255,255,255,.1); background:rgba(11,18,48,.6); border-radius:20px; padding:20px; backdrop-filter: blur(10px); }
-    
-    .shopGrid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px; margin-top:15px; }
+    .card h3{
+      margin:0 0 8px;
+      font-family:"Orbitron", system-ui, sans-serif;
+      font-weight:800;
+      font-size:14px;
+      letter-spacing:.4px;
+    }
+    .muted{color:var(--muted); font-size:13px; line-height:1.5; margin:0}
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .inp{
+      width:min(320px, 100%);
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.22);
+      color:var(--text);
+      outline:none;
+      font-weight:800;
+    }
+    .inp:focus{border-color:rgba(124,255,234,.7)}
+    .lbList{display:grid; gap:8px; margin-top:10px;}
+    .lbRow{
+      display:flex; justify-content:space-between; gap:10px; align-items:center;
+      padding:10px 10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.18);
+      font-size:13px;
+    }
+    .lbRow b{font-weight:950}
+    .small{font-size:12px; color:var(--muted)}
+    .shopGrid{
+      display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; margin-top:10px;
+    }
     .item{
-      border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,0.03);
-      border-radius:24px; padding:20px; display:flex; flex-direction:column; gap:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.18);
+      border-radius:16px;
+      padding:12px;
+      display:flex; flex-direction:column; gap:8px; min-height:126px;
     }
-    .veh-preview {
-      height: 120px; border-radius: 15px; display: flex; align-items: center; justify-content: center;
-      position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
+    .item .top{display:flex; justify-content:space-between; gap:8px; align-items:center;}
+    .item .name{font-weight:950}
+    .qty{
+      display:inline-flex; min-width:26px; justify-content:center;
+      padding:2px 8px; border-radius:999px; background:rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.12); font-size:12px; font-weight:950; white-space:nowrap;
+    }
+    .swatch{display:flex; gap:8px; align-items:center;}
+    .dot{
+      width:14px; height:14px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.18); background:#fff;
+      box-shadow:0 8px 18px rgba(0,0,0,.25);
+    }
+    .skinBar{
+      height:14px; border-radius:999px; border:1px solid rgba(255,255,255,.18);
+      box-shadow:0 10px 22px rgba(0,0,0,.25); flex:1; min-width:80px;
+    }
+    @media (max-width:900px){ .grid{grid-template-columns:1fr} }
+    @media (max-width:520px){ .shopGrid{grid-template-columns:1fr} }
+
+    .gameScreen{position:fixed; inset:0; display:none; background:#050814;}
+    .gameWrap{position:absolute; inset:0; display:flex; flex-direction:column;}
+
+    .hud{
+      position:absolute;
+      top: max(10px, env(safe-area-inset-top));
+      left: max(10px, env(safe-area-inset-left));
+      right: max(10px, env(safe-area-inset-right));
+      display:flex; gap:8px; align-items:center; justify-content:space-between;
+      z-index:10; pointer-events:none;
+    }
+    .hudLeft, .hudRight{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+    .pill{
+      pointer-events:none; background:rgba(11,18,48,.68);
+      border:1px solid rgba(255,255,255,.12); border-radius:999px;
+      padding:8px 10px; font-size:12px; display:inline-flex; gap:6px; align-items:center;
+      backdrop-filter: blur(10px);
+    }
+    .pill b{font-weight:950}
+    .menuBtn{
+      pointer-events:auto; width:40px; height:40px; display:grid; place-items:center;
+      border-radius:12px; background:rgba(11,18,48,.75);
+      border:1px solid rgba(255,255,255,.16); backdrop-filter: blur(10px); font-weight:950;
     }
 
-    .gameScreen{position:fixed; inset:0; display:none; background:#000;}
-    .hud{ position:absolute; top:20px; left:20px; right:20px; display:flex; justify-content:space-between; pointer-events:none; z-index:100; }
-    .pill{ background:rgba(11,18,48,0.8); border:1px solid var(--a); padding:10px 18px; border-radius:30px; display:flex; gap:10px; backdrop-filter:blur(5px); }
+    #game{
+      flex:1; width:100%; height:100%; display:block; touch-action:none; background:#050814;
+    }
 
-    canvas{ width:100%; height:100%; display:block; }
-    
-    .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:var(--panel); border:1px solid var(--a); padding:12px 25px; border-radius:15px; z-index:1000; display:none; }
+    /* Floating Moveable joystick */
+    .joystickWrap{
+      position:absolute;
+      left: 0; bottom: 0;
+      z-index:12;
+      width:50vw; height:80vh;
+      pointer-events:auto; display:none; user-select:none; touch-action:none;
+    }
+    .joyBase{
+      width:100px; height:100px;
+      position:absolute; left:40px; bottom:40px;
+      border-radius:999px; border:1px solid rgba(255,255,255,.18);
+      background:radial-gradient(circle at 35% 30%, rgba(124,255,234,.18), rgba(255,106,223,.10) 55%, rgba(0,0,0,.25) 100%);
+      box-shadow:0 18px 55px rgba(0,0,0,.45); backdrop-filter: blur(10px);
+      overflow:hidden;
+    }
+    .joyBase:after{
+      content:""; position:absolute; inset:8px; border-radius:999px;
+      border:1px dashed rgba(255,255,255,.16); opacity:.65;
+    }
+    .joyStick{
+      width:40px; height:40px;
+      border-radius:999px; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      border:1px solid rgba(255,255,255,.22);
+      background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.18), rgba(124,255,234,.22) 50%, rgba(0,0,0,.25));
+      box-shadow:0 16px 45px rgba(0,0,0,.55);
+    }
+    .joyHint{
+      position:absolute; left:40px; bottom:160px; text-align:left; font-size:12px;
+      color:rgba(255,255,255,.78); text-shadow:0 10px 30px rgba(0,0,0,.5); font-weight:900;
+      letter-spacing:.2px; pointer-events:none;
+    }
+    .joyHint b{color:var(--a)}
+    @media (max-width:760px){ .joystickWrap{display:block} }
+
+    /* touch buttons */
+    .touchBtns{
+      position:absolute;
+      right: max(12px, env(safe-area-inset-right));
+      bottom: max(12px, env(safe-area-inset-bottom));
+      z-index:12; display:none; gap:10px; pointer-events:auto; user-select:none; touch-action:none;
+    }
+    .touchBtn{
+      width:84px; height:84px; border-radius:20px; border:1px solid rgba(255,255,255,.18);
+      background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.16), rgba(255,106,223,.14) 45%, rgba(0,0,0,.25));
+      box-shadow:0 18px 55px rgba(0,0,0,.45); font-weight:950; font-size:14px;
+      letter-spacing:.2px; line-height:1.05; flex-direction:column;
+    }
+    .touchBtn:active{ transform:translateY(1px) scale(0.99); }
+    .touchBtn.on{
+      background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.18), rgba(124,255,234,.20) 45%, rgba(0,0,0,.25));
+      border-color:rgba(124,255,234,.45);
+    }
+    @media (max-width:760px){ .touchBtns{display:flex} }
+
+    .overlay{
+      position:absolute; inset:0; display:none; place-items:center; padding:16px;
+      background:rgba(0,0,0,.60); backdrop-filter: blur(8px); z-index:30;
+    }
+    .modal{
+      width:min(920px, 94vw); max-height: min(88vh, 900px); overflow:auto;
+      background:rgba(11,18,48,.92); border:1px solid rgba(255,255,255,.14);
+      border-radius:18px; padding:14px; box-shadow:0 24px 70px rgba(0,0,0,.6);
+    }
+    .modal h2{
+      margin:0 0 6px; font-family:"Orbitron", system-ui, sans-serif; font-weight:900;
+      letter-spacing:.8px; font-size:16px;
+    }
+    .modal .split{display:grid; grid-template-columns: 1.2fr 1fr; gap:12px;}
+    @media (max-width:900px){ .modal .split{grid-template-columns:1fr} }
+
+    .toast, .toastTop{
+      position:fixed; left:50%; transform:translateX(-50%);
+      border:1px solid rgba(255,255,255,.14); border-radius:14px; color:var(--text);
+      font-size:13px; z-index:100; display:none; backdrop-filter: blur(10px);
+      max-width:min(92vw, 520px); text-align:center;
+    }
+    .toast { bottom: max(16px, env(safe-area-inset-bottom)); background:rgba(11,18,48,.85); padding:10px 12px; box-shadow:0 12px 40px rgba(0,0,0,.35); }
+    .toastTop { top: max(16px, env(safe-area-inset-top)); background:linear-gradient(135deg, rgba(124,255,234,.22), rgba(255,106,223,.18)); padding:10px 14px; box-shadow:0 18px 50px rgba(0,0,0,.45); font-weight:950; border-radius:999px;}
   </style>
 </head>
 
 <body>
 <div class="app">
   <div class="topbar">
-    <div class="brand"><h1>NEON HIGHWAY</h1></div>
-    <div class="actions" style="display:flex; gap:15px; align-items:center;">
-      <span class="pill">🪙 <b id="bankCoins">0</b></span>
-      <button id="playBtn">START ENGINE</button>
+    <div class="brand">
+      <h1>NEON HIGHWAY RACER</h1>
+      <div class="sub">Tap Play to go fullscreen</div>
+    </div>
+    <div class="actions">
+      <span class="chip">Player: <b id="playerName">Gamer</b></span>
+      <span class="chip">Rank <b id="rankChip">Rookie</b></span>
+      <span class="chip">Bank 🪙 <b id="bankCoins">0</b></span>
+      <span class="chip">Best <b id="bestScore">0</b></span>
+      <button id="audioBtn">🔊 Audio</button>
+      <button id="playFromTop">▶ Play</button>
     </div>
   </div>
 
   <div class="home" id="home">
     <div class="hero">
-      <h1>ASCEND THE LEGACY</h1>
-      <p class="muted">5 Lanes. Infinite Speed. Zero Mercy.</p>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <h3>Daily Crate</h3>
-        <button id="crateBtn">OPEN CRATE</button>
-        <p id="crateInfo" class="small"></p>
-      </div>
-      <div class="card">
-        <h3>Referral Task</h3>
-        <p class="small">Invite 3 friends to submit a score.</p>
-        <div id="referralStatus">Progress: 0/3</div>
-        <button onclick="toast('Invite link copied!')" style="margin-top:10px; background:var(--p)">COPY LINK</button>
+      <div class="heroRow">
+        <div>
+          <p class="heroTitle">Race. Dodge. Collect. Flex your rank.</p>
+          <p class="muted">Start easy, get hooked, then chase the leaderboard.</p>
+        </div>
+        <div class="row">
+          <button id="playBtn">▶ Play Fullscreen</button>
+          <button id="howBtn">📘 How to Play</button>
+          <button id="feedbackBtn">💬 Feedback</button>
+        </div>
       </div>
     </div>
 
     <div class="card">
-      <h2>Vehicle Showroom</h2>
+      <h3>Player name</h3>
+      <div class="row" style="margin-top:10px">
+        <input class="inp" id="nameInput" maxlength="18" placeholder="Enter name (default: Gamer)" />
+        <button id="saveName">Save</button>
+        <button id="claimBonus">Daily Reward</button>
+      </div>
+      <p class="small" id="bonusInfo" style="margin-top:8px"></p>
+    </div>
+
+    <div class="card">
+      <h3>Daily Crate</h3>
+      <div class="row" style="margin-top:10px">
+        <button id="crateBtn">🎁 Open Daily Crate</button>
+        <span class="chip">Status: <b id="crateStatus">Ready</b></span>
+      </div>
+      <p class="small" id="crateInfo" style="margin-top:8px"></p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Daily Tasks</h3>
+        <div id="missions" style="margin-top:10px; display:grid; gap:10px;"></div>
+      </div>
+      <div class="card">
+        <h3>Leaderboard (Top 10)</h3>
+        <p class="muted" id="lbStatus">Loading…</p>
+        <div class="lbList" id="lbList"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Shop (buy before you play)</h3>
+      <div class="shopGrid" id="shop"></div>
+    </div>
+
+    <div class="card">
+      <h3>Vehicles</h3>
       <div class="shopGrid" id="skins"></div>
     </div>
   </div>
 
-  <div class="gameScreen" id="gameScreen">
-    <div class="hud">
-      <div style="display:flex; gap:10px;">
-        <div class="pill">SCORE <b id="hudScore">0</b></div>
-        <div class="pill">ARMOR <b id="hudArmor">0</b></div>
-        <div class="pill" id="hudShieldPill" style="display:none">SHIELD ACTIVE</div>
+  <div class="gameScreen" id="gameScreen" aria-hidden="true">
+    <div class="gameWrap">
+      <div class="hud">
+        <div class="hudLeft">
+          <div class="pill">Score <b id="hudScore">0</b></div>
+          <div class="pill">Best <b id="hudBest">0</b></div>
+          <div class="pill">Run 🪙 <b id="hudRunCoins">0</b></div>
+          <div class="pill">Lives <b id="hudLives">2</b></div>
+          <div class="pill">Rank <b id="hudRank">Rookie</b></div>
+          <div class="pill">Nitro <b id="hudNitro">100%</b></div>
+          <div class="pill" id="hudCombo" style="display:none">🔥 Combo <b id="hudComboV">x1</b></div>
+          <div class="pill" id="hudBonus" style="display:none">BONUS <b id="hudBonusT">12.0</b>s</div>
+          <div class="pill" id="hudGhost" style="display:none">👻 Ghost <b>ON</b></div>
+          <div class="pill" id="hudDrift" style="display:none">🌀 Drift <b id="hudDriftV">0%</b></div>
+        </div>
+        <div class="hudRight">
+          <button class="menuBtn" id="menuBtn" title="Menu">☰</button>
+        </div>
+      </div>
+
+      <canvas id="game"></canvas>
+
+      <div class="joystickWrap" id="joystickWrap">
+        <div class="joyHint">Joystick: <b>move</b></div>
+        <div class="joyBase" id="joyBase">
+          <div class="joyStick" id="joyStick"></div>
+        </div>
+      </div>
+
+      <div class="touchBtns" id="touchBtns">
+        <button class="touchBtn" id="nitroTouch" aria-label="Nitro">🚀<br/>Nitro</button>
+        <button class="touchBtn" id="driftTouch" aria-label="Drift">🌀<br/>Drift</button>
+      </div>
+
+      <div class="overlay" id="overlay">
+        <div class="modal">
+          <h2>Menu</h2>
+          <div class="split">
+            <div class="card" style="background:rgba(0,0,0,.18)">
+              <h3>Quick</h3>
+              <div class="row">
+                <button id="resumeBtn">▶ Resume</button>
+                <button id="restartBtn">🔁 Restart</button>
+                <button id="exitBtn">🏠 Home</button>
+              </div>
+              <div class="row" style="margin-top:12px">
+                <span class="chip">Bank 🪙 <b id="menuBank">0</b></span>
+                <span class="chip">Best <b id="menuBest">0</b></span>
+              </div>
+              <div class="card" style="margin-top:12px; background:rgba(11,18,48,.55)">
+                <h3>Revive</h3>
+                <button id="reviveBtn" disabled>❤️ Revive (100)</button>
+                <p class="small" id="reviveHint" style="margin-top:8px"></p>
+              </div>
+            </div>
+
+            <div>
+              <div class="card" style="background:rgba(0,0,0,.18)">
+                <h3>Leaderboard</h3>
+                <p class="muted" id="lbStatus2">Loading…</p>
+                <div class="lbList" id="lbList2"></div>
+              </div>
+              <div class="card" style="margin-top:12px; background:rgba(0,0,0,.18)">
+                <h3>Shop (next run)</h3>
+                <div class="shopGrid" id="shop2"></div>
+              </div>
+              <div class="card" style="margin-top:12px; background:rgba(0,0,0,.18)">
+                <h3>Vehicles</h3>
+                <div class="shopGrid" id="skins2"></div>
+              </div>
+              <div class="card" style="margin-top:12px; background:rgba(0,0,0,.18)">
+                <h3>Daily Crate</h3>
+                <div class="row" style="margin-top:10px">
+                  <button id="crateBtn2">🎁 Open</button>
+                  <span class="chip">Status: <b id="crateStatus2">Ready</b></span>
+                </div>
+                <p class="small" id="crateInfo2" style="margin-top:8px"></p>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:12px; background:rgba(0,0,0,.18)">
+            <h3>Daily Tasks</h3>
+            <div id="missions2" style="margin-top:10px; display:grid; gap:10px;"></div>
+          </div>
+        </div>
       </div>
     </div>
-    <canvas id="game"></canvas>
   </div>
 </div>
 
+<div class="toastTop" id="toastTop"></div>
 <div class="toast" id="toast"></div>
 
 <script>
 (() => {
-  // CONFIGURATION
-  const laneCount = 5; // 
-  const VEHICLES = [
-    { key:"v_sports", name:"Neon Dart", cost:0, hex:["#4df6ff","#ff5cd6"], speedMult: 1.0, driftMult: 1.0, armor: 0, rarity:"common" },
-    { key:"v_drifter", name:"Drift King", cost:1200, hex:["#ff3366","#ff9933"], speedMult: 1.05, driftMult: 1.8, armor: 0, rarity:"rare" },
-    { key:"v_suv", name:"Interceptor", cost:3000, hex:["#222222","#ff2e4d"], speedMult: 1.10, driftMult: 0.6, armor: 1, rarity:"epic" },
-    { key:"v_tank", name:"Rhino Tank", cost:6000, hex:["#556b2f","#8b4513"], speedMult: 0.85, driftMult: 0.1, armor: 3, rarity:"legendary" }, // 
-    { key:"v_mythic", name:"Void Runner", cost:15000, hex:["#ff0000","#000000"], speedMult: 1.35, driftMult: 2.0, armor: 5, rarity:"mythic" }
-  ];
+  const SUPABASE_URL = "https://dnyibstgahnjbkjokuxs.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_1PLhDg4aoFucc0-7qWH0KA_unYKueat";
 
-  // PROFILE
-  let profile = JSON.parse(localStorage.getItem("neon_pro_v5") || "null") || {
-    bankCoins: 500, bestScore: 0, ownedSkins: ["v_sports"], skin: "v_sports", referrals: 0
-  };
+  const sb = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
 
+  async function lbTop10(){
+    if(!sb) return null;
+    const { data, error } = await sb.from("leaderboard").select("name,score").order("score", { ascending:false }).limit(10);
+    if(error) throw error;
+    return data || [];
+  }
+
+  async function lbSubmit(name, score){
+    if(!sb) return;
+    const nm = (name || "Gamer").trim().slice(0,18);
+    const sc = Math.max(0, Math.floor(score||0));
+    try{
+      const { error } = await sb.rpc("upsert_leaderboard", { p_name:nm, p_score:sc });
+      if(!error) return;
+    }catch{}
+    const { error } = await sb.from("leaderboard").upsert(
+      { name:nm, score:sc, updated_at:new Date().toISOString() }, { onConflict:"name" }
+    );
+    if(error) throw error;
+  }
+
+  const home = document.getElementById("home");
+  const gameScreen = document.getElementById("gameScreen");
   const canvas = document.getElementById("game");
-  const ctx = canvas.getContext("2d");
-  let vw, vh, running = false, score = 0, runCoins = 0, runArmor = 0, buffShield = 0;
-  let player = { x: 0, y: 0, w: 40, h: 75, vx: 0 };
-  let traffic = [], speed = 100, invulnT = 0;
-  const keys = new Set();
+  const ctx = canvas.getContext("2d", { alpha:false });
 
-  // UTILS
-  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const roadW = () => vw * 0.75; // 
-  const roadX = () => (vw - roadW()) / 2; // 
-  const laneW = () => roadW() / laneCount; // 
-  const laneCenter = (l) => roadX() + laneW() * (l + 0.5); // [cite: 190]
+  const playerNameEl = document.getElementById("playerName"), bankCoinsEl = document.getElementById("bankCoins"), bestScoreEl = document.getElementById("bestScore"), rankChipEl = document.getElementById("rankChip");
+  const audioBtn = document.getElementById("audioBtn"), nameInput = document.getElementById("nameInput"), saveNameBtn = document.getElementById("saveName"), claimBonusBtn = document.getElementById("claimBonus"), bonusInfo = document.getElementById("bonusInfo");
+  const crateBtn = document.getElementById("crateBtn"), crateBtn2 = document.getElementById("crateBtn2"), crateStatus = document.getElementById("crateStatus"), crateStatus2 = document.getElementById("crateStatus2"), crateInfo = document.getElementById("crateInfo"), crateInfo2 = document.getElementById("crateInfo2");
+  const playBtn = document.getElementById("playBtn"), playFromTop = document.getElementById("playFromTop"), howBtn = document.getElementById("howBtn");
+  const missionsEl = document.getElementById("missions"), missions2El = document.getElementById("missions2");
+  const lbStatusEl = document.getElementById("lbStatus"), lbListEl = document.getElementById("lbList"), lbStatus2El = document.getElementById("lbStatus2"), lbList2El = document.getElementById("lbList2");
+  const shopEl = document.getElementById("shop"), shop2El = document.getElementById("shop2"), skinsEl = document.getElementById("skins"), skins2El = document.getElementById("skins2");
+  const hudScore = document.getElementById("hudScore"), hudBest = document.getElementById("hudBest"), hudRunCoins = document.getElementById("hudRunCoins"), hudLives = document.getElementById("hudLives"), hudRank = document.getElementById("hudRank"), hudNitro = document.getElementById("hudNitro"), hudBonus = document.getElementById("hudBonus"), hudBonusT = document.getElementById("hudBonusT"), hudCombo = document.getElementById("hudCombo"), hudComboV = document.getElementById("hudComboV"), hudGhost = document.getElementById("hudGhost"), hudDrift = document.getElementById("hudDrift"), hudDriftV = document.getElementById("hudDriftV");
+  const menuBtn = document.getElementById("menuBtn"), overlay = document.getElementById("overlay"), resumeBtn = document.getElementById("resumeBtn"), restartBtn = document.getElementById("restartBtn"), exitBtn = document.getElementById("exitBtn");
+  const reviveBtn = document.getElementById("reviveBtn"), reviveHint = document.getElementById("reviveHint"), menuBank = document.getElementById("menuBank"), menuBest = document.getElementById("menuBest");
+  const joyBase = document.getElementById("joyBase"), joyStick = document.getElementById("joyStick"), nitroTouch = document.getElementById("nitroTouch"), driftTouch = document.getElementById("driftTouch");
+  const toastEl = document.getElementById("toast"), toastTopEl = document.getElementById("toastTop");
 
-  function toast(m) { const t = document.getElementById("toast"); t.textContent = m; t.style.display="block"; setTimeout(()=>t.style.display="none", 2000); }
-  function save() { localStorage.setItem("neon_pro_v5", JSON.stringify(profile)); }
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const rand=(a,b)=>a+Math.random()*(b-a);
+  const randi=(a,b)=>Math.floor(rand(a,b+1));
 
-  // UI RENDERING
-  function syncUI() {
-    document.getElementById("bankCoins").textContent = profile.bankCoins;
-    const shelf = document.getElementById("skins");
-    shelf.innerHTML = "";
-    VEHICLES.forEach(v => {
-      const owned = profile.ownedSkins.includes(v.key);
-      const div = document.createElement("div");
-      div.className = "item";
-      div.innerHTML = `
-        <div class="veh-preview" style="background:linear-gradient(135deg, ${v.hex[0]}44, ${v.hex[1]}44)">
-            <div style="width:30px; height:55px; background:linear-gradient(${v.hex[0]}, ${v.hex[1]}); border-radius:5px; box-shadow:0 0 15px ${v.hex[0]}"></div>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <b style="color:var(--${v.rarity})">${v.name}</b>
-            <span class="small">${owned ? "OWNED" : v.cost + " 🪙"}</span>
-        </div>
-        <button ${owned && profile.skin === v.key ? "disabled" : ""} onclick="selectVehicle('${v.key}')">
-            ${owned ? (profile.skin === v.key ? "SELECTED" : "EQUIP") : "BUY"}
-        </button>
-      `;
-      shelf.appendChild(div);
-    });
+  function toast(msg, ms=1500){
+    toastEl.textContent = msg; toastEl.style.display="block";
+    clearTimeout(toastEl._t); toastEl._t=setTimeout(()=>toastEl.style.display="none", ms);
+  }
+  function toastTop(msg, ms=1600){
+    toastTopEl.textContent = msg; toastTopEl.style.display="block";
+    clearTimeout(toastTopEl._t); toastTopEl._t=setTimeout(()=>toastTopEl.style.display="none", ms);
+  }
+  function todayISO(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
+
+  let inputFocus=false;
+  nameInput.addEventListener("focus", ()=>inputFocus=true); nameInput.addEventListener("blur", ()=>inputFocus=false);
+
+  const SETTINGS_KEY = "neon_racer_settings_v3";
+  let settings = (() => { try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || "null"); } catch { return null; } })() || { audioOn:true, musicVol:0.35, sfxVol:0.6 };
+  function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+
+  let ac=null, master=null, musicBus=null, sfxBus=null;
+  const Music = { tempo: 110, playing:false, nextTime:0, step:0, timer:null, bass:null, lead:null, hat:null };
+
+  function ensureAudioContext(){
+    if(ac) return;
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain(); master.gain.value = settings.audioOn ? 1 : 0; master.connect(ac.destination);
+    musicBus = ac.createGain(); sfxBus = ac.createGain();
+    musicBus.gain.value = settings.musicVol; sfxBus.gain.value = settings.sfxVol;
+    musicBus.connect(master); sfxBus.connect(master);
+  }
+  function setAudioEnabled(on){ settings.audioOn = on; saveSettings(); if(master) master.gain.value = on ? 1 : 0; audioBtn.textContent = settings.audioOn ? "🔊 Audio" : "🔇 Muted"; if(!on) stopMusic(); }
+  audioBtn.textContent = settings.audioOn ? "🔊 Audio" : "🔇 Muted";
+  function midiToFreq(m){ return 440 * Math.pow(2, (m-69)/12); }
+
+  function playSfx(type){
+    if(!settings.audioOn) return; ensureAudioContext(); const now = ac.currentTime;
+    const g = ac.createGain(); g.connect(sfxBus);
+    if(type==="coin"||type==="pickup"||type==="bonus"||type==="crate"){
+      const o = ac.createOscillator(); o.type="square"; o.frequency.setValueAtTime(660, now);
+      o.frequency.exponentialRampToValueAtTime(1320, now+0.1);
+      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.3, now+0.01); g.gain.exponentialRampToValueAtTime(0.0001, now+0.2);
+      o.connect(g); o.start(now); o.stop(now+0.25);
+    } else if(type==="crash") {
+      const o = ac.createOscillator(); o.type="sawtooth"; o.frequency.setValueAtTime(150, now);
+      o.frequency.exponentialRampToValueAtTime(40, now+0.3);
+      g.gain.setValueAtTime(0.4, now); g.gain.exponentialRampToValueAtTime(0.0001, now+0.3);
+      o.connect(g); o.start(now); o.stop(now+0.35);
+    }
   }
 
-  window.selectVehicle = (key) => {
-    const v = VEHICLES.find(x => x.key === key);
-    if (!profile.ownedSkins.includes(key)) {
-      if (profile.bankCoins >= v.cost) {
-        profile.bankCoins -= v.cost;
-        profile.ownedSkins.push(key);
-        toast("Vehicle Unlocked!");
-      } else return toast("Insufficient Coins");
+  function startMusic(){
+    if(!settings.audioOn) return; ensureAudioContext(); if(Music.playing) return; Music.playing=true; Music.step=0; Music.nextTime = ac.currentTime + 0.05;
+    const bass = ac.createOscillator(); bass.type="sawtooth"; const bassGain = ac.createGain(); bassGain.gain.value = 0.0; bass.connect(bassGain); bassGain.connect(musicBus); bass.start();
+    const lead = ac.createOscillator(); lead.type="square"; const leadGain = ac.createGain(); leadGain.gain.value = 0.0; lead.connect(leadGain); leadGain.connect(musicBus); lead.start();
+    const hatGain = ac.createGain(); hatGain.gain.value = 0.0; hatGain.connect(musicBus);
+    Music.bass = { o:bass, g:bassGain }; Music.lead = { o:lead, g:leadGain }; Music.hat = { g:hatGain };
+    function scheduleStep(){
+      if(!Music.playing) return; const now = ac.currentTime; const stepDur = (60 / Music.tempo) / 2;
+      while(Music.nextTime < now + 0.18){
+        const st = Music.step % 16;
+        Music.bass.o.frequency.setValueAtTime(midiToFreq([45,45,45,45, 43,43,43,43, 40,40,40,40, 43,43,43,43][st]), Music.nextTime);
+        Music.bass.g.gain.setValueAtTime(0.0001, Music.nextTime); Music.bass.g.gain.exponentialRampToValueAtTime(0.22, Music.nextTime+0.01); Music.bass.g.gain.exponentialRampToValueAtTime(0.0001, Music.nextTime+stepDur*0.9);
+        if(st % 2 === 0){ Music.lead.o.frequency.setValueAtTime(midiToFreq([69,72,76,72, 71,74,78,74, 69,72,76,72, 71,74,78,74][st]), Music.nextTime); Music.lead.g.gain.setValueAtTime(0.0001, Music.nextTime); Music.lead.g.gain.exponentialRampToValueAtTime(0.11, Music.nextTime+0.01); Music.lead.g.gain.exponentialRampToValueAtTime(0.0001, Music.nextTime+stepDur*0.6); }
+        Music.nextTime += stepDur; Music.step++;
+      }
+      Music.timer = setTimeout(scheduleStep, 25);
     }
-    profile.skin = key;
-    save(); syncUI();
-  };
+    scheduleStep();
+  }
+  function stopMusic(){ Music.playing=false; if(Music.timer) clearTimeout(Music.timer); Music.timer=null; try{ Music.bass?.o?.stop(); Music.lead?.o?.stop(); }catch{} }
+  audioBtn.addEventListener("click", async ()=>{ ensureAudioContext(); if(ac.state === "suspended") await ac.resume().catch(()=>{}); setAudioEnabled(!settings.audioOn); toast(settings.audioOn ? "Audio ON" : "Muted"); });
 
-  // CRATE LOGIC 
-  document.getElementById("crateBtn").onclick = () => {
-    const today = new Date().toDateString();
-    if (profile.lastCrate === today) return toast("Come back tomorrow!");
+  const PROFILE_KEY="neon_racer_profile_v4";
+  let _saveCooldown = 0;
+  function saveProfile(){ localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); }
+  function saveProfileThrottled(dt){ _saveCooldown -= dt; if(_saveCooldown <= 0){ _saveCooldown = 0.55; saveProfile(); } }
+  let profile = (() => { try{ return JSON.parse(localStorage.getItem(PROFILE_KEY)||"null"); }catch{ return null; } })() || { name:"Gamer", bestScore:0, bankCoins:0, streakDaysClaimed:0, lastBonusDate:null, missionsDate:null, missions:[], ownedSkins:[], skin:"", lastCrateDate:null, ghost:null };
+  
+  // VEHICLE SYSTEM (Replaces old skins)
+  const VEHICLES = [
+    { key:"v_sports", name:"Neon Dart", type:"sports", cost:0, hex:["#4df6ff","#ff5cd6"], speedMult: 1.0, steerMult: 1.0, driftMult: 1.0, armor: 0, rarity:"common" },
+    { key:"v_drifter", name:"Drift King", type:"sports", cost:1200, hex:["#ff3366","#ff9933"], speedMult: 1.05, steerMult: 1.25, driftMult: 1.8, armor: 0, rarity:"rare" },
+    { key:"v_suv", name:"Interceptor", type:"suv", cost:3000, hex:["#222222","#ff2e4d"], speedMult: 1.10, steerMult: 0.85, driftMult: 0.6, armor: 1, rarity:"epic" },
+    { key:"v_tank", name:"Rhino Tank", type:"tank", cost:6000, hex:["#556b2f","#8b4513"], speedMult: 0.85, steerMult: 0.65, driftMult: 0.1, armor: 2, rarity:"legendary" }
+  ];
+  const RARITY_ORDER = { common:0, rare:1, epic:2, legendary:3 };
+
+  // Migration from old skin format to new Vehicle format
+  if(!profile.ownedSkins) profile.ownedSkins = [];
+  if(!profile.ownedSkins.includes("v_sports")) profile.ownedSkins.push("v_sports");
+  if(!VEHICLES.some(v => v.key === profile.skin)) profile.skin = "v_sports";
+  saveProfile();
+
+  function getSkin(){ return VEHICLES.find(s=>s.key===profile.skin) || VEHICLES[0]; }
+
+  function dailyBonusForDay(n){ return 40 + n*10; }
+  function bonusPreview(){ if(profile.streakDaysClaimed>=7) return "Daily reward: Completed ✅"; const d=profile.streakDaysClaimed+1; return `Daily reward: +${dailyBonusForDay(d)} coins (Day ${d}/7)`; }
+  function claimDailyBonus(){ const t=todayISO(); if(profile.lastBonusDate===t) return {ok:false,msg:"Already claimed today."}; if(profile.streakDaysClaimed>=7){ profile.lastBonusDate=t; saveProfile(); return {ok:false,msg:"7-day reward completed."}; } const day=profile.streakDaysClaimed+1; const amt=dailyBonusForDay(day); profile.bankCoins += amt; profile.streakDaysClaimed += 1; profile.lastBonusDate = t; saveProfile(); return {ok:true,msg:`+${amt} coins claimed! (Day ${day}/7)`}; }
+
+  const RANKS = [ { name:"Rookie", min:0 }, { name:"Street Racer", min:500 }, { name:"Neon Pro", min:1500 }, { name:"Highway Phantom", min:3000 }, { name:"Neon Legend", min:6000 } ];
+  function rankFor(score){ let r = RANKS[0].name; for(const x of RANKS){ if(score >= x.min) r = x.name; } return r; }
+
+  function newMission(){ const types=["passCars","collectCoins","closeCalls"]; const type=types[randi(0,types.length-1)]; if(type==="passCars"){ const target=[10,15,20,25][randi(0,3)]; return {type,target,progress:0,reward:Math.round(target*1.1),claimed:false}; } if(type==="collectCoins"){ const target=[20,25,30,40][randi(0,3)]; return {type,target,progress:0,reward:Math.round(target*0.9),claimed:false}; } const target=[4,6,8][randi(0,2)]; return {type,target,progress:0,reward:target*8,claimed:false}; }
+  function ensureDailyMissions(){ const t=todayISO(); if(profile.missionsDate===t && Array.isArray(profile.missions) && profile.missions.length===3) return; const ms=[]; while(ms.length<3){ const m=newMission(); if(!ms.some(x=>x.type===m.type)) ms.push(m); else if(Math.random()<0.35) ms.push(m); } profile.missionsDate=t; profile.missions=ms.slice(0,3); saveProfile(); }
+  function renderMissions(where){ where.innerHTML=""; profile.missions.forEach((m,idx)=>{ const pct=Math.round(clamp(m.progress/m.target,0,1)*100); const div=document.createElement("div"); div.className="lbRow"; div.innerHTML=`<div><b>${escapeHtml(m.type==="passCars"?`Pass ${m.target} cars`:m.type==="collectCoins"?`Collect ${m.target} coins`:`Close calls ${m.target} times`)}</b><div class="small">${m.progress}/${m.target}</div><div style="height:8px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.10);overflow:hidden;margin-top:8px"><i style="display:block;height:100%;width:${pct}%;background:rgba(255,210,77,.9)"></i></div></div><div style="text-align:right"><div><b>+${m.reward} 🪙</b></div><button data-claim="${idx}" style="margin-top:8px" ${m.claimed || m.progress<m.target ? "disabled":""}>${m.claimed ? "Claimed" : (m.progress<m.target ? "In progress" : "Claim")}</button></div>`; where.appendChild(div); }); where.querySelectorAll("button[data-claim]").forEach(btn=>{ btn.addEventListener("click", ()=>{ const idx=Number(btn.getAttribute("data-claim")); const m=profile.missions[idx]; if(!m || m.claimed || m.progress<m.target) return; m.claimed=true; profile.bankCoins += m.reward; saveProfile(); syncHomeUI(); renderMissions(missionsEl); renderMissions(missions2El); toast(`+${m.reward} coins claimed!`); }); }); }
+
+  const cart = { shield:0, magnet:0, slowmo:0, nitro:0, invisibility:0, extraLife:0 };
+  const SHOP = [ { key:"shield", name:"🛡 Shield", desc:"Blocks 1 crash. (Run)", base: 40, max:2 }, { key:"nitro", name:"🚀 Nitro+", desc:"Start with extra nitro.", base: 30, max:3 }, { key:"slowmo", name:"⏱ Slow-Motion", desc:"Obstacles 5× slower.", base: 40, max:3 }, { key:"invisibility", name:"👻 Invisibility", desc:"Phase through cars.", base: 60, max:2 }, { key:"extraLife", name:"❤️ Extra Life", desc:"Adds +1 life this run.", base: 100, max:2 }, { key:"magnet", name:"🧲 Magnet", desc:"Pulls ALL coins to you (7s).", base: 70, max:3 } ];
+  function renderShop(where){ where.innerHTML=""; SHOP.forEach(it=>{ const qty=cart[it.key]||0; const cost=Math.round(it.base); const div=document.createElement("div"); div.className="item"; div.innerHTML=`<div class="top"><div class="name">${escapeHtml(it.name)}</div><span class="qty">${qty}</span></div><div class="small">${escapeHtml(it.desc)}</div><div class="row" style="margin-top:auto;justify-content:space-between"><button data-buy="${it.key}">Buy</button><span class="small">Cost: <b>${cost}</b> 🪙</span></div>`; where.appendChild(div); }); where.querySelectorAll("button[data-buy]").forEach(btn=>{ btn.addEventListener("click", ()=>{ const k=btn.getAttribute("data-buy"); const it=SHOP.find(x=>x.key===k); if(!it) return; const cost=Math.round(it.base); if(profile.bankCoins < cost) return toast("Not enough coins."); if((cart[k]||0) >= it.max) return toast("Max for this item reached."); profile.bankCoins -= cost; cart[k] = (cart[k]||0)+1; saveProfile(); syncHomeUI(); renderShop(shopEl); renderShop(shop2El); toast(`Bought ${it.name}`); }); }); }
+
+  function renderSkins(where){ where.innerHTML=""; const list = [...VEHICLES].sort((a,b)=>{ const ra = RARITY_ORDER[a.rarity] ?? 9; const rb = RARITY_ORDER[b.rarity] ?? 9; if(ra !== rb) return ra - rb; return a.cost - b.cost; }); list.forEach(s=>{ const owned = profile.ownedSkins.includes(s.key); const selected = profile.skin === s.key; const div=document.createElement("div"); div.className="item"; div.innerHTML=`<div class="top"><div class="swatch" style="flex:1"><span class="chip rar ${s.rarity}">${s.rarity.toUpperCase()}</span><span class="dot" style="background:${s.hex[0]}"></span><span class="dot" style="background:${s.hex[1]}"></span><span class="skinBar" style="background:linear-gradient(135deg, ${s.hex[0]}, ${s.hex[1]});"></span></div><span class="qty">${owned ? "OWNED" : (s.cost+" 🪙")}</span></div><div style="font-size:11px; color:var(--muted); margin-top:4px; display:grid; grid-template-columns: 1fr 1fr; gap:4px;"><span>🏎️ Spd: ${s.speedMult}x</span><span>🕹️ Hndl: ${s.steerMult}x</span><span>🌀 Drft: ${s.driftMult}x</span><span>🛡️ Arm: ${s.armor}</span></div><div class="row" style="margin-top:auto;justify-content:space-between"><button data-skin="${s.key}">${owned ? (selected ? "Selected" : "Select") : "Buy"}</button><span class="small">${selected ? "Using ✅" : (owned ? "Tap Select" : "")}</span></div>`; where.appendChild(div); }); where.querySelectorAll("button[data-skin]").forEach(btn=>{ btn.addEventListener("click", ()=>{ const k=btn.getAttribute("data-skin"); const s=VEHICLES.find(x=>x.key===k); if(!s) return; const owned = profile.ownedSkins.includes(k); if(!owned){ if(profile.bankCoins < s.cost) return toast("Not enough coins."); profile.bankCoins -= s.cost; profile.ownedSkins.push(k); toast("Vehicle unlocked!"); } profile.skin = k; saveProfile(); syncHomeUI(); renderSkins(skinsEl); renderSkins(skins2El); }); }); }
+
+  function crateReady(){ return profile.lastCrateDate !== todayISO(); }
+  function syncCrateUI(){ const ready = crateReady(); const st = ready ? "Ready" : "Claimed"; crateStatus.textContent = st; crateStatus2.textContent = st; crateBtn.disabled = !ready; crateBtn2.disabled = !ready; crateInfo.textContent = ready ? "Tap to open your daily crate!" : "Come back tomorrow for another crate."; crateInfo2.textContent = crateInfo.textContent; }
+  function pickWeighted(items){ const total = items.reduce((s,x)=>s + x.w, 0); let r = Math.random() * total; for(const it of items){ r -= it.w; if(r <= 0) return it; } return items[items.length-1]; }
+  function openDailyCrate(){ if(!crateReady()) return toast("Already claimed today."); const drop = pickWeighted([ { type:"coins", w: 45 }, { type:"buff", w: 40 }, { type:"skin", w: 15 } ]); let msg = ""; if(drop.type === "coins"){ const amt = [120,150,180,220,260][randi(0,4)]; profile.bankCoins += amt; msg = `Daily Crate: +${amt} coins 🪙`; } if(drop.type === "buff"){ const buffDrop = pickWeighted([ { key:"shield", w: 18 }, { key:"nitro", w: 18 }, { key:"coinsSmall", w: 14 } ]); if(buffDrop.key === "coinsSmall"){ const amt = [60,80,100,120][randi(0,3)]; profile.bankCoins += amt; msg = `Daily Crate: +${amt} coins 🪙`; }else{ cart[buffDrop.key] = clamp((cart[buffDrop.key]||0) + 1, 0, 99); const name = SHOP.find(x=>x.key===buffDrop.key)?.name || buffDrop.key; msg = `Daily Crate: +1 ${name} (next run)`; } } if(drop.type === "skin"){ const eligible = VEHICLES.filter(s => s.rarity !== "legendary"); const rarityPick = pickWeighted([ { rarity:"common", w: 70 }, { rarity:"rare", w: 24 }, { rarity:"epic", w: 6 } ]); const pool = eligible.filter(s => s.rarity === rarityPick.rarity); const s = pool[randi(0, pool.length-1)]; const already = profile.ownedSkins.includes(s.key); if(already){ const comp = s.rarity==="common" ? 220 : (s.rarity==="rare" ? 450 : 800); profile.bankCoins += comp; msg = `Daily Crate: Duplicate vehicle → +${comp} coins 🪙`; }else{ profile.ownedSkins.push(s.key); msg = `Daily Crate: Vehicle unlocked! (${s.rarity.toUpperCase()})`; } } profile.lastCrateDate = todayISO(); saveProfile(); syncHomeUI(); renderShop(shopEl); renderShop(shop2El); renderSkins(skinsEl); renderSkins(skins2El); syncCrateUI(); playSfx("crate"); toast(msg, 2200); }
+
+  function renderLeaderboard(where, list){ where.innerHTML=""; list.forEach((x,i)=>{ const row=document.createElement("div"); row.className="lbRow"; row.innerHTML=`<span>#${i+1} <b>${escapeHtml(x.name)}</b></span><span><b>${x.score}</b></span>`; where.appendChild(row); }); }
+  async function syncLeaderboard(){ if(!sb){ lbStatusEl.textContent = "Leaderboard coming soon"; lbStatus2El.textContent = "Leaderboard coming soon"; lbListEl.innerHTML=""; lbList2El.innerHTML=""; return; } try{ lbStatusEl.textContent = "Loading…"; lbStatus2El.textContent = "Loading…"; const list = await lbTop10(); lbStatusEl.textContent = list.length ? "Live leaderboard:" : "No scores yet."; lbStatus2El.textContent = list.length ? "Live leaderboard:" : "No scores yet."; renderLeaderboard(lbListEl, list); renderLeaderboard(lbList2El, list); }catch(e){ lbStatusEl.textContent = "Leaderboard error (check policies/RLS)"; lbStatus2El.textContent = "Leaderboard error (check policies/RLS)"; lbListEl.innerHTML=""; lbList2El.innerHTML=""; } }
+  async function submitScoreOnline(){ try{ if(sb){ await lbSubmit(profile.name || "Gamer", profile.bestScore || 0); } }catch{} }
+
+  function syncHomeUI(){ playerNameEl.textContent = profile.name || "Gamer"; bankCoinsEl.textContent = profile.bankCoins || 0; bestScoreEl.textContent = profile.bestScore || 0; bonusInfo.textContent = bonusPreview(); const r = rankFor(profile.bestScore||0); rankChipEl.textContent = r; menuBank.textContent = profile.bankCoins || 0; menuBest.textContent = profile.bestScore || 0; hudRank.textContent = r; }
+
+  let gameOverPanel = null;
+  function ensureGameOverPanel(){ 
+    if(gameOverPanel) return; 
+    const modal = overlay.querySelector(".modal"); 
+    const topCard = document.createElement("div"); 
+    topCard.className = "card"; 
+    topCard.style.background = "rgba(0,0,0,.18)"; 
+    topCard.style.marginBottom = "12px"; 
+    topCard.id = "gameOverPanel"; 
+    topCard.style.display = "none"; 
     
-    // Restricted Pool: Coins 10-200, Skins/Vehicles Common-Epic only
-    const roll = Math.random();
-    if (roll < 0.7) {
-      const amt = Math.floor(Math.random() * 191) + 10;
-      profile.bankCoins += amt;
-      toast(`Crate opened: +${amt} Coins!`);
-    } else {
-      const pool = VEHICLES.filter(v => ["common","rare","epic"].includes(v.rarity));
-      const reward = pool[Math.floor(Math.random() * pool.length)];
-      if (!profile.ownedSkins.includes(reward.key)) {
-        profile.ownedSkins.push(reward.key);
-        toast(`Unlocked: ${reward.name}!`);
+    topCard.innerHTML = `<h3 style="margin:0 0 6px;font-family:Orbitron,system-ui,sans-serif;letter-spacing:.6px">GAME OVER</h3><p class="muted" id="goLine" style="margin-top:0">—</p><div class="row" style="margin-top:10px"><button id="goRetry">▶ Play Again</button><button id="goSubmit">🏁 Submit Score</button><button id="goShare" style="background:linear-gradient(180deg, #ff6adf, #b84dff); border-color:#ff6adf;">📤 Share</button></div><p class="small" id="goHint" style="margin-top:10px"></p>`; 
+    
+    modal.prepend(topCard); 
+    gameOverPanel = topCard; 
+    
+    topCard.querySelector("#goRetry").addEventListener("click", ()=>restartRun()); 
+    topCard.querySelector("#goSubmit").addEventListener("click", async ()=>{ 
+      await submitScoreOnline(); 
+      await syncLeaderboard(); 
+      toast("Submitted!"); 
+    }); 
+    
+    topCard.querySelector("#goShare").addEventListener("click", async () => {
+      const currentScore = Math.floor(score);
+      const r = rankFor(profile.bestScore || 0);
+      const shareText = `I just scored ${currentScore} in Neon Highway Racer! My all-time best is ${profile.bestScore} (${r}). Can you beat me? 🏎️🔥`;
+      const shareUrl = window.location.href; 
+
+      if (navigator.share) {
+        try { await navigator.share({ title: 'Neon Highway Racer', text: shareText, url: shareUrl }); } catch (err) { console.log("Share cancelled or failed.", err); }
       } else {
-        profile.bankCoins += 300;
-        toast("Duplicate: +300 Coins compensation.");
+        try { await navigator.clipboard.writeText(`${shareText} ${shareUrl}`); toast("Copied to clipboard! Paste it to your friends.", 2500); } catch (err) { toast("Sharing not supported on this browser."); }
       }
-    }
-    profile.lastCrate = today;
-    save(); syncUI();
-  };
-
-  // GAME ENGINE
-  function spawnTraffic() {
-    const lane = Math.floor(Math.random() * laneCount);
-    //  Fix: Obstacle cars pick a lane and stay in it (no tracing)
-    traffic.push({
-      x: laneCenter(lane),
-      y: -100,
-      lane: lane,
-      speed: speed * (0.6 + Math.random() * 0.4),
-      w: 40, h: 75,
-      color: "#ff4b5c"
     });
   }
 
-  function update(dt) {
-    if (!running) return;
-    invulnT = Math.max(0, invulnT - dt);
-    
-    // Difficulty Scaling [cite: 302]
-    const difficultyMod = score > 2000 ? 1.5 : 1.0;
-    speed += 5 * dt * difficultyMod;
-    
-    // Player Movement
-    const steer = (keys.has("a") || keys.has("arrowleft") ? -1 : 0) + (keys.has("d") || keys.has("arrowright") ? 1 : 0);
-    player.vx = steer * 400 * VEHICLES.find(v=>v.key===profile.skin).speedMult;
-    player.x = clamp(player.x + player.vx * dt, roadX() + 20, roadX() + roadW() - 20);
+  let dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1)); let vw=1, vh=1;
+  function resizeCanvas(){ dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1)); const rect = canvas.getBoundingClientRect(); vw = Math.max(1, rect.width); vh = Math.max(1, rect.height); canvas.width = Math.floor(vw * dpr); canvas.height = Math.floor(vh * dpr); ctx.setTransform(dpr,0,0,dpr,0,0); }
+  const ro = new ResizeObserver(()=>resizeCanvas()); ro.observe(canvas);
 
-    // Traffic [cite: 334]
-    if (Math.random() < 0.02 * (score > 2000 ? 1.2 : 1)) {
-        if (traffic.length < (score > 2000 ? 8 : 5)) spawnTraffic();
+  const keys = new Set();
+  window.addEventListener("keydown",(e)=>{ if(inputFocus) return; const k=e.key.toLowerCase(); keys.add(k); if(k===" "){ e.preventDefault(); togglePause(); } if(k==="r"){ e.preventDefault(); restartRun(); } if(["arrowleft","arrowright","arrowup","arrowdown","a","d","w","s","shift"].includes(k)) e.preventDefault(); });
+  window.addEventListener("keyup",(e)=>keys.delete(e.key.toLowerCase()));
+
+  const joy = { active:false, x:0, y:0, id:null, baseRect:null };
+  function setStickPos(nx, ny){ joy.x = clamp(nx, -1, 1); joy.y = clamp(ny, -1, 1); const r = 28; const px = joy.x * r; const py = joy.y * r; joyStick.style.transform = `translate(-50%,-50%) translate(${px}px, ${py}px)`; }
+  function resetStick(){ joy.active=false; joy.id=null; setStickPos(0,0); }
+  const joyWrap = document.getElementById("joystickWrap");
+  joyWrap.addEventListener("pointerdown", (e)=>{ 
+    joy.active=true; joy.id=e.pointerId; 
+    const rWrap = joyWrap.getBoundingClientRect();
+    const tx = e.clientX - rWrap.left; const ty = e.clientY - rWrap.top;
+    joyBase.style.left = `${tx - 50}px`; joyBase.style.top = `${ty - 50}px`; joyBase.style.bottom = "auto";
+    joyWrap.setPointerCapture(joy.id); joy.baseRect = joyBase.getBoundingClientRect(); handleJoyMove(e); 
+  });
+  joyWrap.addEventListener("pointermove", (e)=>{ if(!joy.active || e.pointerId!==joy.id) return; handleJoyMove(e); });
+  const endJoy = (e)=>{ if(e.pointerId!==joy.id) return; resetStick(); };
+  joyWrap.addEventListener("pointerup", endJoy); joyWrap.addEventListener("pointercancel", endJoy);
+  function handleJoyMove(e){ const r = joy.baseRect || joyBase.getBoundingClientRect(); const cx = r.left + r.width/2; const cy = r.top + r.height/2; const dx = e.clientX - cx; const dy = e.clientY - cy; const max = (r.width*0.5) - 18; const dist = Math.hypot(dx,dy); const nd = dist > 0 ? Math.min(1, dist/max) : 0; const nx = dist>0 ? (dx/dist)*nd : 0; const ny = dist>0 ? (dy/dist)*nd : 0; setStickPos(nx, ny); }
+
+  const touch = { nitro:false, drift:false };
+  function setBtnState(btn, on){ btn.classList.toggle("on", !!on); }
+  function bindHoldButton(btn, key){ btn.addEventListener("pointerdown", (e)=>{ e.preventDefault(); btn.setPointerCapture?.(e.pointerId); touch[key] = true; setBtnState(btn, true); }); const up = (e)=>{ try{ btn.releasePointerCapture?.(e.pointerId); }catch{} touch[key] = false; setBtnState(btn, false); }; btn.addEventListener("pointerup", up); btn.addEventListener("pointercancel", up); btn.addEventListener("pointerleave", up); }
+  bindHoldButton(nitroTouch, "nitro"); bindHoldButton(driftTouch, "drift");
+
+  const laneCount=3; function laneW(){ return vw * 0.56 / laneCount; } function roadX(){ return vw * 0.22; } function roadW(){ return vw * 0.56; } function laneCenter(l){ return roadX() + laneW()*(l+0.5); }
+  const DIFF = { baseSpeed: 90, accel: 2.0, spawnBase: 0.62, spawnRamp: 0.00095, laneChangeRate: 0.055, laneChangeSpeed: 3.1 };
+
+  const player = { x:0, y:0, w:0, h:0, vx:0, vy:0 };
+  const traffic=[], coins=[], pickups=[]; const PICK_TYPES = ["shield","magnet","slowmo","nitro","invisibility"];
+
+  let running=false, paused=false;
+  let score=0, runCoins=0, lives=2, reviveUsed=false, runArmor=0;
+  let speed=DIFF.baseSpeed, nitro=1.0, nitroActive=false;
+  let buffShield=0, buffMagnet=0, buffSlowmo=0, buffInvisibility=0, invulnT=0;
+  let inBonus=false, bonusT=0, nextBonusAt=500;
+  let bonusCollected = { coins:0, shield:0, magnet:0, slowmo:0, nitro:0, invisibility:0 }, buffBackup=null;
+  let passedCars=0, closeCalls=0;
+  let spawnT=0, coinT=0, pickT=0, roadScroll=0;
+  let combo=0, comboTimer=0, lastNearMissId=-1;
+  function comboMult(){ if(combo >= 18) return 3.0; if(combo >= 12) return 2.4; if(combo >= 8) return 1.9; if(combo >= 5) return 1.5; if(combo >= 3) return 1.25; return 1.0; }
+  function addCombo(n=1){ combo = Math.min(25, combo + n); comboTimer = 4.0; }
+  function decayCombo(dt){ if(combo<=0) return; comboTimer -= dt; if(comboTimer <= 0){ combo = 0; comboTimer = 0; } }
+
+  let driftLean = 0, driftSlip = 0, driftHeat = 0, shakeT = 0, shakePow = 0, hitStop = 0;
+  const smokes = [], skids = [], sparks = [], trail = [];
+  function addSmoke(x,y, vx,vy, size=1){ smokes.push({ x,y, vx,vy, life: 1, size }); if(smokes.length>160) smokes.shift(); }
+  function addSkid(x1,y1,x2,y2){ skids.push({ x1,y1,x2,y2, life: 1 }); if(skids.length>160) skids.shift(); }
+  function addSpark(x,y, vx,vy){ sparks.push({ x,y, vx,vy, life: 1 }); if(sparks.length>180) sparks.shift(); }
+  function addTrailPoint(){ trail.push({ x: player.x, y: player.y + player.h*0.15, life: 1 }); if(trail.length > 44) trail.shift(); }
+  function startShake(pow=1){ shakeT = Math.max(shakeT, 0.18); shakePow = Math.max(shakePow, pow); }
+
+  function rectHit(ax,ay,aw,ah, bx,by,bw,bh){ const aL=ax-aw/2, aR=ax+aw/2, aT=ay-ah/2, aB=ay+ah/2; const bL=bx-bw/2, bR=bx+bw/2, bT=by-bh/2, bB=by+bh/2; return (aL<bR && aR>bL && aT<bB && aB>bT); }
+  function distRect(ax,ay,aw,ah, bx,by,bw,bh){ const aL=ax-aw/2, aR=ax+aw/2, aT=ay-ah/2, aB=ay+ah/2; const bL=bx-bw/2, bR=bx+bw/2, bT=by-bh/2, bB=by+bh/2; const dx=Math.max(bL-aR, aL-bR, 0); const dy=Math.max(bT-aB, aT-bB, 0); return Math.hypot(dx,dy); }
+  function enforceRoadBarrier(){ const innerMargin = Math.max(10, laneW()*0.18); const minX = roadX()+innerMargin; const maxX = roadX()+roadW()-innerMargin; player.x = clamp(player.x, minX, maxX); }
+
+  function layoutPlayer(){ player.w = clamp(vw*0.065, 36, 54); player.h = player.w * 1.75; player.y = vh*0.78; player.x = laneCenter(1); player.vx = 0; player.vy = 0; }
+
+  function resetRunState(){
+    score=0; runCoins=0; passedCars=0; closeCalls=0;
+    lives = 2 + (cart.extraLife||0); reviveUsed=false; runArmor=getSkin().armor;
+    speed=DIFF.baseSpeed; roadScroll=0; nitro = clamp(1.0 + (cart.nitro||0)*0.25, 0, 1.8);
+    buffShield = (cart.shield||0); buffMagnet = (cart.magnet||0) * 7; buffSlowmo = (cart.slowmo||0) * 5; buffInvisibility = (cart.invisibility||0) * 6; invulnT = 0;
+    for(const k in cart) cart[k]=0; renderShop(shopEl); renderShop(shop2El);
+    traffic.length=0; coins.length=0; pickups.length=0;
+    inBonus=false; bonusT=0; bonusCollected = { coins:0, shield:0, magnet:0, slowmo:0, nitro:0, invisibility:0 }; buffBackup=null; nextBonusAt = 500;
+    combo=0; comboTimer=0; lastNearMissId=-1;
+    driftLean = 0; driftSlip = 0; driftHeat = 0; shakeT=0; shakePow=0; hitStop=0;
+    smokes.length=0; skids.length=0; sparks.length=0; trail.length=0;
+    resetStick();
+  }
+
+  function requestFS(){ const el = gameScreen; if(document.fullscreenElement) return; const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen; try{ fn?.call(el); }catch{} }
+  let countdown=null; function cinematicCountdown(onDone){ countdown = { t:0, phase:0, done:false, onDone }; }
+
+  function startRun(){
+    home.style.display="none"; gameScreen.style.display="block"; gameScreen.setAttribute("aria-hidden","false");
+    requestFS(); ensureAudioContext(); ac.resume?.().catch(()=>{}); startMusic();
+    requestAnimationFrame(() => { resizeCanvas(); layoutPlayer(); resetRunState(); running=true; paused=false; cinematicCountdown(()=>{}); syncHUD(); });
+  }
+
+  function exitToHome(){ running=false; paused=false; overlay.style.display="none"; gameScreen.style.display="none"; gameScreen.setAttribute("aria-hidden","true"); home.style.display="grid"; stopMusic(); syncHomeUI(); syncLeaderboard(); }
+  function openMenu(){ ensureGameOverPanel(); if(gameOverPanel) gameOverPanel.style.display = "none"; paused=true; overlay.style.display="grid"; stopMusic(); reviveBtn.disabled = true; reviveHint.textContent = ""; syncHomeUI(); renderMissions(missions2El); syncLeaderboard(); renderShop(shop2El); renderSkins(skins2El); syncCrateUI(); }
+  function closeMenu(){ if(!running) return; overlay.style.display="none"; paused=false; if(settings.audioOn) startMusic(); }
+  function togglePause(){ if(!running) return; if(paused) closeMenu(); else openMenu(); }
+
+  function spawnTraffic(){
+    const lane=randi(0,laneCount-1); const w=clamp(vw*0.06, 34, 50); const h=w*1.75;
+    if(traffic.some(o=>o.lane===lane && o.y < vh*0.20)) return;
+    traffic.push({ id: (Math.random()*1e9)|0, lane, x: laneCenter(lane), targetLane: lane, y: -h, w, h, rel: rand(0.86, 1.02), cd: rand(1.0, 1.9), passed:false });
+  }
+  function spawnCoin(){
+    const lane=randi(0,laneCount-1); const val = Math.random()<0.07 ? 10 : (Math.random()<0.18 ? 5 : 1);
+    coins.push({ lane, x: laneCenter(lane), y: -30, r: clamp(vw*0.012, 8, 12), val });
+  }
+  function spawnPickup(){ const lane=randi(0,laneCount-1); const type = PICK_TYPES[randi(0,PICK_TYPES.length-1)]; pickups.push({ lane, type, x: laneCenter(lane), y: -40, r: clamp(vw*0.014, 9, 14) }); }
+
+  function roundRect(x,y,w,h,r){ const rr=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+rr,y); ctx.arcTo(x+w,y,x+w,y+h,rr); ctx.arcTo(x+w,y+h,x,y+h,rr); ctx.arcTo(x,y+h,x,y,rr); ctx.arcTo(x,y,x+w,y,rr); ctx.closePath(); }
+  function roadTint(score){ const t = clamp(score/4000, 0, 1); const a = lerp(0.10, 0.22, t); const b = lerp(0.10, 0.16, t); const c = lerp(0.14, 0.10, t); return { a,b,c }; }
+  function drawRoad(){
+    ctx.fillStyle="#050814"; ctx.fillRect(0,0,vw,vh); const tint = roadTint(score);
+    ctx.fillStyle=`rgba(255,106,223,${0.08 + tint.b})`; ctx.fillRect(0,0, roadX(), vh); ctx.fillRect(roadX()+roadW(),0, vw-(roadX()+roadW()), vh);
+    const grad=ctx.createLinearGradient(roadX(),0,roadX()+roadW(),0);
+    grad.addColorStop(0,`rgba(20,240,255,${0.08 + tint.a})`); grad.addColorStop(0.5,`rgba(255,255,255,${0.04 + tint.c})`); grad.addColorStop(1,`rgba(255,70,220,${0.08 + tint.b})`);
+    ctx.fillStyle=grad; roundRect(roadX(), 0, roadW(), vh, 22); ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,.14)"; ctx.lineWidth=2; roundRect(roadX(), 0, roadW(), vh, 22); ctx.stroke();
+    ctx.save(); ctx.beginPath(); ctx.rect(roadX(),0,roadW(),vh); ctx.clip(); ctx.strokeStyle="rgba(255,255,255,.20)"; ctx.lineWidth=2;
+    const lw=laneW(); for(let i=1;i<laneCount;i++){ const lx=roadX()+lw*i; for(let y=-80; y<vh+80; y+=60){ const yy = y + (roadScroll%60); ctx.beginPath(); ctx.moveTo(lx,yy); ctx.lineTo(lx,yy+26); ctx.stroke(); } }
+    ctx.restore();
+  }
+
+  function hexToRgba(hex, a){ const h = hex.replace("#",""); const r = parseInt(h.slice(0,2),16); const g = parseInt(h.slice(2,4),16); const b = parseInt(h.slice(4,6),16); return `rgba(${r},${g},${b},${a})`; }
+  function drawTrail(skin){
+    if(trail.length < 3) return;
+    ctx.save();
+    for(let i=trail.length-1;i>=1;i--){
+      const a = trail[i]; const b = trail[i-1]; const t = i/(trail.length-1); const alpha = 0.12 + (1-t)*0.22;
+      ctx.strokeStyle = `rgba(124,255,234,${alpha})`; ctx.lineWidth = 10*(1-t); ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+      const col = (t<0.5) ? skin.hex[0] : skin.hex[1]; ctx.strokeStyle = hexToRgba(col, alpha*0.9); ctx.lineWidth = 6*(1-t); ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
     }
+    ctx.restore();
+  }
 
-    traffic.forEach((t, i) => {
-      t.y += t.speed * dt;
-      if (t.y > vh) traffic.splice(i, 1);
+  function drawCar(x,y,w,h,isPlayer,glowColor, vObj, extraAlpha=1, rot=0, driftSide=0){
+    ctx.save();
+    ctx.globalAlpha = extraAlpha;
+    if(rot || driftSide){ ctx.translate(x,y); ctx.rotate(rot); ctx.translate(-x,-y); x += driftSide; }
 
-      // Collision [cite: 205, 357]
-      if (invulnT <= 0 && Math.abs(player.x - t.x) < 35 && Math.abs(player.y - t.y) < 70) {
-        if (runArmor > 0) {
-          runArmor--;
-          traffic.splice(i, 1);
-          invulnT = 0.8;
-          toast("Armor Blocked Crash!");
+    ctx.fillStyle="rgba(0,0,0,.35)";
+    ctx.beginPath(); ctx.ellipse(x, y+h*0.12, w*0.52, h*0.10, 0, 0, Math.PI*2); ctx.fill();
+
+    if(isPlayer) {
+        const vType = vObj ? vObj.type : "sports";
+        const colors = (vObj && vObj.hex) ? vObj.hex : ["#4df6ff","#ff5cd6"];
+
+        if(vType === "tank") {
+            ctx.fillStyle = "#111";
+            roundRect(x-w*0.55, y-h*0.4, w*0.25, h*0.8, 4); ctx.fill(); 
+            roundRect(x+w*0.30, y-h*0.4, w*0.25, h*0.8, 4); ctx.fill(); 
+            
+            const bodyGrad=ctx.createLinearGradient(x-w/2, y-h/2, x-w/2, y+h/2);
+            bodyGrad.addColorStop(0, colors[0]); bodyGrad.addColorStop(1, colors[1]);
+            ctx.fillStyle = bodyGrad;
+            roundRect(x-w*0.4, y-h*0.45, w*0.8, h*0.9, 8); ctx.fill();
+            
+            ctx.fillStyle = "#222";
+            ctx.beginPath(); ctx.arc(x, y+h*0.1, w*0.35, 0, Math.PI*2); ctx.fill();
+            
+            ctx.fillStyle = "#111";
+            ctx.fillRect(x-w*0.1, y-h*0.65, w*0.2, h*0.6);
+            
+            ctx.fillStyle="#ffffff";
+            roundRect(x-w*0.3, y-h*0.45, w*0.15, 6, 2); ctx.fill();
+            roundRect(x+w*0.15, y-h*0.45, w*0.15, 6, 2); ctx.fill();
+
+        } else if(vType === "suv") {
+            const bodyGrad=ctx.createLinearGradient(x-w/2, y-h/2, x-w/2, y+h/2);
+            bodyGrad.addColorStop(0, colors[0]); bodyGrad.addColorStop(1, colors[1]);
+            ctx.fillStyle = bodyGrad;
+            roundRect(x-w*0.45, y-h*0.45, w*0.9, h*0.9, 8); ctx.fill();
+            
+            ctx.fillStyle="#111522"; 
+            roundRect(x-w*0.4, y-h*0.2, w*0.8, h*0.5, 6); ctx.fill();
+            ctx.fillStyle="#334055";
+            roundRect(x-w*0.35, y-h*0.15, w*0.7, h*0.2, 4); ctx.fill(); 
+            
+            ctx.fillStyle="#0a0a0a";
+            roundRect(x-w*0.55, y-h*0.35, w*0.15, h*0.25, 4); ctx.fill();
+            roundRect(x+w*0.4,  y-h*0.35, w*0.15, h*0.25, 4); ctx.fill();
+            roundRect(x-w*0.55, y+h*0.15, w*0.15, h*0.25, 4); ctx.fill();
+            roundRect(x+w*0.4,  y+h*0.15, w*0.15, h*0.25, 4); ctx.fill();
+            
+            ctx.fillStyle="#ffffff";
+            roundRect(x-w*0.4, y-h*0.45, w*0.25, h*0.1, 4); ctx.fill();
+            roundRect(x+w*0.15, y-h*0.45, w*0.25, h*0.1, 4); ctx.fill();
+            
         } else {
-            //  Shield Fix: Uses shield powerup if available
-            if (buffShield > 0) {
-                buffShield = 0;
-                invulnT = 1.0;
-                traffic.splice(i, 1);
-                toast("Shield Consumed!");
-            } else {
-                running = false;
-                profile.bankCoins += Math.floor(score/10);
-                save(); syncUI();
-                document.getElementById("home").style.display = "grid";
-                document.getElementById("gameScreen").style.display = "none";
-                toast("Game Over!");
-            }
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = glowColor;
+
+            const bodyX=x-w/2, bodyY=y-h/2;
+            const bodyGrad=ctx.createLinearGradient(bodyX, bodyY, bodyX, bodyY+h);
+            bodyGrad.addColorStop(0, colors[0]); bodyGrad.addColorStop(1, colors[1]);
+            ctx.fillStyle=bodyGrad;
+            roundRect(bodyX, bodyY, w, h, w*0.25); ctx.fill();
+
+            ctx.shadowBlur=0;
+            ctx.fillStyle="#111522"; 
+            roundRect(x-w*0.35, y-h*0.2, w*0.7, h*0.4, w*0.15); ctx.fill();
+            ctx.fillStyle="#334055";
+            roundRect(x-w*0.25, y-h*0.15, w*0.5, h*0.15, w*0.1); ctx.fill();
+            
+            ctx.fillStyle="#ffffff";
+            ctx.shadowBlur = 10; ctx.shadowColor = "#ffffff";
+            roundRect(x-w*0.4, y-h*0.45, w*0.2, h*0.1, 4); ctx.fill();
+            roundRect(x+w*0.2, y-h*0.45, w*0.2, h*0.1, 4); ctx.fill();
+            
+            ctx.shadowBlur = 0;
+            ctx.fillStyle="#ff2e4d";
+            roundRect(x-w*0.4, y+h*0.35, w*0.25, h*0.08, 2); ctx.fill();
+            roundRect(x+w*0.15, y+h*0.35, w*0.25, h*0.08, 2); ctx.fill();
+            
+            ctx.fillStyle="#0a0a0a";
+            roundRect(x-w*0.55, y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
+            roundRect(x+w*0.4,  y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
+            roundRect(x-w*0.55, y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
+            roundRect(x+w*0.4,  y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
+            
+            ctx.fillStyle="#222";
+            roundRect(x-w*0.45, y+h*0.42, w*0.9, h*0.06, 2); ctx.fill();
         }
-      }
-    });
 
-    score += dt * 50;
-    document.getElementById("hudScore").textContent = Math.floor(score);
-    document.getElementById("hudArmor").textContent = runArmor;
-  }
+        const bodyX=x-w/2, bodyY=y-h/2;
+        if(buffInvisibility>0 && !inBonus){
+            ctx.globalAlpha = extraAlpha*0.4;
+            ctx.strokeStyle="rgba(124,255,234,.95)";
+            ctx.lineWidth=3;
+            roundRect(bodyX-4, bodyY-4, w+8, h+8, w*0.25);
+            ctx.stroke();
+            ctx.globalAlpha = extraAlpha;
+        }
 
-  function draw() {
-    ctx.fillStyle = "#050814";
-    ctx.fillRect(0, 0, vw, vh);
+        if(invulnT>0){
+            ctx.globalAlpha = extraAlpha*0.6;
+            ctx.strokeStyle="rgba(255,210,77,.95)";
+            ctx.lineWidth=3;
+            roundRect(bodyX-6, bodyY-6, w+12, h+12, w*0.25);
+            ctx.stroke();
+            ctx.globalAlpha = extraAlpha;
+        }
+    } else {
+        const bodyX=x-w/2, bodyY=y-h/2;
+        ctx.fillStyle="rgba(20,20,30,.95)"; 
+        roundRect(bodyX, bodyY, w, h, w*0.15); ctx.fill();
 
-    // Road [cite: 231]
-    ctx.fillStyle = "#111a33";
-    ctx.fillRect(roadX(), 0, roadW(), vh);
-    
-    ctx.strokeStyle = "rgba(124,255,234,0.3)";
-    ctx.setLineDash([20, 20]);
-    for(let i=1; i<laneCount; i++) {
-      ctx.beginPath();
-      ctx.moveTo(roadX() + i * laneW(), 0);
-      ctx.lineTo(roadX() + i * laneW(), vh);
-      ctx.stroke();
+        ctx.fillStyle=glowColor;
+        roundRect(x-w*0.4, y-h*0.4, w*0.8, h*0.8, w*0.1); ctx.fill();
+
+        ctx.fillStyle="#000";
+        roundRect(x-w*0.3, y-h*0.25, w*0.6, h*0.2, 4); ctx.fill(); 
+        roundRect(x-w*0.3, y+h*0.05, w*0.6, h*0.15, 4); ctx.fill();
+
+        ctx.fillStyle="#ff4444";
+        ctx.fillRect(x-w*0.4, y+h*0.4, w*0.2, 4);
+        ctx.fillRect(x+w*0.2, y+h*0.4, w*0.2, 4);
+
+        ctx.fillStyle="#000";
+        roundRect(x-w*0.55, y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
+        roundRect(x+w*0.4,  y-h*0.3, w*0.15, h*0.2, 4); ctx.fill();
+        roundRect(x-w*0.55, y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
+        roundRect(x+w*0.4,  y+h*0.1, w*0.15, h*0.2, 4); ctx.fill();
     }
-    ctx.setLineDash([]);
 
-    // Player [cite: 243]
-    const skin = VEHICLES.find(v => v.key === profile.skin);
-    ctx.fillStyle = skin.hex[0];
-    ctx.shadowBlur = 15; ctx.shadowColor = skin.hex[0];
-    ctx.fillRect(player.x - 20, player.y - 37, 40, 75);
-    ctx.shadowBlur = 0;
-
-    // Traffic [cite: 264]
-    ctx.fillStyle = "#ff4b5c";
-    traffic.forEach(t => ctx.fillRect(t.x - 20, t.y - 37, 40, 75));
+    ctx.restore();
   }
 
-  function loop(now) {
-    const dt = 1/60;
-    update(dt);
-    draw();
-    requestAnimationFrame(loop);
+  function drawCoin(c){
+    ctx.save(); ctx.shadowBlur=18; ctx.shadowColor="rgba(255,210,77,0.95)"; ctx.fillStyle="rgba(255,210,77,.92)"; ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; ctx.fillStyle="rgba(0,0,0,.25)"; ctx.beginPath(); ctx.arc(c.x,c.y,c.r*0.55,0,Math.PI*2); ctx.fill(); ctx.fillStyle="rgba(255,255,255,.95)"; ctx.font="900 11px system-ui, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(String(c.val)+"x", c.x, c.y+0.5); ctx.restore();
+  }
+  function drawPickup(p){
+    ctx.save(); ctx.shadowBlur=18; ctx.shadowColor="rgba(124,255,234,.85)"; ctx.fillStyle="rgba(124,255,234,.18)"; ctx.beginPath(); ctx.arc(p.x,p.y,p.r*1.25,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; ctx.fillStyle="rgba(0,0,0,.35)"; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); ctx.fillStyle="rgba(255,255,255,.95)"; ctx.font="900 14px system-ui, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; const map={shield:"🛡",magnet:"🧲",slowmo:"⏱",nitro:"🚀",invisibility:"👻"}; ctx.fillText(map[p.type]||"⭐", p.x, p.y+0.5); ctx.restore();
   }
 
-  function startRun() {
-    vw = canvas.width = window.innerWidth;
-    vh = canvas.height = window.innerHeight;
-    const skin = VEHICLES.find(v => v.key === profile.skin);
-    player.x = vw/2; player.y = vh * 0.8;
-    runArmor = skin.armor;
-    score = 0; traffic = []; running = true;
-    document.getElementById("home").style.display = "none";
-    document.getElementById("gameScreen").style.display = "block";
+  function applyPickup(type){
+    if(inBonus){ bonusCollected[type] = (bonusCollected[type]||0) + 1; return; }
+    if(type==="shield") buffShield = Math.min(2, buffShield+1); if(type==="magnet") buffMagnet = Math.min(21, buffMagnet+7); if(type==="slowmo") buffSlowmo = Math.min(15, buffSlowmo+5); if(type==="nitro") nitro = Math.min(1.8, nitro+0.35); if(type==="invisibility") buffInvisibility = Math.min(12, buffInvisibility+6);
   }
 
-  window.addEventListener("keydown", e => keys.add(e.key.toLowerCase()));
-  window.addEventListener("keyup", e => keys.delete(e.key.toLowerCase()));
-  document.getElementById("playBtn").onclick = startRun;
+  function startBonus(){ inBonus=true; bonusT=12.0; hudBonus.style.display="inline-flex"; playSfx("bonus"); buffBackup = { shield:buffShield, magnet:buffMagnet, slowmo:buffSlowmo, invisibility:buffInvisibility }; buffShield=0; buffMagnet=0; buffSlowmo=0; buffInvisibility=0; traffic.length=0; }
+  function endBonus(){ inBonus=false; hudBonus.style.display="none"; for(const t of PICK_TYPES){ const count = bonusCollected[t]||0; for(let i=0;i<count;i++) applyPickup(t); } bonusCollected = { coins:0, shield:0, magnet:0, slowmo:0, nitro:0, invisibility:0 }; if(buffBackup){ buffShield = Math.max(buffShield, buffBackup.shield); buffMagnet = Math.max(buffMagnet, buffBackup.magnet); buffSlowmo = Math.max(buffSlowmo, buffBackup.slowmo); buffInvisibility = Math.max(buffInvisibility, buffBackup.invisibility); buffBackup=null; } nextBonusAt = Math.floor(score) + 1000; }
 
-  syncUI();
-  requestAnimationFrame(loop);
+  function hitCrash(){
+    if(invulnT>0) return; playSfx("crash"); hitStop = Math.max(hitStop, 0.10); startShake(1.0); combo = 0; comboTimer = 0; hudCombo.style.display="none";
+    if(buffInvisibility>0 && !inBonus) return;
+    if(buffShield>0 && !inBonus){ buffShield -= 1; score = Math.max(0, score - 40); invulnT = 0.8; toast("Shield saved you!"); return; }
+    lives -= 1;
+    if(lives > 0){ toast("Life lost!"); score = Math.max(0, score - 80); invulnT = 1.2; return; }
+    gameOver();
+  }
+
+  function gameOver(){
+    running=false; paused=true; overlay.style.display="grid"; stopMusic();
+    profile.bankCoins += runCoins; const earned = runCoins; runCoins = 0;
+    const sc=Math.floor(score); if(sc > (profile.bestScore||0)){ profile.bestScore=sc; }
+    saveProfile(); syncHomeUI();
+    const canRevive = !reviveUsed && profile.bankCoins >= 100; reviveBtn.disabled = !canRevive; reviveHint.textContent = canRevive ? "Revive available." : (!reviveUsed ? "Not enough coins for revive." : "Revive already used in this run.");
+    ensureGameOverPanel(); const line = gameOverPanel.querySelector("#goLine"); const hint = gameOverPanel.querySelector("#goHint"); line.textContent = `Score: ${sc} • Best: ${profile.bestScore||0} • Banked: +${earned} 🪙`; hint.textContent = canRevive ? "Revive is available below 👇" : "No revive available."; gameOverPanel.style.display = "block";
+  }
+
+  function updateMissionsProgress(){ for(const m of profile.missions){ if(m.type==="passCars") m.progress = Math.max(m.progress, passedCars); if(m.type==="collectCoins") m.progress = Math.max(m.progress, runCoins); if(m.type==="closeCalls") m.progress = Math.max(m.progress, closeCalls); } }
+
+  function syncHUD(){
+    hudScore.textContent = Math.floor(score); hudBest.textContent = profile.bestScore || 0; hudRunCoins.textContent = runCoins; 
+    hudLives.textContent = lives + (runArmor > 0 ? ` (+${runArmor} Arm)` : ""); 
+    hudRank.textContent = rankFor(profile.bestScore||0); hudNitro.textContent = `${Math.round((nitro/1.8)*100)}%`; if(inBonus) hudBonusT.textContent = bonusT.toFixed(1);
+    if(combo>0){ hudCombo.style.display="inline-flex"; hudComboV.textContent = `x${comboMult().toFixed(2)}`; }else{ hudCombo.style.display="none"; }
+    hudGhost.style.display = "none"; 
+    if(driftSlip>0.05){ hudDrift.style.display="inline-flex"; hudDriftV.textContent = `${Math.round(driftSlip*100)}%`; }else{ hudDrift.style.display="none"; }
+    menuBank.textContent = profile.bankCoins || 0; menuBest.textContent = profile.bestScore || 0;
+  }
+
+  const streaks = Array.from({length: 38}, () => ({ x: Math.random(), y: Math.random(), l: rand(0.18, 0.55), s: rand(420, 920) }));
+  function drawWarp(intensity){
+    if(intensity<=0) return; ctx.save(); ctx.globalAlpha = 0.55 * intensity; ctx.beginPath(); ctx.rect(roadX(), 0, roadW(), vh); ctx.clip(); ctx.lineWidth = 2; ctx.strokeStyle = `rgba(255,255,255,${0.18*intensity})`;
+    for(const st of streaks){ const x = roadX() + st.x*roadW(); const y = (st.y*vh + (performance.now()*0.001*st.s)) % (vh+200) - 100; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + st.l*vh*0.22); ctx.stroke(); }
+    ctx.restore();
+  }
+
+  let last=performance.now();
+  function update(dt){
+    if(hitStop > 0){ hitStop = Math.max(0, hitStop - dt); return; }
+    if(countdown && !countdown.done){ countdown.t += dt; if(countdown.t > 0.9){ countdown.phase++; countdown.t=0; if(countdown.phase>=4){ countdown.done=true; countdown.onDone?.(); } } return; }
+
+    const activeVeh = getSkin();
+
+    invulnT = Math.max(0, invulnT - dt); speed += DIFF.accel * dt; const easyWindow = clamp(score / 600, 0, 1); const spawnRate = (DIFF.spawnBase + (Math.floor(score) * DIFF.spawnRamp)) * (0.65 + 0.35*easyWindow);
+    if(!inBonus){ buffMagnet = Math.max(0, buffMagnet - dt); buffSlowmo = Math.max(0, buffSlowmo - dt); buffInvisibility = Math.max(0, buffInvisibility - dt); }
+
+    const kLeft  = keys.has("arrowleft") || keys.has("a"); const kRight = keys.has("arrowright")|| keys.has("d"); const kUp = keys.has("arrowup") || keys.has("w"); const kDown = keys.has("arrowdown") || keys.has("s"); const kNitro = keys.has("arrowup") || keys.has("w"); const kDrift = keys.has("shift");
+    const jx = joy.x; const jy = joy.y; const steerAxis = clamp((kLeft?-1:0) + (kRight?1:0) + jx, -1, 1); const nitroAxis = kNitro || touch.nitro; const driftAxis = kDrift || touch.drift;
+
+    nitroActive = nitroAxis && nitro > 0.02 && !inBonus; if(nitroActive) nitro = Math.max(0, nitro - dt*0.22); else nitro = Math.min(1.8, nitro + dt*0.14);
+    
+    const effectiveSpeed = (speed + (nitroActive ? 105 : 0)) * activeVeh.speedMult;
+    roadScroll += effectiveSpeed*dt; if(roadScroll>60) roadScroll-=60;
+    decayCombo(dt);
+    if(!inBonus && Math.floor(score) >= nextBonusAt) startBonus(); if(inBonus){ bonusT -= dt; hudBonusT.textContent = bonusT.toFixed(1); if(bonusT <= 0) endBonus(); }
+
+    if(!inBonus){ spawnT += dt * spawnRate * (0.70 + effectiveSpeed/950); if(spawnT>=1){ spawnT=0; spawnTraffic(); if(score > 1200 && Math.random()<0.12) spawnTraffic(); } }
+    coinT += dt * (0.86 + effectiveSpeed/1150); if(coinT>=1){ coinT=0; spawnCoin(); if(Math.random()<0.34) spawnCoin(); }
+    pickT += dt * 0.33; if(pickT>=1){ pickT=0; if(Math.random()<0.62) spawnPickup(); }
+
+    const driftWanted = driftAxis && !inBonus && Math.abs(steerAxis) > 0.05;
+    const driftTargetSlip = driftWanted ? clamp(Math.abs(steerAxis) * (0.55 + clamp(effectiveSpeed/650,0,0.45)), 0, 1) * activeVeh.driftMult : 0;
+    driftSlip = lerp(driftSlip, driftTargetSlip, 1 - Math.pow(0.0008, dt)); driftHeat = lerp(driftHeat, driftWanted ? driftSlip : 0, 1 - Math.pow(0.0007, dt));
+    const yawTarget = driftWanted ? (steerAxis * (0.16 + driftSlip*0.14)) : (steerAxis * 0.06); driftLean = lerp(driftLean, yawTarget, 1 - Math.pow(0.0007, dt));
+
+    const steerSpeed = lerp(550, 750, clamp(score/4200, 0, 1)) * activeVeh.steerMult;
+    const traction = 1 - driftSlip*0.65;
+    const response = driftWanted ? 0.75 : 1.0;
+    const targetVx = steerAxis * steerSpeed;
+    const smooth = 1 - Math.pow(0.00001, dt * response);
+    player.vx = lerp(player.vx, targetVx, smooth);
+    
+    const slipPush = driftWanted ? (steerAxis * steerSpeed * 0.28 * driftSlip) : 0; player.vx += slipPush * dt * 8; player.vx *= (0.985 + traction*0.01);
+    player.x += player.vx * dt;
+
+    const fbAxis = clamp(-jy + (kUp?1:0) + (kDown?-1:0), -1, 1);
+    const fbSpeed = lerp(350, 500, clamp(score/4200, 0, 1)) * activeVeh.speedMult;
+    const targetVy = fbAxis * fbSpeed;
+    player.vy = lerp(player.vy, targetVy, 1 - Math.pow(0.00001, dt)); 
+    player.y -= player.vy * dt;
+
+    const minY = vh*0.20; 
+    const maxY = vh*0.90;
+    player.y = clamp(player.y, minY, maxY);
+    enforceRoadBarrier();
+
+    if(driftWanted && driftSlip > 0.18){
+      if(Math.random() < 0.85){
+        const rearY = player.y + player.h*0.42; const leftX = player.x - player.w*0.28; const rightX= player.x + player.w*0.28;
+        addSkid(leftX, rearY, leftX - steerAxis*6, rearY + 12); addSkid(rightX,rearY, rightX- steerAxis*6, rearY + 12);
+        addSmoke(player.x - steerAxis*16, rearY, rand(-20,20), rand(18,48), 1.0 + driftHeat*1.4);
+        if(effectiveSpeed > 320 && Math.random() < 0.35){ const sx = player.x + (steerAxis>0 ? -1 : 1) * player.w*0.22; addSpark(sx, rearY, rand(-80,80) - steerAxis*60, rand(40,120)); }
+      }
+      addCombo(Math.random() < 0.10 ? 1 : 0);
+    }
+
+    const obstacleFactor = 0.55 + clamp(score / 6000, 0, 0.45); const obstacleSpeed = effectiveSpeed * obstacleFactor; const obstacleScale = (!inBonus && buffSlowmo>0) ? 0.20 : 1.0;
+    for(let i=traffic.length-1;i>=0;i--){
+      const t=traffic[i]; if(!t.passed && t.y > player.y + player.h*0.6){ t.passed=true; passedCars++; }
+      t.cd -= dt; const laneChangeRate = DIFF.laneChangeRate + clamp(score/3200, 0, 0.09); const laneChangeSpeed = DIFF.laneChangeSpeed + clamp(score/4200, 0, 2.0);
+      if(t.cd<=0 && Math.random()<laneChangeRate){ const dir = Math.random()<0.5 ? -1 : 1; const next = clamp(t.targetLane + dir, 0, laneCount-1); const safe = !traffic.some(o=>o!==t && o.targetLane===next && Math.abs(o.y - t.y) < t.h*1.1); if(safe) t.targetLane=next; t.cd = rand(0.85, 1.9); }
+      const tx=laneCenter(t.targetLane); t.x += (tx - t.x) * dt * laneChangeSpeed; t.y += obstacleSpeed * dt * t.rel * obstacleScale; if(t.y > vh + 220) traffic.splice(i,1);
+    }
+
+    for(let i=coins.length-1;i>=0;i--){
+      const c=coins[i]; c.y += effectiveSpeed*dt*0.90;
+      if(!inBonus && buffMagnet>0){
+        const dx = (player.x - c.x); const dy = (player.y - c.y); const pull = 6.5 + clamp(score/2500, 0, 2.0); c.x += dx * dt * pull; c.y += dy * dt * (pull * 0.55);
+        const d = Math.hypot(player.x - c.x, player.y - c.y); const collectR = Math.max(18, player.w*0.75);
+        if(d < collectR){ coins.splice(i,1); runCoins += c.val; playSfx("coin"); if(!inBonus && Math.random()<0.10) addCombo(1); continue; }
+      }else{ c.x += (laneCenter(c.lane) - c.x)*dt*2.0; }
+      if(c.y > vh+140) coins.splice(i,1);
+    }
+
+    for(let i=pickups.length-1;i>=0;i--){ const p=pickups[i]; p.y += effectiveSpeed*dt*0.88; p.x += (laneCenter(p.lane) - p.x)*dt*2.0; if(p.y > vh+90) pickups.splice(i,1); }
+
+    const mult = comboMult(); let gain = dt * (24 + clamp(effectiveSpeed/55, 0, 10)); if(nitroActive) gain += dt*7; if(driftWanted && driftSlip > 0.15) gain += dt*(7 + driftSlip*6); score += gain * mult;
+
+    if(!inBonus){
+      for(const t of traffic){ const d = distRect(player.x,player.y,player.w,player.h, t.x,t.y,t.w,t.h); if(d>0 && d<8){ if(t.id !== lastNearMissId && Math.random()<0.16){ lastNearMissId = t.id; closeCalls++; addCombo(2); score += 10 * mult; toastTop("🔥 Near miss! +Combo"); } } }
+    }
+
+    for(let i=coins.length-1;i>=0;i--){ const c=coins[i]; if(rectHit(player.x,player.y,player.w*0.92,player.h*0.92, c.x,c.y, c.r*2, c.r*2)){ coins.splice(i,1); runCoins += c.val; playSfx("coin"); if(!inBonus && Math.random()<0.10) addCombo(1); } }
+    for(let i=pickups.length-1;i>=0;i--){ const p=pickups[i]; if(rectHit(player.x,player.y,player.w*0.92,player.h*0.92, p.x,p.y, p.r*2, p.r*2)){ pickups.splice(i,1); applyPickup(p.type); playSfx("pickup"); if(!inBonus) addCombo(1); } }
+
+    if(!inBonus && invulnT<=0){ 
+      for(let i=traffic.length-1; i>=0; i--){ 
+        const t = traffic[i];
+        if(rectHit(player.x,player.y,player.w,player.h, t.x,t.y,t.w,t.h)){ 
+          if(runArmor > 0) {
+            runArmor--;
+            traffic.splice(i, 1);
+            playSfx("crash");
+            startShake(1.5);
+            addSmoke(t.x, t.y, 0, 0, 2.5);
+            for(let k=0; k<8; k++) addSpark(t.x, t.y, rand(-150,150), rand(50,200));
+            invulnT = 0.6; 
+            toast("Armor blocked crash! (" + runArmor + " left)");
+            score += 100;
+          } else {
+            hitCrash(); 
+          }
+          break; 
+        } 
+      } 
+    }
+
+    updateMissionsProgress();
+    const sc=Math.floor(score); if(sc > (profile.bestScore||0)){ profile.bestScore=sc; saveProfileThrottled(dt); } saveProfileThrottled(dt);
+    
+    if(nitroActive || Math.abs(player.vx) > 100 || mult > 1.2){ if(Math.random() < 0.70) addTrailPoint(); }else if(Math.random() < 0.25){ addTrailPoint(); }
+
+    for(let i=smokes.length-1;i>=0;i--){ const s = smokes[i]; s.life -= dt*1.4; s.x += s.vx*dt; s.y += s.vy*dt; s.vy += 14*dt; if(s.life<=0) smokes.splice(i,1); }
+    for(let i=skids.length-1;i>=0;i--){ const s = skids[i]; s.life -= dt*0.8; if(s.life<=0) skids.splice(i,1); }
+    for(let i=sparks.length-1;i>=0;i--){ const s = sparks[i]; s.life -= dt*2.6; s.x += s.vx*dt; s.y += s.vy*dt; s.vy += 220*dt; if(s.life<=0) sparks.splice(i,1); }
+    syncHUD();
+  }
+
+  function draw(dt){
+    ctx.save();
+    if(shakeT > 0){ shakeT = Math.max(0, shakeT - (dt || (1/60))); const p = (shakeT/0.18); const mag = (2 + 8*p) * shakePow; ctx.translate(rand(-mag, mag), rand(-mag, mag)); if(shakeT<=0){ shakePow = 0; } }
+
+    drawRoad(); const activeVeh = getSkin(); drawWarp(nitroActive ? 1 : 0);
+
+    if(skids.length){ ctx.save(); ctx.strokeStyle = "rgba(255,255,255,.22)"; ctx.lineWidth = 3; for(const s of skids){ ctx.globalAlpha = 0.12 + s.life*0.35; ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); ctx.stroke(); } ctx.restore(); }
+    for(const s of smokes){ ctx.save(); const size = 10 + (1-s.life)*28*s.size; ctx.globalAlpha = 0.10 + s.life*0.25; ctx.fillStyle = "rgba(255,255,255,.35)"; ctx.beginPath(); ctx.arc(s.x, s.y, size, 0, Math.PI*2); ctx.fill(); ctx.restore(); }
+    for(const s of sparks){ ctx.save(); ctx.globalAlpha = 0.15 + s.life*0.55; ctx.strokeStyle = "rgba(255,210,77,.95)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(s.x - s.vx*0.03, s.y - s.vy*0.03); ctx.stroke(); ctx.restore(); }
+
+    for(const c of coins) drawCoin(c);
+    for(const p of pickups) drawPickup(p);
+    for(const t of traffic){ drawCar(t.x, t.y, t.w, t.h, false, "rgba(255,106,223,.60)", null, 1, 0, 0); }
+
+    drawTrail(activeVeh);
+    const driftSide = driftSlip * (player.vx * 0.004);
+    drawCar(player.x, player.y, player.w, player.h, true, "rgba(124,255,234,.95)", activeVeh, 1, driftLean, driftSide);
+
+    if(countdown && !countdown.done){ ctx.save(); ctx.fillStyle="rgba(0,0,0,.35)"; ctx.fillRect(0,0,vw,vh); ctx.fillStyle="rgba(255,255,255,.95)"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font = "900 64px Orbitron, system-ui, sans-serif"; const text = (countdown.phase===0) ? "3" : (countdown.phase===1) ? "2" : (countdown.phase===2) ? "1" : "GO!"; ctx.fillText(text, vw/2, vh/2); ctx.restore(); }
+    ctx.restore();
+  }
+
+  function loop(now){ const dt = Math.min(0.033, (now-last)/1000); last=now; if(running && !paused) update(dt); draw(dt); requestAnimationFrame(loop); }
+
+  function restartRun(){ resizeCanvas(); layoutPlayer(); resetRunState(); running=true; paused=false; countdown=null; cinematicCountdown(()=>{}); syncHUD(); closeMenu(); }
+
+  reviveBtn.addEventListener("click", async ()=>{ if(reviveUsed) return; if(profile.bankCoins < 100) return toast("Not enough coins."); profile.bankCoins -= 100; reviveUsed=true; saveProfile(); lives = 1; runArmor = getSkin().armor; running=true; paused=false; overlay.style.display="none"; invulnT = 1.6; hitStop = 0; toast("Revived!"); syncHomeUI(); syncHUD(); if(settings.audioOn) startMusic(); });
+
+  function goHow(){ document.getElementById("howBtn").scrollIntoView({behavior:"smooth"}); }
+
+  saveNameBtn.addEventListener("click", ()=>{ const nm = (nameInput.value||"").trim().slice(0,18); profile.name = nm || "Gamer"; saveProfile(); syncHomeUI(); toast("Name saved!"); });
+  claimBonusBtn.addEventListener("click", ()=>{ const r = claimDailyBonus(); syncHomeUI(); toast(r.msg); });
+  crateBtn.addEventListener("click", ()=>openDailyCrate()); crateBtn2.addEventListener("click", ()=>openDailyCrate());
+  playBtn.addEventListener("click", ()=>startRun()); playFromTop.addEventListener("click", ()=>startRun());
+  menuBtn.addEventListener("click", ()=>{ if(!running && paused) return; if(paused) closeMenu(); else openMenu(); });
+  resumeBtn.addEventListener("click", ()=>{ if(!running) return; closeMenu(); }); restartBtn.addEventListener("click", ()=>restartRun());
+  exitBtn.addEventListener("click", async ()=>{ const sc = Math.floor(score); if(running && sc >= (profile.bestScore||0)){ saveProfile(); } await submitScoreOnline(); await syncLeaderboard(); exitToHome(); });
+
+  document.addEventListener("visibilitychange", ()=>{ if(document.hidden){ stopMusic(); if(running && !paused) openMenu(); }else{ if(running && !paused && settings.audioOn) startMusic(); } });
+
+  ensureDailyMissions(); syncHomeUI(); bonusInfo.textContent = bonusPreview(); nameInput.value = (profile.name && profile.name !== "Gamer") ? profile.name : "";
+  renderMissions(missionsEl); renderMissions(missions2El); renderShop(shopEl); renderShop(shop2El); renderSkins(skinsEl); renderSkins(skins2El);
+  syncCrateUI(); syncLeaderboard(); resizeCanvas(); layoutPlayer(); requestAnimationFrame(loop);
 })();
 </script>
 </body>
