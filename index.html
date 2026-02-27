@@ -15,10 +15,8 @@
 <body class="home-mode">
   <div id="app">
 
-    <!-- 3D CANVAS (runs in Garage mode on Home; Gameplay mode after Play) -->
     <canvas id="game"></canvas>
 
-    <!-- TOPBAR (restored + improved) -->
     <div class="topbar">
       <div class="brand">
         <h1>NEON RACER 3D</h1>
@@ -31,14 +29,14 @@
         <span class="chip">Bank 🪙 <b id="chipBank">0</b></span>
         <span class="chip">Best <b id="chipBest">0</b></span>
 
+        <button id="btn-env" class="btn small" title="Toggle Environment">🌌 Space</button>
         <button id="btn-audio" class="btn small" title="Toggle audio">🔊</button>
         <button id="btn-fullscreen" class="btn small" title="Fullscreen">⛶</button>
         <button id="btn-play-top" class="btn primary small" title="Play">▶ Play</button>
       </div>
     </div>
 
-    <!-- HUD (in-game only) -->
-        <div id="hud" class="hud">
+    <div id="hud" class="hud">
       <div class="hudLeft">
         <div class="pill">Score <b id="score">0</b></div>
         <div class="pill">Combo <b id="combo">x1</b></div>
@@ -56,7 +54,6 @@
       </div>
     </div>
 
-    <!-- HOME (restored full layout; game does NOT start until Play) -->
     <div id="home" class="home visible">
       <div class="hero">
         <div class="heroRow">
@@ -152,12 +149,10 @@
       </div>
     </div>
 
-    <!-- COUNTDOWN -->
     <div id="countdown" class="overlay">
       <div class="count">3</div>
     </div>
 
-    <!-- GAME OVER -->
     <div id="gameover" class="overlay">
       <div class="panel">
         <h2>Game Over</h2>
@@ -179,7 +174,6 @@
       </div>
     </div>
 
-    <!-- MENU (in-game) -->
     <div id="menu" class="overlay">
       <div class="panel wide">
         <h2>Menu</h2>
@@ -193,9 +187,8 @@
       </div>
     </div>
 
-    <!-- TOAST -->
     <div id="toast" class="toast"></div>
-    <!-- Rotate-to-landscape overlay (mobile) -->
+    
     <div id="rotateOverlay" class="rotateOverlay hidden" aria-hidden="true">
       <div class="rotCard">
         <div class="rotIcon">📱↻</div>
@@ -205,8 +198,6 @@
       </div>
     </div>
 
-
-    <!-- MOBILE CONTROLS -->
     <div id="touchUi" class="touchUi hidden">
       <div id="joystick" class="joy">
         <div class="joy-base" id="joyBase"></div>
