@@ -980,7 +980,7 @@
       if(!inBonus && buffMagnet>0){
         const dx = (player.x - c.x); const dy = (player.y - c.y); const pull = 6.5 + clamp(score/2500, 0, 2.0); c.x += dx * dt * pull; c.y += dy * dt * (pull * 0.55);
         const d = Math.hypot(player.x - c.x, player.y - c.y); const collectR = Math.max(18, player.w*0.75);
-        if(d < collectR){ coins.splice(i,1); if(inBonus) bonusCollected.coins += c.val; else runCoins += c.val; playSfx("coin"); if(!inBonus && Math.random()<0.10) addCombo(1); continue; }
+        if(d < collectR){ coins.splice(i,1); runCoins += c.val; playSfx("coin"); if(!inBonus && Math.random()<0.10) addCombo(1); continue; }
       }else{ c.x += (laneCenter(c.lane) - c.x)*dt*2.0; }
       if(c.y > vh+140) coins.splice(i,1);
     }
