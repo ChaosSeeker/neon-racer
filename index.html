@@ -993,7 +993,7 @@
       for(const t of traffic){ const d = distRect(player.x,player.y,player.w,player.h, t.x,t.y,t.w,t.h); if(d>0 && d<8){ if(t.id !== lastNearMissId && Math.random()<0.16){ lastNearMissId = t.id; closeCalls++; addCombo(2); score += 10 * mult; toastTop("🔥 Near miss! +Combo"); } } }
     }
 
-    for(let i=coins.length-1;i>=0;i--){ const c=coins[i]; if(rectHit(player.x,player.y,player.w*0.92,player.h*0.92, c.x,c.y, c.r*2, c.r*2)){ coins.splice(i,1); if(inBonus) bonusCollected.coins += c.val; else runCoins += c.val; playSfx("coin"); if(!inBonus && Math.random()<0.10) addCombo(1); } }
+    for(let i=coins.length-1;i>=0;i--){ const c=coins[i]; if(rectHit(player.x,player.y,player.w*0.92,player.h*0.92, c.x,c.y, c.r*2, c.r*2)){ coins.splice(i,1); runCoins += c.val; playSfx("coin"); if(!inBonus && Math.random()<0.10) addCombo(1); } }
     for(let i=pickups.length-1;i>=0;i--){ const p=pickups[i]; if(rectHit(player.x,player.y,player.w*0.92,player.h*0.92, p.x,p.y, p.r*2, p.r*2)){ pickups.splice(i,1); applyPickup(p.type); playSfx("pickup"); if(!inBonus) addCombo(1); } }
 
     if(!inBonus && invulnT<=0){ for(const t of traffic){ if(rectHit(player.x,player.y,player.w,player.h, t.x,t.y,t.w,t.h)){ hitCrash(); break; } } }
