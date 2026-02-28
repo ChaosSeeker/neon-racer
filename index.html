@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Neon Highway Racer: Overdrive</title>
+  <title>Neon Highway Racer: Arcade Overdrive</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -298,7 +298,7 @@
   <div class="topbar">
     <div class="brand">
       <h1>NEON HIGHWAY RACER</h1>
-      <div class="sub">Overdrive Edition</div>
+      <div class="sub">Arcade Overdrive Edition</div>
     </div>
     <div class="actions">
       <button id="garageBtn" class="garage-btn">🚗 <span id="topPlayerName">Gamer</span>'s Garage</button>
@@ -314,8 +314,8 @@
     <div class="hero">
       <div class="heroRow">
         <div>
-          <p class="heroTitle">Warp Speed. Tank Smashes. Pure Overdrive.</p>
-          <p class="muted">Equip your Mythical Rides and hit the hyper-lanes.</p>
+          <p class="heroTitle">Intelligent AI. Wall Damage. Real Drifting.</p>
+          <p class="muted">Earn your nitro by dodging tight. Don't hug the walls.</p>
         </div>
         <div class="row">
           <button id="playBtn">▶ Play Fullscreen</button>
@@ -381,7 +381,7 @@
           <div class="pill">Run 🪙 <b id="hudRunCoins">0</b></div>
           <div class="pill">Lives <b id="hudLives">2</b></div>
           <div class="pill">Rank <b id="hudRank">Rookie</b></div>
-          <div class="pill">Nitro <b id="hudNitro">100%</b></div>
+          <div class="pill">Nitro <b id="hudNitro">0%</b></div>
           <div class="pill" id="hudCombo" style="display:none">🔥 Combo <b id="hudComboV">x1</b></div>
           <div class="pill" id="hudBonus" style="display:none">BONUS <b id="hudBonusT">12.0</b>s</div>
           <div class="pill" id="hudDrift" style="display:none">🌀 Drift <b id="hudDriftV">0%</b></div>
@@ -407,7 +407,7 @@
 
       <div class="overlay" id="overlay">
         <div class="modal">
-          <h2>Menu</h2>
+          <h2 id="menuTitle">Menu</h2>
           <div class="split">
             <div class="card" style="background:rgba(0,0,0,.18)">
               <h3>Quick</h3>
@@ -544,7 +544,7 @@
   function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
 
   let ac=null, master=null, musicBus=null, sfxBus=null;
-  const Music = { tempo: 110, playing:false, nextTime:0, step:0, timer:null, bass:null, lead:null, hat:null };
+  const Music = { tempo: 140, playing:false, nextTime:0, step:0, timer:null, bass:null, lead:null };
 
   function ensureAudioContext(){
     if(ac) return; ac = new (window.AudioContext || window.webkitAudioContext)();
@@ -565,8 +565,8 @@
       o.frequency.exponentialRampToValueAtTime(1320, now+0.1);
       g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.3, now+0.01); g.gain.exponentialRampToValueAtTime(0.0001, now+0.2);
       o.connect(g); o.start(now); o.stop(now+0.25);
-    } else if(type==="crash" || type==="smash") {
-      const o = ac.createOscillator(); o.type="sawtooth"; o.frequency.setValueAtTime(type==="smash"? 90 : 150, now);
+    } else if(type==="crash" || type==="smash" || type==="wall") {
+      const o = ac.createOscillator(); o.type="sawtooth"; o.frequency.setValueAtTime(type==="smash"? 90 : (type==="wall" ? 120 : 150), now);
       o.frequency.exponentialRampToValueAtTime(30, now+0.4);
       g.gain.setValueAtTime(type==="smash"? 0.7 : 0.4, now); g.gain.exponentialRampToValueAtTime(0.0001, now+0.4);
       o.connect(g); o.start(now); o.stop(now+0.45);
@@ -575,17 +575,26 @@
 
   function startMusic(){
     if(!settings.audioOn) return; ensureAudioContext(); if(Music.playing) return; Music.playing=true; Music.step=0; Music.nextTime = ac.currentTime + 0.05;
-    const bass = ac.createOscillator(); bass.type="sawtooth"; const bassGain = ac.createGain(); bassGain.gain.value = 0.0; bass.connect(bassGain); bassGain.connect(musicBus); bass.start();
+    const bass = ac.createOscillator(); bass.type="square"; const bassGain = ac.createGain(); bassGain.gain.value = 0.0; bass.connect(bassGain); bassGain.connect(musicBus); bass.start();
     const lead = ac.createOscillator(); lead.type="square"; const leadGain = ac.createGain(); leadGain.gain.value = 0.0; lead.connect(leadGain); leadGain.connect(musicBus); lead.start();
-    const hatGain = ac.createGain(); hatGain.gain.value = 0.0; hatGain.connect(musicBus);
-    Music.bass = { o:bass, g:bassGain }; Music.lead = { o:lead, g:leadGain }; Music.hat = { g:hatGain };
+    Music.bass = { o:bass, g:bassGain }; Music.lead = { o:lead, g:leadGain };
+    
+    // Fast arcade arpeggios
+    const bassSeq = [45, 33, 45, 33, 48, 36, 48, 36];
+    const leadSeq = [69, 72, 76, 81, 76, 72, 69, 72, 69, 72, 76, 81, 76, 72, 69, 72];
+    
     function scheduleStep(){
-      if(!Music.playing) return; const now = ac.currentTime; const stepDur = (60 / Music.tempo) / 2;
+      if(!Music.playing) return; const now = ac.currentTime; const stepDur = (60 / Music.tempo) / 4; // Fast 16th notes
       while(Music.nextTime < now + 0.18){
-        const st = Music.step % 16;
-        Music.bass.o.frequency.setValueAtTime(midiToFreq([45,45,45,45, 43,43,43,43, 40,40,40,40, 43,43,43,43][st]), Music.nextTime);
-        Music.bass.g.gain.setValueAtTime(0.0001, Music.nextTime); Music.bass.g.gain.exponentialRampToValueAtTime(0.22, Music.nextTime+0.01); Music.bass.g.gain.exponentialRampToValueAtTime(0.0001, Music.nextTime+stepDur*0.9);
-        if(st % 2 === 0){ Music.lead.o.frequency.setValueAtTime(midiToFreq([69,72,76,72, 71,74,78,74, 69,72,76,72, 71,74,78,74][st]), Music.nextTime); Music.lead.g.gain.setValueAtTime(0.0001, Music.nextTime); Music.lead.g.gain.exponentialRampToValueAtTime(0.11, Music.nextTime+0.01); Music.lead.g.gain.exponentialRampToValueAtTime(0.0001, Music.nextTime+stepDur*0.6); }
+        const bStep = Music.step % bassSeq.length;
+        const lStep = Music.step % leadSeq.length;
+        
+        Music.bass.o.frequency.setValueAtTime(midiToFreq(bassSeq[bStep]), Music.nextTime);
+        Music.bass.g.gain.setValueAtTime(0.0001, Music.nextTime); Music.bass.g.gain.exponentialRampToValueAtTime(0.25, Music.nextTime+0.01); Music.bass.g.gain.exponentialRampToValueAtTime(0.0001, Music.nextTime+stepDur*0.9);
+        
+        Music.lead.o.frequency.setValueAtTime(midiToFreq(leadSeq[lStep]), Music.nextTime); 
+        Music.lead.g.gain.setValueAtTime(0.0001, Music.nextTime); Music.lead.g.gain.exponentialRampToValueAtTime(0.12, Music.nextTime+0.01); Music.lead.g.gain.exponentialRampToValueAtTime(0.0001, Music.nextTime+stepDur*0.7); 
+        
         Music.nextTime += stepDur; Music.step++;
       }
       Music.timer = setTimeout(scheduleStep, 25);
@@ -725,15 +734,30 @@
   function syncHomeUI(){ playerNameEl && (playerNameEl.textContent = profile.name || "Gamer"); topPlayerNameEl && (topPlayerNameEl.textContent = profile.name || "Gamer"); bankCoinsEl.textContent = profile.bankCoins || 0; bestScoreEl.textContent = profile.bestScore || 0; bonusInfo.textContent = bonusPreview(); const r = rankFor(profile.bestScore||0); rankChipEl.textContent = r; menuBank.textContent = profile.bankCoins || 0; menuBest.textContent = profile.bestScore || 0; hudRank.textContent = r; }
 
   let gameOverPanel = null;
-  function ensureGameOverPanel(){ 
-    if(gameOverPanel) return; 
-    const modal = overlay.querySelector(".modal"); 
-    const topCard = document.createElement("div"); 
-    topCard.className = "card"; topCard.style.background = "rgba(0,0,0,.18)"; topCard.style.marginBottom = "12px"; topCard.id = "gameOverPanel"; topCard.style.display = "none"; 
-    topCard.innerHTML = `<h3 style="margin:0 0 6px;font-family:Orbitron,system-ui,sans-serif;letter-spacing:.6px">GAME OVER</h3><p class="muted" id="goLine" style="margin-top:0">—</p><div class="row" style="margin-top:10px"><button id="goRetry">▶ Play Again</button><button id="goSubmit">🏁 Submit Score</button></div><p class="small" id="goHint" style="margin-top:10px"></p>`; 
-    modal.prepend(topCard); gameOverPanel = topCard; 
-    topCard.querySelector("#goRetry").addEventListener("click", ()=>restartRun()); 
-    topCard.querySelector("#goSubmit").addEventListener("click", async ()=>{ await submitScoreOnline(); await syncLeaderboard(); toast("Submitted!"); }); 
+  function ensureGameOverPanel(isWallDeath = false){ 
+    let modal = overlay.querySelector(".modal"); 
+    if(!gameOverPanel) {
+      const topCard = document.createElement("div"); 
+      topCard.className = "card"; topCard.style.background = "rgba(0,0,0,.18)"; topCard.style.marginBottom = "12px"; topCard.id = "gameOverPanel"; topCard.style.display = "none"; 
+      topCard.innerHTML = `
+        <h3 id="goMainTitle" style="margin:0 0 6px;font-family:Orbitron,system-ui,sans-serif;letter-spacing:.6px">GAME OVER</h3>
+        <p class="muted" id="goLine" style="margin-top:0">—</p>
+        <div class="row" style="margin-top:10px">
+            <button id="goRetry">▶ Play Again</button>
+            <button id="goSubmit">🏁 Submit Score</button>
+        </div>
+        <p class="small" id="goHint" style="margin-top:10px"></p>`; 
+      modal.prepend(topCard); gameOverPanel = topCard; 
+      topCard.querySelector("#goRetry").addEventListener("click", ()=>restartRun()); 
+      topCard.querySelector("#goSubmit").addEventListener("click", async ()=>{ await submitScoreOnline(); await syncLeaderboard(); toast("Submitted!"); }); 
+    }
+    
+    const goMainTitle = gameOverPanel.querySelector("#goMainTitle");
+    if(isWallDeath) {
+        goMainTitle.innerHTML = "💀 Haha, No drunk & playing!<br><span style='font-size:12px; font-weight:normal;'>Play another round to beat the high-score: " + (profile.bestScore || 0) + "</span>";
+    } else {
+        goMainTitle.textContent = "GAME OVER";
+    }
   }
 
   let dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1)); let vw=1, vh=1;
@@ -766,8 +790,9 @@
   const traffic=[], coins=[], pickups=[], debris=[]; const PICK_TYPES = ["shield","magnet","slowmo","nitro","invisibility"];
 
   let running=false, paused=false;
-  let score=0, runCoins=0, lives=2, reviveUsed=false, runArmor=0, runSmash=0;
-  let speed=DIFF.baseSpeed, nitro=1.0, nitroActive=false, warpFov=1.0;
+  let score=0, runCoins=0, lives=2, reviveUsed=false, runArmor=0, runSmash=0, carHP=7;
+  let wallHitCD = 0, skidTimer = 0, playerBlasted = false;
+  let speed=DIFF.baseSpeed, nitro=0, nitroActive=false, warpFov=1.0;
   let buffShield=0, buffMagnet=0, buffSlowmo=0, buffInvisibility=0, invulnT=0;
   let inBonus=false, bonusT=0, nextBonusAt=500;
   let bonusCollected = { coins:0, shield:0, magnet:0, slowmo:0, nitro:0, invisibility:0 }, buffBackup=null;
@@ -788,7 +813,32 @@
 
   function rectHit(ax,ay,aw,ah, bx,by,bw,bh){ const aL=ax-aw/2, aR=ax+aw/2, aT=ay-ah/2, aB=ay+ah/2; const bL=bx-bw/2, bR=bx+bw/2, bT=by-bh/2, bB=by+bh/2; return (aL<bR && aR>bL && aT<bB && aB>bT); }
   function distRect(ax,ay,aw,ah, bx,by,bw,bh){ const aL=ax-aw/2, aR=ax+aw/2, aT=ay-ah/2, aB=ay+ah/2; const bL=bx-bw/2, bR=bx+bw/2, bT=by-bh/2, bB=by+bh/2; const dx=Math.max(bL-aR, aL-bR, 0); const dy=Math.max(bT-aB, aT-bB, 0); return Math.hypot(dx,dy); }
-  function enforceRoadBarrier(){ const innerMargin = Math.max(10, laneW()*0.18); const minX = roadX()+innerMargin; const maxX = roadX()+roadW()-innerMargin; player.x = clamp(player.x, minX, maxX); }
+  
+  function enforceRoadBarrier(){ 
+    const innerMargin = Math.max(10, laneW()*0.18); 
+    const minX = roadX()+innerMargin; 
+    const maxX = roadX()+roadW()-innerMargin; 
+    let hitWall = false;
+    if(player.x <= minX) { player.x = minX; hitWall = true; }
+    if(player.x >= maxX) { player.x = maxX; hitWall = true; }
+    
+    if(hitWall && wallHitCD <= 0 && !playerBlasted) {
+      carHP--;
+      wallHitCD = 1.0;
+      playSfx('wall');
+      startShake(1.5);
+      toast(`Wall Hit! HP: ${carHP}/7`, 1000);
+      for(let k=0; k<5; k++) addSpark(player.x + (player.x <= minX ? -player.w/2 : player.w/2), player.y, rand(-50,50), rand(50,150));
+      
+      if(carHP <= 0) {
+        playerBlasted = true;
+        playSfx("smash");
+        startShake(3.0);
+        for(let k=0; k<25; k++) debris.push({ x: player.x, y: player.y, vx: rand(-500, 500), vy: rand(-800, -200), rot: rand(0, Math.PI*2), rotV: rand(-15, 15), size: rand(10, 30), color: Math.random() < 0.5 ? "#ff4b5c" : "#111", life: rand(1.0, 2.0) });
+        setTimeout(() => gameOver(true), 1500); // Wait for explosion, then show custom game over
+      }
+    }
+  }
 
   function layoutPlayer(){ player.w = clamp(vw*0.065, 36, 54); player.h = player.w * 1.75; player.y = vh*0.78; player.x = laneCenter(1); player.vx = 0; player.vy = 0; }
 
@@ -798,7 +848,8 @@
     lives = 2 + (cart.extraLife||0) + (activeVeh.lives || 0); reviveUsed=false; 
     runArmor=activeVeh.armor || 0; 
     runSmash = activeVeh.smash || 0;
-    speed=DIFF.baseSpeed; roadScroll=0; nitro = clamp(1.0 + (cart.nitro||0)*0.25, 0, 1.8);
+    carHP = 7; wallHitCD = 0; skidTimer = 0; playerBlasted = false;
+    speed=DIFF.baseSpeed; roadScroll=0; nitro = (cart.nitro||0)*0.5; // Start with some nitro if bought
     warpFov = 1.0;
     buffShield = (cart.shield||0); buffMagnet = (cart.magnet||0) * 7; buffSlowmo = (cart.slowmo||0) * 5; buffInvisibility = (cart.invisibility||0) * 6; invulnT = 0;
     for(const k in cart) cart[k]=0; renderShop(shopEl); renderShop(shop2El);
@@ -820,7 +871,7 @@
   }
 
   function exitToHome(){ running=false; paused=false; overlay.style.display="none"; gameScreen.style.display="none"; gameScreen.setAttribute("aria-hidden","true"); home.style.display="grid"; stopMusic(); syncHomeUI(); syncLeaderboard(); }
-  function openMenu(){ ensureGameOverPanel(); if(gameOverPanel) gameOverPanel.style.display = "none"; paused=true; overlay.style.display="grid"; stopMusic(); reviveBtn.disabled = true; reviveHint.textContent = ""; syncHomeUI(); renderMissions(missions2El); syncLeaderboard(); renderShop(shop2El); }
+  function openMenu(){ if(playerBlasted) ensureGameOverPanel(true); else ensureGameOverPanel(); if(gameOverPanel) gameOverPanel.style.display = "none"; paused=true; overlay.style.display="grid"; stopMusic(); reviveBtn.disabled = true; reviveHint.textContent = ""; syncHomeUI(); renderMissions(missions2El); syncLeaderboard(); renderShop(shop2El); }
   function closeMenu(){ if(!running) return; overlay.style.display="none"; paused=false; if(settings.audioOn) startMusic(); }
   function togglePause(){ if(!running) return; if(paused) closeMenu(); else openMenu(); }
 
@@ -840,7 +891,13 @@
   }
 
   function spawnTraffic(){
-    const maxTraffic = score < 3000 ? 2 : 4;
+    // Dynamic max traffic logic based on score
+    let maxTraffic = 2;
+    if (score < 1200) maxTraffic = 2 + Math.floor(score / 400); // 2 to 4
+    else if (score < 3000) maxTraffic = 5;
+    else maxTraffic = 6 + Math.floor((score - 3000) / 2000); 
+    maxTraffic = Math.min(maxTraffic, 8); // hard cap
+
     if (traffic.length >= maxTraffic) return;
     const lane=randi(0,laneCount-1); const w=clamp(vw*0.06, 34, 50); const h=w*1.75;
     if(traffic.some(o=>o.lane===lane && o.y < vh*0.25)) return;
@@ -939,6 +996,15 @@
         }
 
         ctx.shadowBlur = 0;
+        
+        // Draw HP Bar
+        const barW = (w*1.2) / 7;
+        const barStartX = x - (w*1.2)/2;
+        for(let i=0; i<7; i++){
+          ctx.fillStyle = i < carHP ? "#7cffea" : "rgba(255,0,0,0.5)";
+          ctx.fillRect(barStartX + i*barW, y + h*0.6, barW - 2, 6);
+        }
+
         if(buffInvisibility>0 && !inBonus){
             ctx.globalAlpha = extraAlpha*0.4; ctx.strokeStyle="rgba(124,255,234,.95)"; ctx.lineWidth=3; roundRect(bodyX-4, bodyY-4, w+8, h+8, w*0.25); ctx.stroke(); ctx.globalAlpha = extraAlpha;
         }
@@ -962,7 +1028,11 @@
 
   function applyPickup(type){
     if(inBonus){ bonusCollected[type] = (bonusCollected[type]||0) + 1; return; }
-    if(type==="shield") buffShield = Math.min(2, buffShield+1); if(type==="magnet") buffMagnet = Math.min(21, buffMagnet+7); if(type==="slowmo") buffSlowmo = Math.min(15, buffSlowmo+5); if(type==="nitro") nitro = Math.min(1.8, nitro+0.35); if(type==="invisibility") buffInvisibility = Math.min(12, buffInvisibility+6);
+    if(type==="shield") buffShield = Math.min(2, buffShield+1); 
+    if(type==="magnet") buffMagnet = Math.min(21, buffMagnet+7); 
+    if(type==="slowmo") buffSlowmo = Math.min(15, buffSlowmo+5); 
+    if(type==="nitro") { nitro = Math.min(1.8, nitro + 0.18); toastTop("Nitro +10%!"); }
+    if(type==="invisibility") buffInvisibility = Math.min(12, buffInvisibility+6);
   }
 
   function startBonus(){ inBonus=true; bonusT=12.0; hudBonus.style.display="inline-flex"; playSfx("bonus"); buffBackup = { shield:buffShield, magnet:buffMagnet, slowmo:buffSlowmo, invisibility:buffInvisibility }; buffShield=0; buffMagnet=0; buffSlowmo=0; buffInvisibility=0; traffic.length=0; }
@@ -977,13 +1047,22 @@
     gameOver();
   }
 
-  function gameOver(){
+  function gameOver(isWallDeath = false){
     running=false; paused=true; overlay.style.display="grid"; stopMusic();
     profile.bankCoins += runCoins; const earned = runCoins; runCoins = 0;
     const sc=Math.floor(score); if(sc > (profile.bestScore||0)){ profile.bestScore=sc; }
     saveProfile(); syncHomeUI();
-    const canRevive = !reviveUsed && profile.bankCoins >= 100; reviveBtn.disabled = !canRevive; reviveHint.textContent = canRevive ? "Revive available." : (!reviveUsed ? "Not enough coins for revive." : "Revive already used in this run.");
-    ensureGameOverPanel(); const line = gameOverPanel.querySelector("#goLine"); const hint = gameOverPanel.querySelector("#goHint"); line.textContent = `Score: ${sc} • Best: ${profile.bestScore||0} • Banked: +${earned} 🪙`; hint.textContent = canRevive ? "Revive is available below 👇" : "No revive available."; gameOverPanel.style.display = "block";
+    
+    // Revive disabled on wall blast
+    const canRevive = !isWallDeath && !reviveUsed && profile.bankCoins >= 100; 
+    reviveBtn.disabled = !canRevive; 
+    reviveHint.textContent = isWallDeath ? "You blasted! No revives." : (canRevive ? "Revive available." : (!reviveUsed ? "Not enough coins for revive." : "Revive already used in this run."));
+    
+    ensureGameOverPanel(isWallDeath); 
+    const line = gameOverPanel.querySelector("#goLine"); const hint = gameOverPanel.querySelector("#goHint"); 
+    line.textContent = `Score: ${sc} • Best: ${profile.bestScore||0} • Banked: +${earned} 🪙`; 
+    hint.textContent = isWallDeath ? "Don't hug the walls too hard next time!" : (canRevive ? "Revive is available below 👇" : "No revive available."); 
+    gameOverPanel.style.display = "block";
   }
 
   function updateMissionsProgress(){ for(const m of profile.missions){ if(m.type==="passCars") m.progress = Math.max(m.progress, passedCars); if(m.type==="collectCoins") m.progress = Math.max(m.progress, runCoins); if(m.type==="closeCalls") m.progress = Math.max(m.progress, closeCalls); } }
@@ -1013,20 +1092,49 @@
     if(hitStop > 0){ hitStop = Math.max(0, hitStop - dt); return; }
     if(countdown && !countdown.done){ countdown.t += dt; if(countdown.t > 0.9){ countdown.phase++; countdown.t=0; if(countdown.phase>=4){ countdown.done=true; countdown.onDone?.(); } } return; }
 
+    if(playerBlasted) {
+       for(let i=debris.length-1;i>=0;i--){ const d = debris[i]; d.x += d.vx*dt; d.y += d.vy*dt; d.vy += 1200*dt; d.rot += d.rotV*dt; d.life -= dt; if(d.life<=0) debris.splice(i,1); }
+       for(let i=sparks.length-1;i>=0;i--){ const s = sparks[i]; s.life -= dt*2.6; s.x += s.vx*dt; s.y += s.vy*dt; s.vy += 220*dt; if(s.life<=0) sparks.splice(i,1); }
+       return; 
+    }
+
     const activeVeh = getActiveVehicle(); const activePaint = getActivePaint();
-    invulnT = Math.max(0, invulnT - dt); speed += DIFF.accel * dt; 
+    invulnT = Math.max(0, invulnT - dt); speed += DIFF.accel * dt; wallHitCD -= dt;
     
     const easyWindow = score < 3000 ? 0.3 : clamp((score - 3000) / 4000, 0, 1);
     const spawnRate = (DIFF.spawnBase + (Math.floor(score) * DIFF.spawnRamp * 0.5)) * (0.4 + 0.6 * easyWindow);
     
     if(!inBonus){ buffMagnet = Math.max(0, buffMagnet - dt); buffSlowmo = Math.max(0, buffSlowmo - dt); buffInvisibility = Math.max(0, buffInvisibility - dt); }
 
-    const kLeft  = keys.has("arrowleft") || keys.has("a"); const kRight = keys.has("arrowright")|| keys.has("d"); const kUp = keys.has("arrowup") || keys.has("w"); const kDown = keys.has("arrowdown") || keys.has("s"); const kNitro = keys.has("arrowup") || keys.has("w"); const kDrift = keys.has("shift");
-    const jx = joy.x; const jy = joy.y; const steerAxis = clamp((kLeft?-1:0) + (kRight?1:0) + jx, -1, 1); const nitroAxis = kNitro || touch.nitro; const driftAxis = kDrift || touch.drift;
+    let kLeft  = keys.has("arrowleft") || keys.has("a"); let kRight = keys.has("arrowright")|| keys.has("d"); 
+    let steerAxis = clamp((kLeft?-1:0) + (kRight?1:0) + joy.x, -1, 1); 
+    const kUp = keys.has("arrowup") || keys.has("w"); const kDown = keys.has("arrowdown") || keys.has("s"); 
+    const kNitro = keys.has("arrowup") || keys.has("w"); const kDrift = keys.has("shift");
+    const nitroAxis = kNitro || touch.nitro; const driftAxis = kDrift || touch.drift;
 
-    nitroActive = nitroAxis && nitro > 0.02 && !inBonus; if(nitroActive) nitro = Math.max(0, nitro - dt*0.22); else nitro = Math.min(1.8, nitro + dt*0.14);
+    // Drift Skid Penalty Logic
+    if(driftSlip > 0.80 && skidTimer <= 0 && driftWanted) {
+       skidTimer = 3.0;
+       toastTop("Whoa! Lost control!", 1500);
+    }
+    
+    if(skidTimer > 0) {
+       skidTimer -= dt;
+       driftSlip = 0.9; 
+       steerAxis += Math.sin(performance.now()*0.01)*0.5; // Heavy sway
+       speed = Math.max(DIFF.baseSpeed, speed - dt*50); // Lose speed
+    }
+
+    // Low HP penalty Logic
+    if (carHP <= 3 && carHP > 0) {
+       steerAxis += Math.sin(performance.now()*0.005)*0.3; // Slight wobble
+       if(carHP <= 2) driftSlip = Math.max(driftSlip, 0.6); // Force sliding
+    }
+
+    nitroActive = nitroAxis && nitro > 0.02 && !inBonus; 
+    if(nitroActive) nitro = Math.max(0, nitro - dt*0.35); // Nitro drains when used
     warpFov = lerp(warpFov, nitroActive ? 1.08 : 1.0, 1 - Math.pow(0.01, dt));
-    if(nitroActive) startShake(0.15); // Constant small shake when hyper-driving
+    if(nitroActive) startShake(0.15);
 
     const effectiveSpeed = (speed + (nitroActive ? 105 : 0)) * activeVeh.speedMult;
     roadScroll += effectiveSpeed*dt; if(roadScroll>60) roadScroll-=60;
@@ -1037,22 +1145,26 @@
     coinT += dt * (0.86 + effectiveSpeed/1150); if(coinT>=1){ coinT=0; spawnCoin(); if(Math.random()<0.34) spawnCoin(); }
     pickT += dt * 0.33; if(pickT>=1){ pickT=0; if(Math.random()<0.62) spawnPickup(); }
 
-    const driftWanted = driftAxis && !inBonus && Math.abs(steerAxis) > 0.05;
+    var driftWanted = driftAxis && !inBonus && Math.abs(steerAxis) > 0.05;
     const driftTargetSlip = driftWanted ? clamp(Math.abs(steerAxis) * (0.55 + clamp(effectiveSpeed/650,0,0.45)), 0, 1) * activeVeh.driftMult : 0;
-    driftSlip = lerp(driftSlip, driftTargetSlip, 1 - Math.pow(0.0008, dt)); driftHeat = lerp(driftHeat, driftWanted ? driftSlip : 0, 1 - Math.pow(0.0007, dt));
-    const yawTarget = driftWanted ? (steerAxis * (0.16 + driftSlip*0.14)) : (steerAxis * 0.06); driftLean = lerp(driftLean, yawTarget, 1 - Math.pow(0.0007, dt));
+    
+    if(skidTimer <= 0) driftSlip = lerp(driftSlip, driftTargetSlip, 1 - Math.pow(0.0008, dt)); 
+    driftHeat = lerp(driftHeat, driftWanted ? driftSlip : 0, 1 - Math.pow(0.0007, dt));
+    const yawTarget = driftWanted || skidTimer > 0 ? (steerAxis * (0.16 + driftSlip*0.14)) : (steerAxis * 0.06); 
+    driftLean = lerp(driftLean, yawTarget, 1 - Math.pow(0.0007, dt));
 
     const steerSpeed = lerp(550, 750, clamp(score/4200, 0, 1)) * activeVeh.steerMult;
     const traction = 1 - driftSlip*0.65;
-    const response = driftWanted ? 0.75 : 1.0;
+    const response = driftWanted || skidTimer > 0 ? 0.75 : 1.0;
     const targetVx = steerAxis * steerSpeed;
     const smooth = 1 - Math.pow(0.00001, dt * response);
     player.vx = lerp(player.vx, targetVx, smooth);
     
-    const slipPush = driftWanted ? (steerAxis * steerSpeed * 0.28 * driftSlip) : 0; player.vx += slipPush * dt * 8; player.vx *= (0.985 + traction*0.01);
+    const slipPush = (driftWanted || skidTimer > 0) ? (steerAxis * steerSpeed * 0.28 * driftSlip) : 0; 
+    player.vx += slipPush * dt * 8; player.vx *= (0.985 + traction*0.01);
     player.x += player.vx * dt;
 
-    const fbAxis = clamp(-jy + (kUp?1:0) + (kDown?-1:0), -1, 1);
+    const fbAxis = clamp(-joy.y + (kUp?1:0) + (kDown?-1:0), -1, 1);
     const fbSpeed = lerp(350, 500, clamp(score/4200, 0, 1)) * activeVeh.speedMult;
     const targetVy = fbAxis * fbSpeed;
     player.vy = lerp(player.vy, targetVy, 1 - Math.pow(0.00001, dt)); 
@@ -1060,7 +1172,7 @@
 
     const minY = vh*0.20; const maxY = vh*0.90;
     player.y = clamp(player.y, minY, maxY);
-    enforceRoadBarrier();
+    enforceRoadBarrier(); // Will handle HP hit logic
 
     if(driftWanted && driftSlip > 0.18){
       if(Math.random() < 0.85){
@@ -1077,10 +1189,34 @@
     }
 
     const obstacleFactor = 0.55 + clamp(score / 6000, 0, 0.45); const obstacleSpeed = effectiveSpeed * obstacleFactor; const obstacleScale = (!inBonus && buffSlowmo>0) ? 0.20 : 1.0;
+    
+    let intelActive = score >= 1200;
+    let aggressive = score >= 3000;
+    let baseChangeRate = aggressive ? (DIFF.laneChangeRate * 1.5) : (intelActive ? DIFF.laneChangeRate : 0.01);
+
     for(let i=traffic.length-1;i>=0;i--){
       const t=traffic[i]; if(!t.passed && t.y > player.y + player.h*0.6){ t.passed=true; passedCars++; }
-      t.cd -= dt; const laneChangeRate = (DIFF.laneChangeRate * 0.25) + clamp(score/8000, 0, 0.05); const laneChangeSpeed = DIFF.laneChangeSpeed + clamp(score/4200, 0, 1.5);
-      if(t.cd<=0 && Math.random()<laneChangeRate){ const dir = Math.random()<0.5 ? -1 : 1; const next = clamp(t.targetLane + dir, 0, laneCount-1); const safe = !traffic.some(o=>o!==t && o.targetLane===next && Math.abs(o.y - t.y) < t.h*1.1); if(safe) t.targetLane=next; t.cd = rand(0.85, 1.9); }
+      t.cd -= dt; const laneChangeSpeed = DIFF.laneChangeSpeed + clamp(score/4200, 0, 1.5);
+      
+      if(t.cd<=0){ 
+          let next = t.targetLane;
+          // Intelligent AI blocking logic
+          if(intelActive && Math.random() < (aggressive ? 0.4 : 0.2)) {
+             if (t.y < player.y && t.y > player.y - vh*0.5) {
+                 let pLane = Math.floor((player.x - roadX()) / laneW());
+                 if (pLane > t.targetLane) next = t.targetLane + 1;
+                 else if (pLane < t.targetLane) next = t.targetLane - 1;
+             }
+          } else if (Math.random() < baseChangeRate) {
+             const dir = Math.random()<0.5 ? -1 : 1;
+             next = clamp(t.targetLane + dir, 0, laneCount-1);
+          }
+          
+          const safe = !traffic.some(o=>o!==t && o.targetLane===next && Math.abs(o.y - t.y) < t.h*1.1); 
+          if(safe) t.targetLane=next; 
+          t.cd = rand(0.85, 1.9); 
+      }
+      
       const tx=laneCenter(t.targetLane); t.x += (tx - t.x) * dt * laneChangeSpeed; t.y += obstacleSpeed * dt * t.rel * obstacleScale; if(t.y > vh + 220) traffic.splice(i,1);
     }
 
@@ -1103,7 +1239,7 @@
     score += (gain * mult) * 0.4; 
 
     if(!inBonus){
-      for(const t of traffic){ const d = distRect(player.x,player.y,player.w,player.h, t.x,t.y,t.w,t.h); if(d>0 && d<8){ if(t.id !== lastNearMissId && Math.random()<0.16){ lastNearMissId = t.id; closeCalls++; addCombo(2); score += 10 * mult; toastTop("🔥 Near miss! +Combo"); } } }
+      for(const t of traffic){ const d = distRect(player.x,player.y,player.w,player.h, t.x,t.y,t.w,t.h); if(d>0 && d<8){ if(t.id !== lastNearMissId && Math.random()<0.16){ lastNearMissId = t.id; closeCalls++; addCombo(2); score += 10 * mult; toastTop("🔥 Near miss! +Combo"); if(driftWanted || driftSlip > 0.15){ nitro = Math.min(1.8, nitro + 0.18); toastTop("Drift + Nitro!"); } } } }
     }
 
     for(let i=coins.length-1;i>=0;i--){ const c=coins[i]; if(rectHit(player.x,player.y,player.w*0.92,player.h*0.92, c.x,c.y, c.r*2, c.r*2)){ coins.splice(i,1); runCoins += c.val; playSfx("coin"); if(!inBonus && Math.random()<0.10) addCombo(1); } }
@@ -1160,9 +1296,11 @@
 
     for(const d of debris){ ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.globalAlpha = Math.max(0, d.life); ctx.fillStyle = d.color; ctx.fillRect(-d.size/2, -d.size/2, d.size, d.size); ctx.restore(); }
 
-    drawTrail(activePaint);
-    const driftSide = driftSlip * (player.vx * 0.004);
-    drawCar(player.x, player.y, player.w, player.h, true, "rgba(124,255,234,.95)", activeVeh, activePaint, 1, driftLean, driftSide);
+    if(!playerBlasted) {
+      drawTrail(activePaint);
+      const driftSide = driftSlip * (player.vx * 0.004);
+      drawCar(player.x, player.y, player.w, player.h, true, "rgba(124,255,234,.95)", activeVeh, activePaint, 1, driftLean, driftSide);
+    }
 
     if(countdown && !countdown.done){ ctx.save(); ctx.fillStyle="rgba(0,0,0,.35)"; ctx.fillRect(0,0,vw,vh); ctx.fillStyle="rgba(255,255,255,.95)"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font = "900 64px Orbitron, system-ui, sans-serif"; const text = (countdown.phase===0) ? "3" : (countdown.phase===1) ? "2" : (countdown.phase===2) ? "1" : "GO!"; ctx.fillText(text, vw/2, vh/2); ctx.restore(); }
     ctx.restore();
