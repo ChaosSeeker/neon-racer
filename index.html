@@ -28,13 +28,8 @@
       --mythic: #ff3333;
     }
     
-    * { 
-      box-sizing: border-box; 
-    }
-    
-    html, body { 
-      height: 100%; 
-    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
     
     body {
       margin: 0;
@@ -45,131 +40,40 @@
       touch-action: none;
     }
 
-    .app { 
-      height: 100%; 
-      display: flex; 
-      flex-direction: column; 
-    }
+    .app { height: 100%; display: flex; flex-direction: column; }
     
     .topbar {
       padding: 12px 14px;
       background: rgba(11, 18, 48, .78);
       border-bottom: 1px solid rgba(255, 255, 255, .10);
       backdrop-filter: blur(10px);
-      display: flex; 
-      gap: 12px; 
-      align-items: center; 
-      justify-content: space-between;
+      display: flex; gap: 12px; align-items: center; justify-content: space-between;
       z-index: 50;
     }
     
-    .brand { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 2px; 
-    }
+    .brand { display: flex; flex-direction: column; gap: 2px; }
+    .brand h1 { margin: 0; font-family: "Orbitron", system-ui, sans-serif; font-weight: 900; letter-spacing: .8px; font-size: 16px; line-height: 1.15; }
+    .brand .sub { font-size: 12px; color: var(--muted); }
     
-    .brand h1 { 
-      margin: 0; 
-      font-family: "Orbitron", system-ui, sans-serif; 
-      font-weight: 900; 
-      letter-spacing: .8px; 
-      font-size: 16px; 
-      line-height: 1.15; 
-    }
-    
-    .brand .sub { 
-      font-size: 12px; 
-      color: var(--muted); 
-    }
-    
-    .actions { 
-      display: flex; 
-      gap: 8px; 
-      align-items: center; 
-      flex-wrap: wrap; 
-    }
+    .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     
     button {
-      cursor: pointer; 
-      color: var(--text); 
-      background: rgba(255, 255, 255, .08);
-      border: 1px solid rgba(255, 255, 255, .16); 
-      border-radius: 12px; 
-      padding: 10px 12px;
-      font-weight: 900; 
-      font-size: 13px; 
-      transition: .15s transform, .15s background;
-      user-select: none; 
-      display: inline-flex; 
-      gap: 8px; 
-      align-items: center; 
-      justify-content: center;
+      cursor: pointer; color: var(--text); background: rgba(255, 255, 255, .08);
+      border: 1px solid rgba(255, 255, 255, .16); border-radius: 12px; padding: 10px 12px;
+      font-weight: 900; font-size: 13px; transition: .15s transform, .15s background;
+      user-select: none; display: inline-flex; gap: 8px; align-items: center; justify-content: center;
     }
-    
-    button:hover { 
-      background: rgba(255, 255, 255, .12); 
-    }
-    
-    button:active { 
-      transform: translateY(1px); 
-    }
-    
-    button:disabled { 
-      opacity: .55; 
-      cursor: not-allowed; 
-    }
-    
-    button.garage-btn { 
-      background: linear-gradient(135deg, rgba(124, 255, 234, .2), rgba(255, 106, 223, .2)); 
-      border-color: var(--a); 
-    }
+    button:hover { background: rgba(255, 255, 255, .12); }
+    button:active { transform: translateY(1px); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    button.garage-btn { background: linear-gradient(135deg, rgba(124, 255, 234, .2), rgba(255, 106, 223, .2)); border-color: var(--a); }
 
-    .home { 
-      flex: 1; 
-      overflow: auto; 
-      padding: 14px; 
-      display: grid; 
-      gap: 12px; 
-      align-content: start; 
-    }
+    .home { flex: 1; overflow: auto; padding: 14px; display: grid; gap: 12px; align-content: start; }
+    .hero { border: 1px solid rgba(255, 255, 255, .12); background: linear-gradient(135deg, rgba(124, 255, 234, .12), rgba(255, 106, 223, .10)); border-radius: 18px; padding: 14px; box-shadow: 0 18px 60px rgba(0, 0, 0, .35); }
+    .heroRow { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .heroTitle { font-family: "Orbitron", system-ui, sans-serif; font-weight: 900; font-size: 18px; margin: 0; letter-spacing: 1px; }
     
-    .hero { 
-      border: 1px solid rgba(255, 255, 255, .12); 
-      background: linear-gradient(135deg, rgba(124, 255, 234, .12), rgba(255, 106, 223, .10)); 
-      border-radius: 18px; 
-      padding: 14px; 
-      box-shadow: 0 18px 60px rgba(0, 0, 0, .35); 
-    }
-    
-    .heroRow { 
-      display: flex; 
-      gap: 12px; 
-      align-items: center; 
-      justify-content: space-between; 
-      flex-wrap: wrap; 
-    }
-    
-    .heroTitle { 
-      font-family: "Orbitron", system-ui, sans-serif; 
-      font-weight: 900; 
-      font-size: 18px; 
-      margin: 0; 
-      letter-spacing: 1px; 
-    }
-    
-    .chip { 
-      background: rgba(0, 0, 0, .22); 
-      border: 1px solid rgba(255, 255, 255, .12); 
-      border-radius: 999px; 
-      padding: 8px 10px; 
-      font-size: 12px; 
-      color: var(--muted); 
-      display: inline-flex; 
-      gap: 6px; 
-      align-items: center; 
-    }
-    
+    .chip { background: rgba(0, 0, 0, .22); border: 1px solid rgba(255, 255, 255, .12); border-radius: 999px; padding: 8px 10px; font-size: 12px; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
     .chip b { color: var(--text); }
     
     .rar { font-weight: 800; }
@@ -179,419 +83,105 @@
     .rar.legendary { color: var(--legend); } 
     .rar.mythic { color: var(--mythic); text-shadow: 0 0 6px rgba(255, 51, 51, 0.6); }
 
-    .grid { 
-      display: grid; 
-      grid-template-columns: 1.2fr 1fr; 
-      gap: 12px; 
-    }
+    .grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; }
+    .card { border: 1px solid rgba(255, 255, 255, .12); background: rgba(11, 18, 48, .55); border-radius: 18px; padding: 12px; backdrop-filter: blur(10px); box-shadow: 0 12px 40px rgba(0, 0, 0, .25); }
+    .card h3 { margin: 0 0 8px; font-family: "Orbitron", system-ui, sans-serif; font-weight: 800; font-size: 14px; letter-spacing: .4px; }
     
-    .card { 
-      border: 1px solid rgba(255, 255, 255, .12); 
-      background: rgba(11, 18, 48, .55); 
-      border-radius: 18px; 
-      padding: 12px; 
-      backdrop-filter: blur(10px); 
-      box-shadow: 0 12px 40px rgba(0, 0, 0, .25); 
-    }
+    .muted { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 0; }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .inp { width: min(320px, 100%); padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, .14); background: rgba(0, 0, 0, .22); color: var(--text); outline: none; font-weight: 800; }
+    .inp:focus { border-color: rgba(124, 255, 234, .7); }
     
-    .card h3 { 
-      margin: 0 0 8px; 
-      font-family: "Orbitron", system-ui, sans-serif; 
-      font-weight: 800; 
-      font-size: 14px; 
-      letter-spacing: .4px; 
-    }
-    
-    .muted { 
-      color: var(--muted); 
-      font-size: 13px; 
-      line-height: 1.5; 
-      margin: 0; 
-    }
-    
-    .row { 
-      display: flex; 
-      gap: 10px; 
-      align-items: center; 
-      flex-wrap: wrap; 
-    }
-    
-    .inp { 
-      width: min(320px, 100%); 
-      padding: 10px 12px; 
-      border-radius: 12px; 
-      border: 1px solid rgba(255, 255, 255, .14); 
-      background: rgba(0, 0, 0, .22); 
-      color: var(--text); 
-      outline: none; 
-      font-weight: 800; 
-    }
-    
-    .inp:focus { 
-      border-color: rgba(124, 255, 234, .7); 
-    }
-    
-    .lbList { 
-      display: grid; 
-      gap: 8px; 
-      margin-top: 10px; 
-    }
-    
-    .lbRow { 
-      display: flex; 
-      justify-content: space-between; 
-      gap: 10px; 
-      align-items: center; 
-      padding: 10px 10px; 
-      border-radius: 14px; 
-      border: 1px solid rgba(255, 255, 255, .12); 
-      background: rgba(0, 0, 0, .18); 
-      font-size: 13px; 
-    }
-    
+    .lbList { display: grid; gap: 8px; margin-top: 10px; }
+    .lbRow { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 10px 10px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, .12); background: rgba(0, 0, 0, .18); font-size: 13px; }
     .lbRow b { font-weight: 950; }
     .small { font-size: 12px; color: var(--muted); }
     
-    .shopGrid { 
-      display: grid; 
-      grid-template-columns: repeat(2, minmax(0, 1fr)); 
-      gap: 10px; 
-      margin-top: 10px; 
-    }
+    .shopGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+    .item { border: 1px solid rgba(255, 255, 255, .14); background: rgba(0, 0, 0, .18); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 8px; min-height: 126px; }
+    .item .top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+    .item .name { font-weight: 950; display: flex; flex-direction: column; }
+    .qty { display: inline-flex; min-width: 26px; justify-content: center; padding: 2px 8px; border-radius: 999px; background: rgba(0, 0, 0, .25); border: 1px solid rgba(255, 255, 255, .12); font-size: 12px; font-weight: 950; white-space: nowrap; }
     
-    .item { 
-      border: 1px solid rgba(255, 255, 255, .14); 
-      background: rgba(0, 0, 0, .18); 
-      border-radius: 16px; 
-      padding: 12px; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 8px; 
-      min-height: 126px; 
-    }
+    .swatch { display: flex; gap: 8px; align-items: center; }
+    .dot { width: 14px; height: 14px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .18); background: #fff; box-shadow: 0 8px 18px rgba(0, 0, 0, .25); }
+    .skinBar { height: 14px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .18); box-shadow: 0 10px 22px rgba(0, 0, 0, .25); flex: 1; min-width: 80px; }
     
-    .item .top { 
-      display: flex; 
-      justify-content: space-between; 
-      gap: 8px; 
-      align-items: center; 
-    }
-    
-    .item .name { 
-      font-weight: 950; 
-      display: flex; 
-      flex-direction: column; 
-    }
-    
-    .qty { 
-      display: inline-flex; 
-      min-width: 26px; 
-      justify-content: center; 
-      padding: 2px 8px; 
-      border-radius: 999px; 
-      background: rgba(0, 0, 0, .25); 
-      border: 1px solid rgba(255, 255, 255, .12); 
-      font-size: 12px; 
-      font-weight: 950; 
-      white-space: nowrap; 
-    }
-    
-    .swatch { 
-      display: flex; 
-      gap: 8px; 
-      align-items: center; 
-    }
-    
-    .dot { 
-      width: 14px; 
-      height: 14px; 
-      border-radius: 999px; 
-      border: 1px solid rgba(255, 255, 255, .18); 
-      background: #fff; 
-      box-shadow: 0 8px 18px rgba(0, 0, 0, .25); 
-    }
-    
-    .skinBar { 
-      height: 14px; 
-      border-radius: 999px; 
-      border: 1px solid rgba(255, 255, 255, .18); 
-      box-shadow: 0 10px 22px rgba(0, 0, 0, .25); 
-      flex: 1; 
-      min-width: 80px; 
-    }
-    
-    @media (max-width:900px) { 
-      .grid { grid-template-columns: 1fr; } 
-    }
-    @media (max-width:520px) { 
-      .shopGrid { grid-template-columns: 1fr; } 
-    }
+    @media (max-width:900px) { .grid { grid-template-columns: 1fr; } }
+    @media (max-width:520px) { .shopGrid { grid-template-columns: 1fr; } }
 
     /* Game Screen */
-    .gameScreen { 
-      position: fixed; 
-      inset: 0; 
-      display: none; 
-      background: #050814; 
-    }
-    
-    .gameWrap { 
-      position: absolute; 
-      inset: 0; 
-      display: flex; 
-      flex-direction: column; 
-    }
+    .gameScreen { position: fixed; inset: 0; display: none; background: #050814; }
+    .gameWrap { position: absolute; inset: 0; display: flex; flex-direction: column; }
 
     .hud {
       position: absolute; 
       top: max(10px, env(safe-area-inset-top)); 
       left: max(10px, env(safe-area-inset-left)); 
       right: max(10px, env(safe-area-inset-right));
-      display: flex; 
-      gap: 8px; 
-      align-items: center; 
-      justify-content: space-between; 
-      z-index: 20; 
-      pointer-events: none;
+      display: flex; gap: 8px; align-items: center; justify-content: space-between; 
+      z-index: 20; pointer-events: none;
     }
-    
-    .hudLeft, .hudRight { 
-      display: flex; 
-      gap: 8px; 
-      flex-wrap: wrap; 
-      align-items: center; 
-    }
-    
+    .hudLeft, .hudRight { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     .pill {
-      pointer-events: none; 
-      background: rgba(11, 18, 48, .68); 
-      border: 1px solid rgba(255, 255, 255, .12); 
-      border-radius: 999px;
-      padding: 8px 10px; 
-      font-size: 12px; 
-      display: inline-flex; 
-      gap: 6px; 
-      align-items: center; 
-      backdrop-filter: blur(10px);
+      pointer-events: none; background: rgba(11, 18, 48, .68); border: 1px solid rgba(255, 255, 255, .12); border-radius: 999px;
+      padding: 8px 10px; font-size: 12px; display: inline-flex; gap: 6px; align-items: center; backdrop-filter: blur(10px);
     }
-    
     .pill b { font-weight: 950; }
     
     .menuBtn {
-      pointer-events: auto; 
-      width: 40px; 
-      height: 40px; 
-      display: grid; 
-      place-items: center; 
-      border-radius: 12px; 
-      background: rgba(11, 18, 48, .75);
-      border: 1px solid rgba(255, 255, 255, .16); 
-      backdrop-filter: blur(10px); 
-      font-weight: 950;
+      pointer-events: auto; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: rgba(11, 18, 48, .75);
+      border: 1px solid rgba(255, 255, 255, .16); backdrop-filter: blur(10px); font-weight: 950;
     }
 
-    #game { 
-      flex: 1; 
-      width: 100%; 
-      height: 100%; 
-      display: block; 
-      touch-action: none; 
-      background: #050814; 
-    }
+    #game { flex: 1; width: 100%; height: 100%; display: block; touch-action: none; background: #050814; }
 
     /* Floating Omni-directional joystick */
-    .joystickWrap {
-      position: absolute; 
-      inset: 0; 
-      z-index: 12; 
-      pointer-events: auto; 
-      display: none; 
-      user-select: none; 
-      touch-action: none;
-    }
-    
+    .joystickWrap { position: absolute; inset: 0; z-index: 12; pointer-events: auto; display: none; user-select: none; touch-action: none; }
     .joyBase {
-      width: 110px; 
-      height: 110px; 
-      position: absolute; 
-      left: -1000px; 
-      top: -1000px; 
-      transform: translate(-50%, -50%);
-      border-radius: 999px; 
-      border: 1px solid rgba(255, 255, 255, .18);
+      width: 110px; height: 110px; position: absolute; left: -1000px; top: -1000px; transform: translate(-50%, -50%);
+      border-radius: 999px; border: 1px solid rgba(255, 255, 255, .18);
       background: radial-gradient(circle at 35% 30%, rgba(124, 255, 234, .15), rgba(255, 106, 223, .08) 55%, rgba(0, 0, 0, .15) 100%);
-      box-shadow: 0 18px 55px rgba(0, 0, 0, .45); 
-      backdrop-filter: blur(4px); 
-      overflow: hidden; 
-      opacity: 0; 
-      transition: opacity 0.15s; 
-      pointer-events: none;
+      box-shadow: 0 18px 55px rgba(0, 0, 0, .45); backdrop-filter: blur(4px); overflow: hidden; opacity: 0; transition: opacity 0.15s; pointer-events: none;
     }
-    
     .joyBase.active { opacity: 1; }
-    
-    .joyBase:after { 
-      content: ""; 
-      position: absolute; 
-      inset: 8px; 
-      border-radius: 999px; 
-      border: 1px dashed rgba(255, 255, 255, .16); 
-      opacity: .65; 
-    }
-    
+    .joyBase:after { content: ""; position: absolute; inset: 8px; border-radius: 999px; border: 1px dashed rgba(255, 255, 255, .16); opacity: .65; }
     .joyStick {
-      width: 46px; 
-      height: 46px; 
-      border-radius: 999px; 
-      position: absolute; 
-      left: 50%; 
-      top: 50%; 
-      transform: translate(-50%, -50%);
-      border: 1px solid rgba(255, 255, 255, .22); 
-      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, .25), rgba(124, 255, 234, .35) 50%, rgba(0, 0, 0, .35));
+      width: 46px; height: 46px; border-radius: 999px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      border: 1px solid rgba(255, 255, 255, .22); background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, .25), rgba(124, 255, 234, .35) 50%, rgba(0, 0, 0, .35));
       box-shadow: 0 16px 45px rgba(0, 0, 0, .55);
     }
-    
-    .joyHint { 
-      position: absolute; 
-      left: 50%; 
-      bottom: 15%; 
-      transform: translateX(-50%); 
-      text-align: center; 
-      font-size: 14px; 
-      color: rgba(255, 255, 255, .5); 
-      font-weight: 900; 
-      letter-spacing: .2px; 
-      pointer-events: none; 
-    }
-    
+    .joyHint { position: absolute; left: 50%; bottom: 15%; transform: translateX(-50%); text-align: center; font-size: 14px; color: rgba(255, 255, 255, .5); font-weight: 900; letter-spacing: .2px; pointer-events: none; }
     @media (max-width:900px) { .joystickWrap { display: block; } }
 
     /* Touch buttons */
     .touchBtns {
-      position: absolute; 
-      right: max(16px, env(safe-area-inset-right)); 
-      bottom: max(16px, env(safe-area-inset-bottom));
-      z-index: 20; 
-      display: none; 
-      gap: 12px; 
-      pointer-events: auto; 
-      user-select: none; 
-      touch-action: none;
+      position: absolute; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom));
+      z-index: 20; display: none; gap: 12px; pointer-events: auto; user-select: none; touch-action: none;
     }
-    
     .touchBtn {
-      width: 76px; 
-      height: 76px; 
-      border-radius: 50%; 
-      border: 2px solid rgba(255, 255, 255, .18);
+      width: 76px; height: 76px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .18);
       background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, .16), rgba(255, 106, 223, .14) 45%, rgba(0, 0, 0, .35));
-      box-shadow: 0 18px 55px rgba(0, 0, 0, .45); 
-      font-weight: 950; 
-      font-size: 13px; 
-      letter-spacing: .2px; 
-      line-height: 1.1; 
-      flex-direction: column; 
-      backdrop-filter: blur(5px);
+      box-shadow: 0 18px 55px rgba(0, 0, 0, .45); font-weight: 950; font-size: 13px; letter-spacing: .2px; line-height: 1.1; flex-direction: column; backdrop-filter: blur(5px);
     }
-    
     .touchBtn:active { transform: translateY(2px) scale(0.95); }
-    .touchBtn.on { 
-      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, .18), rgba(124, 255, 234, .25) 45%, rgba(0, 0, 0, .35)); 
-      border-color: rgba(124, 255, 234, .65); 
-    }
-    
+    .touchBtn.on { background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, .18), rgba(124, 255, 234, .25) 45%, rgba(0, 0, 0, .35)); border-color: rgba(124, 255, 234, .65); }
     @media (max-width:900px) { .touchBtns { display: flex; } }
 
     /* Modals & Overlays */
-    .overlay { 
-      position: absolute; 
-      inset: 0; 
-      display: none; 
-      place-items: center; 
-      padding: 16px; 
-      background: rgba(0, 0, 0, .75); 
-      backdrop-filter: blur(8px); 
-      z-index: 40; 
-    }
-    
-    .modal { 
-      width: min(920px, 94vw); 
-      max-height: min(88vh, 900px); 
-      overflow: auto; 
-      background: rgba(11, 18, 48, .92); 
-      border: 1px solid rgba(255, 255, 255, .14); 
-      border-radius: 18px; 
-      padding: 14px; 
-      box-shadow: 0 24px 70px rgba(0, 0, 0, .6); 
-    }
-    
-    .modal h2 { 
-      margin: 0 0 6px; 
-      font-family: "Orbitron", system-ui, sans-serif; 
-      font-weight: 900; 
-      letter-spacing: .8px; 
-      font-size: 16px; 
-    }
-    
-    .modal .split { 
-      display: grid; 
-      grid-template-columns: 1.2fr 1fr; 
-      gap: 12px; 
-    }
-    
+    .overlay { position: absolute; inset: 0; display: none; place-items: center; padding: 16px; background: rgba(0, 0, 0, .75); backdrop-filter: blur(8px); z-index: 40; }
+    .modal { width: min(920px, 94vw); max-height: min(88vh, 900px); overflow: auto; background: rgba(11, 18, 48, .92); border: 1px solid rgba(255, 255, 255, .14); border-radius: 18px; padding: 14px; box-shadow: 0 24px 70px rgba(0, 0, 0, .6); }
+    .modal h2 { margin: 0 0 6px; font-family: "Orbitron", system-ui, sans-serif; font-weight: 900; letter-spacing: .8px; font-size: 16px; }
+    .modal .split { display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; }
     @media (max-width:900px) { .modal .split { grid-template-columns: 1fr; } }
 
-    .toast, .toastTop { 
-      position: fixed; 
-      left: 50%; 
-      transform: translateX(-50%); 
-      border: 1px solid rgba(255, 255, 255, .14); 
-      border-radius: 14px; 
-      color: var(--text); 
-      font-size: 13px; 
-      z-index: 100; 
-      display: none; 
-      backdrop-filter: blur(10px); 
-      max-width: min(92vw, 520px); 
-      text-align: center; 
-    }
-    
-    .toast { 
-      bottom: max(16px, env(safe-area-inset-bottom)); 
-      background: rgba(11, 18, 48, .85); 
-      padding: 10px 12px; 
-      box-shadow: 0 12px 40px rgba(0, 0, 0, .35); 
-    }
-    
-    .toastTop { 
-      top: max(16px, env(safe-area-inset-top)); 
-      background: linear-gradient(135deg, rgba(124, 255, 234, .22), rgba(255, 106, 223, .18)); 
-      padding: 10px 14px; 
-      box-shadow: 0 18px 50px rgba(0, 0, 0, .45); 
-      font-weight: 950; 
-      border-radius: 999px; 
-    }
+    .toast, .toastTop { position: fixed; left: 50%; transform: translateX(-50%); border: 1px solid rgba(255, 255, 255, .14); border-radius: 14px; color: var(--text); font-size: 13px; z-index: 100; display: none; backdrop-filter: blur(10px); max-width: min(92vw, 520px); text-align: center; }
+    .toast { bottom: max(16px, env(safe-area-inset-bottom)); background: rgba(11, 18, 48, .85); padding: 10px 12px; box-shadow: 0 12px 40px rgba(0, 0, 0, .35); }
+    .toastTop { top: max(16px, env(safe-area-inset-top)); background: linear-gradient(135deg, rgba(124, 255, 234, .22), rgba(255, 106, 223, .18)); padding: 10px 14px; box-shadow: 0 18px 50px rgba(0, 0, 0, .45); font-weight: 950; border-radius: 999px; }
 
     /* Tuning Bars */
-    .tune-bar { 
-      height: 8px; 
-      background: rgba(0, 0, 0, 0.4); 
-      border-radius: 4px; 
-      overflow: hidden; 
-      display: flex; 
-      flex: 1; 
-      margin-left: 10px; 
-      border: 1px solid rgba(255, 255, 255, 0.1); 
-    }
-    
-    .tune-pip { 
-      flex: 1; 
-      border-right: 1px solid #000; 
-      background: transparent; 
-      transition: background 0.2s; 
-    }
-    
+    .tune-bar { height: 8px; background: rgba(0, 0, 0, 0.4); border-radius: 4px; overflow: hidden; display: flex; flex: 1; margin-left: 10px; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .tune-pip { flex: 1; border-right: 1px solid #000; background: transparent; transition: background 0.2s; }
     .tune-pip:last-child { border-right: none; }
     .tune-pip.filled { background: var(--a); }
   </style>
@@ -782,10 +372,7 @@
   // ----------------------------------------------------
   const SUPABASE_URL = "https://dnyibstgahnjbkjokuxs.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_1PLhDg4aoFucc0-7qWH0KA_unYKueat";
-  
-  const sb = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) 
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
-    : null;
+  const sb = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
   async function lbTop10() { 
     if(!sb) return []; 
@@ -807,55 +394,41 @@
   // ----------------------------------------------------
   // UTILITIES
   // ----------------------------------------------------
-  function clamp(v, a, b) { 
-      return Math.max(a, Math.min(b, v)); 
-  }
-  
-  function lerp(a, b, t) { 
-      return a + (b - a) * t; 
-  }
-  
-  function rand(a, b) { 
-      return a + Math.random() * (b - a); 
-  }
-  
-  function randi(a, b) { 
-      return Math.floor(rand(a, b + 1)); 
-  }
-  
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function rand(a, b) { return a + Math.random() * (b - a); }
+  function randi(a, b) { return Math.floor(rand(a, b + 1)); }
   function todayISO() { 
       const d = new Date(); 
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; 
   }
-  
   function escapeHtml(s) { 
       return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); 
   }
 
   // ----------------------------------------------------
-  // DOM ELEMENTS
+  // DOM ELEMENTS & TOASTS
   // ----------------------------------------------------
   const canvas = document.getElementById("game"); 
   const ctx = canvas.getContext("2d", { alpha: false });
-  
-  const toastEl = document.getElementById("toast");
-  const toastTopEl = document.getElementById("toastTop");
 
   function toast(msg, ms=1500) { 
-    if (toastEl) {
-        toastEl.textContent = msg; 
-        toastEl.style.display = "block"; 
-        clearTimeout(toastEl._t); 
-        toastEl._t = setTimeout(() => toastEl.style.display = "none", ms); 
+    const el = document.getElementById("toast");
+    if (el) {
+        el.textContent = msg; 
+        el.style.display = "block"; 
+        clearTimeout(el._t); 
+        el._t = setTimeout(() => el.style.display = "none", ms); 
     }
   }
   
   function toastTop(msg, ms=1600) { 
-    if (toastTopEl) {
-        toastTopEl.textContent = msg; 
-        toastTopEl.style.display = "block"; 
-        clearTimeout(toastTopEl._t); 
-        toastTopEl._t = setTimeout(() => toastTopEl.style.display = "none", ms); 
+    const el = document.getElementById("toastTop");
+    if (el) {
+        el.textContent = msg; 
+        el.style.display = "block"; 
+        clearTimeout(el._t); 
+        el._t = setTimeout(() => el.style.display = "none", ms); 
     }
   }
 
@@ -1154,8 +727,10 @@
     saveProfile(); 
   }
   
-  function renderMissions(where) { 
+  function renderMissions(whereId) { 
+    const where = document.getElementById(whereId);
     if (!where) return;
+    
     where.innerHTML = ""; 
     profile.missions.forEach((m, idx) => { 
       const pct = Math.round(clamp(m.progress / m.target, 0, 1) * 100); 
@@ -1187,8 +762,8 @@
         profile.bankCoins += m.reward; 
         saveProfile(); 
         syncHomeUI(); 
-        renderMissions(document.getElementById("missions")); 
-        renderMissions(document.getElementById("missions2")); 
+        renderMissions("missions"); 
+        renderMissions("missions2"); 
         toast(`+${m.reward} coins claimed!`); 
       }); 
     }); 
@@ -1198,41 +773,27 @@
   // UI SYNCING & HTML UPDATES (Completely Safe)
   // ----------------------------------------------------
   function syncHomeUI() {
-      // Use optional chaining to guarantee we don't throw errors
-      const bankCoinsEl = document.getElementById("bankCoins");
-      if (bankCoinsEl) bankCoinsEl.textContent = profile.bankCoins || 0;
-
-      const bestScoreEl = document.getElementById("bestScore");
-      if (bestScoreEl) bestScoreEl.textContent = profile.bestScore || 0;
-
-      const nameInput = document.getElementById("nameInput");
-      if (nameInput && nameInput.value !== profile.name) {
-          nameInput.value = profile.name || "Gamer";
-      }
-
-      const menuBank = document.getElementById("menuBank");
-      if (menuBank) menuBank.textContent = profile.bankCoins || 0;
-
-      const menuBest = document.getElementById("menuBest");
-      if (menuBest) menuBest.textContent = profile.bestScore || 0;
-
-      const topPlayerName = document.getElementById("topPlayerName");
-      if (topPlayerName) topPlayerName.textContent = profile.name || "Gamer";
-
-      const playerName = document.getElementById("playerName");
-      if (playerName) playerName.textContent = profile.name || "Gamer";
+      const els = {
+          bank: document.getElementById("bankCoins"),
+          best: document.getElementById("bestScore"),
+          nameInp: document.getElementById("nameInput"),
+          menuBank: document.getElementById("menuBank"),
+          menuBest: document.getElementById("menuBest"),
+          topName: document.getElementById("topPlayerName"),
+          rank: document.getElementById("rankChip"),
+          bonus: document.getElementById("bonusInfo")
+      };
       
-      const rankChip = document.getElementById("rankChip");
-      if (rankChip) rankChip.textContent = rankFor(profile.bestScore || 0);
-
-      const hudRank = document.getElementById("hudRank");
-      if (hudRank) hudRank.textContent = rankFor(profile.bestScore || 0);
-
-      const bonusInfo = document.getElementById("bonusInfo");
-      if (bonusInfo) bonusInfo.textContent = bonusPreview();
+      if(els.bank) els.bank.textContent = profile.bankCoins || 0;
+      if(els.best) els.best.textContent = profile.bestScore || 0;
+      if(els.nameInp && els.nameInp.value !== profile.name) els.nameInp.value = profile.name || "Gamer";
+      if(els.menuBank) els.menuBank.textContent = profile.bankCoins || 0;
+      if(els.menuBest) els.menuBest.textContent = profile.bestScore || 0;
+      if(els.topName) els.topName.textContent = profile.name || "Gamer";
+      if(els.rank) els.rank.textContent = rankFor(profile.bestScore || 0);
+      if(els.bonus) els.bonus.textContent = bonusPreview();
   }
 
-  // Save Name Event
   const saveNameBtn = document.getElementById("saveName");
   if (saveNameBtn) {
       saveNameBtn.addEventListener("click", () => { 
@@ -1245,7 +806,6 @@
       });
   }
 
-  // Claim Bonus Event
   const claimBonusBtn = document.getElementById("claimBonus");
   if (claimBonusBtn) {
       claimBonusBtn.addEventListener("click", () => { 
@@ -1482,6 +1042,13 @@
   // ----------------------------------------------------
   // INPUT SYSTEM
   // ----------------------------------------------------
+  let inputFocus = false;
+  const nameInputEl = document.getElementById("nameInput");
+  if (nameInputEl) {
+      nameInputEl.addEventListener("focus", () => inputFocus = true); 
+      nameInputEl.addEventListener("blur", () => inputFocus = false);
+  }
+
   const keys = new Set();
   window.addEventListener("keydown", (e) => { 
       if(inputFocus) return; 
@@ -1742,7 +1309,9 @@
     invulnT = 0;
     
     for(const k in cart) cart[k] = 0; 
-    renderShop(document.getElementById("shop"));
+    
+    const shopEl = document.getElementById("shop");
+    if (shopEl) renderShop(shopEl);
     
     traffic.length = 0; 
     coins.length = 0; 
@@ -1855,6 +1424,59 @@
           syncHomeUI(); 
           renderShop(document.getElementById("shop2")); 
       } 
+  }
+
+  // ----------------------------------------------------
+  // ASYNC LEADERBOARD (Moved down)
+  // ----------------------------------------------------
+  async function syncLeaderboard() { 
+    const st1 = document.getElementById("lbStatus");
+    const st2 = document.getElementById("lbStatus2");
+    const ls1 = document.getElementById("lbList");
+    const ls2 = document.getElementById("lbList2");
+    
+    if(!sb) { 
+        if(st1) st1.textContent = "Leaderboard not configured"; 
+        if(st2) st2.textContent = "Leaderboard not configured"; 
+        if(ls1) ls1.innerHTML = ""; 
+        if(ls2) ls2.innerHTML = ""; 
+        return; 
+    } 
+    
+    try { 
+        if(st1) st1.textContent = "Loading…"; 
+        if(st2) st2.textContent = "Loading…"; 
+        
+        const list = await lbTop10(); 
+        
+        if(st1) st1.textContent = list.length ? "Live leaderboard:" : "No scores yet."; 
+        if(st2) st2.textContent = list.length ? "Live leaderboard:" : "No scores yet."; 
+        
+        if(ls1) {
+            ls1.innerHTML = ""; 
+            list.forEach((x, i) => { 
+                const row = document.createElement("div"); 
+                row.className = "lbRow"; 
+                row.innerHTML = `<span>#${i+1} <b>${escapeHtml(x.name)}</b></span><span><b>${x.score}</b></span>`; 
+                ls1.appendChild(row); 
+            });
+        }
+        
+        if(ls2) {
+            ls2.innerHTML = "";
+            list.forEach((x, i) => { 
+                const row = document.createElement("div"); 
+                row.className = "lbRow"; 
+                row.innerHTML = `<span>#${i+1} <b>${escapeHtml(x.name)}</b></span><span><b>${x.score}</b></span>`; 
+                ls2.appendChild(row); 
+            });
+        }
+    } catch(e) { 
+        if(st1) st1.textContent = "Leaderboard offline"; 
+        if(st2) st2.textContent = "Leaderboard offline"; 
+        if(ls1) ls1.innerHTML = ""; 
+        if(ls2) ls2.innerHTML = ""; 
+    } 
   }
 
   const PHASES = [
@@ -3005,7 +2627,7 @@
 
         if(buffInvisibility > 0 && !inBonus) {
             ctx.globalAlpha = extraAlpha * 0.4; 
-            ctx.strokeStyle = "rgba(124,255,234,.95)"; 
+            ctx.strokeStyle = "rgba(124, 255, 234, .95)"; 
             ctx.lineWidth = 3; 
             roundRectDraw(bodyX - 4, bodyY - 4, w + 8, h + 8, w * 0.25); 
             ctx.stroke(); 
@@ -3014,7 +2636,7 @@
 
         if(invulnT > 0) {
             ctx.globalAlpha = extraAlpha * 0.6; 
-            ctx.strokeStyle = "rgba(255,210,77,.95)"; 
+            ctx.strokeStyle = "rgba(255, 210, 77, .95)"; 
             ctx.lineWidth = 3; 
             roundRectDraw(bodyX - 6, bodyY - 6, w + 12, h + 12, w * 0.25); 
             ctx.stroke(); 
@@ -3023,7 +2645,7 @@
     } else {
         // Traffic Drawing
         const bodyX = x - w/2, bodyY = y - h/2;
-        ctx.fillStyle = "rgba(20,20,30,.95)"; 
+        ctx.fillStyle = "rgba(20, 20, 30, .95)"; 
         roundRectDraw(bodyX, bodyY, w, h, w * 0.15); 
         ctx.fill();
         
@@ -3084,7 +2706,7 @@
     // Weather Visuals
     if(weather === "snow") {
        ctx.save(); 
-       ctx.fillStyle = "rgba(255,255,255,0.6)";
+       ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
        for(let i=0; i<30; i++) { 
            ctx.beginPath(); 
            ctx.arc(roadX() + rand(0, roadW()), (performance.now() * 0.1 + i * 100) % vh, rand(1, 3), 0, Math.PI*2); 
@@ -3099,7 +2721,7 @@
     }
     if(weather === "rain") {
        ctx.save(); 
-       ctx.strokeStyle = "rgba(100,200,255,0.4)"; 
+       ctx.strokeStyle = "rgba(100, 200, 255, 0.4)"; 
        ctx.lineWidth = 1.5;
        for(let i=0; i<40; i++) { 
            const x = roadX() + rand(0, roadW()); 
@@ -3115,7 +2737,7 @@
     // Particles
     if(skids.length) { 
         ctx.save(); 
-        ctx.strokeStyle = "rgba(255,255,255,.22)"; 
+        ctx.strokeStyle = "rgba(255, 255, 255, .22)"; 
         ctx.lineWidth = 3; 
         for(const s of skids) { 
             ctx.globalAlpha = 0.12 + s.life * 0.35; 
@@ -3131,7 +2753,7 @@
         ctx.save(); 
         const size = 10 + (1 - s.life) * 28 * s.size; 
         ctx.globalAlpha = 0.10 + s.life * 0.25; 
-        ctx.fillStyle = "rgba(255,255,255,.35)"; 
+        ctx.fillStyle = "rgba(255, 255, 255, .35)"; 
         ctx.beginPath(); 
         ctx.arc(s.x, s.y, size, 0, Math.PI*2); 
         ctx.fill(); 
@@ -3169,7 +2791,7 @@
     
     for(const p of pickups) { 
         ctx.save(); 
-        ctx.fillStyle = "rgba(124,255,234,.8)"; 
+        ctx.fillStyle = "rgba(124, 255, 234, .8)"; 
         ctx.beginPath(); 
         ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); 
         ctx.fill(); 
@@ -3195,7 +2817,7 @@
            ctx.fillText("☠", 0, 0); 
            ctx.restore();
         } else {
-           drawCar(t.x, t.y, t.w, t.h, false, "rgba(255,106,223,.60)", null, null, 1, 0, 0); 
+           drawCar(t.x, t.y, t.w, t.h, false, "rgba(255, 106, 223, .60)", null, null, 1, 0, 0); 
         }
     }
 
@@ -3210,7 +2832,7 @@
     }
 
     if(!playerBlasted) {
-      drawTrail(activePaint);
+      const driftSide = driftSlip * (player.vx * 0.004);
       
       // Laser Beam Draw
       if(buffLaser > 0) {
@@ -3221,14 +2843,13 @@
          bGrad.addColorStop(0.5, "rgba(124, 255, 234, 0.9)"); 
          bGrad.addColorStop(1, "transparent");
          ctx.fillStyle = bGrad; 
-         ctx.fillRect(player.x - 15, 0, 30, player.y);
+         ctx.fillRect(player.x - 15 + driftSide, 0, 30, player.y);
          ctx.fillStyle = "#fff"; 
-         ctx.fillRect(player.x - 4, 0, 8, player.y);
+         ctx.fillRect(player.x - 4 + driftSide, 0, 8, player.y);
          ctx.restore();
       }
 
-      const driftSide = driftSlip * (player.vx * 0.004);
-      drawCar(player.x, player.y, player.w, player.h, true, "rgba(124,255,234,.95)", activeVeh, activePaint, 1, driftLean, driftSide);
+      drawCar(player.x, player.y, player.w, player.h, true, "rgba(124, 255, 234, .95)", activeVeh, activePaint, 1, driftLean, driftSide);
     }
 
     if(countdown && !countdown.done) { 
@@ -3318,8 +2939,13 @@
   // Init Boot Calls
   ensureDailyMissions();
   syncHomeUI(); 
-  renderShop(document.getElementById("shop")); 
-  renderShop(document.getElementById("shop2")); 
+  
+  const shopElMain = document.getElementById("shop");
+  if (shopElMain) renderShop(shopElMain); 
+  
+  const shop2ElMain = document.getElementById("shop2");
+  if (shop2ElMain) renderShop(shop2ElMain); 
+  
   syncLeaderboard(); 
   resizeCanvas(); 
   layoutPlayer(); 
