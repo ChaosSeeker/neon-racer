@@ -214,9 +214,9 @@
     /* Floating Moveable joystick */
     .joystickWrap{
       position:absolute;
-      left: 0; bottom: 0;
+      inset: 0;
       z-index:12;
-      width:50vw; height:80vh;
+      width:100vw; height:100vh;
       pointer-events:auto; display:none; user-select:none; touch-action:none;
     }
     .joyBase{
@@ -251,7 +251,7 @@
       position:absolute;
       right: max(12px, env(safe-area-inset-right));
       bottom: max(12px, env(safe-area-inset-bottom));
-      z-index:12; display:none; gap:10px; pointer-events:auto; user-select:none; touch-action:none;
+      z-index:13; display:none; gap:10px; pointer-events:auto; user-select:none; touch-action:none;
     }
     .touchBtn{
       width:84px; height:84px; border-radius:20px; border:1px solid rgba(255,255,255,.18);
@@ -382,6 +382,7 @@
           <div class="pill">Lives <b id="hudLives">2</b></div>
           <div class="pill">Rank <b id="hudRank">Rookie</b></div>
           <div class="pill">Nitro <b id="hudNitro">0%</b></div>
+          <div class="pill">Laser <b id="hudLasers">0</b></div>
           <div class="pill" id="hudCombo" style="display:none">🔥 Combo <b id="hudComboV">x1</b></div>
           <div class="pill" id="hudBonus" style="display:none">BONUS <b id="hudBonusT">12.0</b>s</div>
           <div class="pill" id="hudDrift" style="display:none">🌀 Drift <b id="hudDriftV">0%</b></div>
@@ -401,6 +402,7 @@
       </div>
 
       <div class="touchBtns" id="touchBtns">
+        <button class="touchBtn" id="laserTouch" aria-label="Laser">⚡<br/>Laser <span id="laserCountBtn">0</span></button>
         <button class="touchBtn" id="nitroTouch" aria-label="Nitro">🚀<br/>Nitro</button>
         <button class="touchBtn" id="driftTouch" aria-label="Drift">🌀<br/>Drift</button>
       </div>
@@ -517,11 +519,11 @@
   const lbStatusEl = document.getElementById("lbStatus"), lbListEl = document.getElementById("lbList"), lbStatus2El = document.getElementById("lbStatus2"), lbList2El = document.getElementById("lbList2");
   const shopEl = document.getElementById("shop"), shop2El = document.getElementById("shop2"), skinsEl = document.getElementById("skins"), paintShopEl = document.getElementById("paintShop");
   
-  const hudScore = document.getElementById("hudScore"), hudBest = document.getElementById("hudBest"), hudRunCoins = document.getElementById("hudRunCoins"), hudLives = document.getElementById("hudLives"), hudRank = document.getElementById("hudRank"), hudNitro = document.getElementById("hudNitro"), hudBonus = document.getElementById("hudBonus"), hudBonusT = document.getElementById("hudBonusT"), hudCombo = document.getElementById("hudCombo"), hudComboV = document.getElementById("hudComboV"), hudDrift = document.getElementById("hudDrift"), hudDriftV = document.getElementById("hudDriftV");
+  const hudScore = document.getElementById("hudScore"), hudBest = document.getElementById("hudBest"), hudRunCoins = document.getElementById("hudRunCoins"), hudLives = document.getElementById("hudLives"), hudRank = document.getElementById("hudRank"), hudNitro = document.getElementById("hudNitro"), hudLasers = document.getElementById("hudLasers"), hudBonus = document.getElementById("hudBonus"), hudBonusT = document.getElementById("hudBonusT"), hudCombo = document.getElementById("hudCombo"), hudComboV = document.getElementById("hudComboV"), hudDrift = document.getElementById("hudDrift"), hudDriftV = document.getElementById("hudDriftV");
   
   const menuBtn = document.getElementById("menuBtn"), overlay = document.getElementById("overlay"), resumeBtn = document.getElementById("resumeBtn"), restartBtn = document.getElementById("restartBtn"), exitBtn = document.getElementById("exitBtn");
   const reviveBtn = document.getElementById("reviveBtn"), reviveHint = document.getElementById("reviveHint"), menuBank = document.getElementById("menuBank"), menuBest = document.getElementById("menuBest");
-  const joyBase = document.getElementById("joyBase"), joyStick = document.getElementById("joyStick"), nitroTouch = document.getElementById("nitroTouch"), driftTouch = document.getElementById("driftTouch");
+  const joyBase = document.getElementById("joyBase"), joyStick = document.getElementById("joyStick"), nitroTouch = document.getElementById("nitroTouch"), driftTouch = document.getElementById("driftTouch"), laserTouch = document.getElementById("laserTouch"), laserCountBtn = document.getElementById("laserCountBtn");
   const toastEl = document.getElementById("toast"), toastTopEl = document.getElementById("toastTop");
 
   const garageBtn = document.getElementById("garageBtn"), garageOverlay = document.getElementById("garageOverlay"), closeGarageBtn = document.getElementById("closeGarageBtn"), garageVehiclesEl = document.getElementById("garageVehicles"), garagePaintsEl = document.getElementById("garagePaints"), garageModalName = document.getElementById("garageModalName");
@@ -765,7 +767,7 @@
   const ro = new ResizeObserver(()=>resizeCanvas()); ro.observe(canvas);
 
   const keys = new Set();
-  window.addEventListener("keydown",(e)=>{ if(inputFocus) return; const k=e.key.toLowerCase(); keys.add(k); if(k===" "){ e.preventDefault(); togglePause(); } if(k==="r"){ e.preventDefault(); restartRun(); } if(["arrowleft","arrowright","arrowup","arrowdown","a","d","w","s","shift"].includes(k)) e.preventDefault(); });
+  window.addEventListener("keydown",(e)=>{ if(inputFocus) return; const k=e.key.toLowerCase(); keys.add(k); if(k===" "){ e.preventDefault(); togglePause(); } if(k==="r"){ e.preventDefault(); restartRun(); } if(k==="e"){ e.preventDefault(); fireLaser(); } if(["arrowleft","arrowright","arrowup","arrowdown","a","d","w","s","shift"].includes(k)) e.preventDefault(); });
   window.addEventListener("keyup",(e)=>keys.delete(e.key.toLowerCase()));
 
   const joy = { active:false, x:0, y:0, id:null, baseRect:null };
@@ -782,15 +784,17 @@
   function setBtnState(btn, on){ btn.classList.toggle("on", !!on); }
   function bindHoldButton(btn, key){ btn.addEventListener("pointerdown", (e)=>{ e.preventDefault(); btn.setPointerCapture?.(e.pointerId); touch[key] = true; setBtnState(btn, true); }); const up = (e)=>{ try{ btn.releasePointerCapture?.(e.pointerId); }catch{} touch[key] = false; setBtnState(btn, false); }; btn.addEventListener("pointerup", up); btn.addEventListener("pointercancel", up); btn.addEventListener("pointerleave", up); }
   bindHoldButton(nitroTouch, "nitro"); bindHoldButton(driftTouch, "drift");
+  
+  laserTouch.addEventListener("pointerdown", (e)=>{ e.preventDefault(); fireLaser(); });
 
-  const laneCount=3; function laneW(){ return vw * 0.56 / laneCount; } function roadX(){ return vw * 0.22; } function roadW(){ return vw * 0.56; } function laneCenter(l){ return roadX() + laneW()*(l+0.5); }
+  const laneCount=5; function laneW(){ return vw * 0.56 / laneCount; } function roadX(){ return vw * 0.22; } function roadW(){ return vw * 0.56; } function laneCenter(l){ return roadX() + laneW()*(l+0.5); }
   const DIFF = { baseSpeed: 90, accel: 2.0, spawnBase: 0.62, spawnRamp: 0.00095, laneChangeRate: 0.055, laneChangeSpeed: 3.1 };
 
   const player = { x:0, y:0, w:0, h:0, vx:0, vy:0 };
-  const traffic=[], coins=[], pickups=[], debris=[]; const PICK_TYPES = ["shield","magnet","slowmo","nitro","invisibility"];
+  const traffic=[], coins=[], pickups=[], debris=[], lasers=[]; const PICK_TYPES = ["shield","magnet","slowmo","nitro","invisibility", "shield", "nitro", "laser"];
 
   let running=false, paused=false;
-  let score=0, runCoins=0, lives=2, reviveUsed=false, runArmor=0, runSmash=0, carHP=7;
+  let score=0, runCoins=0, lives=2, reviveUsed=false, runArmor=0, runSmash=0, carHP=7, runLasers=0;
   let wallHitCD = 0, skidTimer = 0, playerBlasted = false;
   let speed=DIFF.baseSpeed, nitro=0, nitroActive=false, warpFov=1.0;
   let buffShield=0, buffMagnet=0, buffSlowmo=0, buffInvisibility=0, invulnT=0;
@@ -840,7 +844,7 @@
     }
   }
 
-  function layoutPlayer(){ player.w = clamp(vw*0.065, 36, 54); player.h = player.w * 1.75; player.y = vh*0.78; player.x = laneCenter(1); player.vx = 0; player.vy = 0; }
+  function layoutPlayer(){ player.w = clamp(vw*0.065, 36, 54); player.h = player.w * 1.75; player.y = vh*0.78; player.x = laneCenter(2); player.vx = 0; player.vy = 0; }
 
   function resetRunState(){
     const activeVeh = getActiveVehicle();
@@ -850,7 +854,7 @@
     runSmash = activeVeh.smash || 0;
     carHP = 7; wallHitCD = 0; skidTimer = 0; playerBlasted = false;
     speed=DIFF.baseSpeed; roadScroll=0; nitro = (cart.nitro||0)*0.5; // Start with some nitro if bought
-    warpFov = 1.0;
+    warpFov = 1.0; runLasers = 0; lasers.length = 0;
     buffShield = (cart.shield||0); buffMagnet = (cart.magnet||0) * 7; buffSlowmo = (cart.slowmo||0) * 5; buffInvisibility = (cart.invisibility||0) * 6; invulnT = 0;
     for(const k in cart) cart[k]=0; renderShop(shopEl); renderShop(shop2El);
     traffic.length=0; coins.length=0; pickups.length=0; debris.length=0;
@@ -874,6 +878,16 @@
   function openMenu(){ if(playerBlasted) ensureGameOverPanel(true); else ensureGameOverPanel(); if(gameOverPanel) gameOverPanel.style.display = "none"; paused=true; overlay.style.display="grid"; stopMusic(); reviveBtn.disabled = true; reviveHint.textContent = ""; syncHomeUI(); renderMissions(missions2El); syncLeaderboard(); renderShop(shop2El); }
   function closeMenu(){ if(!running) return; overlay.style.display="none"; paused=false; if(settings.audioOn) startMusic(); }
   function togglePause(){ if(!running) return; if(paused) closeMenu(); else openMenu(); }
+  
+  function fireLaser(){
+    if(runLasers > 0 && !playerBlasted){
+        runLasers--;
+        playSfx("smash");
+        startShake(2.0);
+        lasers.push({ x: player.x, life: 0.3, w: laneW() * 0.9 });
+        syncHUD();
+    }
+  }
 
   // Phases Colors
   const PHASES = [
@@ -1024,7 +1038,7 @@
   }
 
   function drawCoin(c){ ctx.save(); ctx.shadowBlur=18; ctx.shadowColor="rgba(255,210,77,0.95)"; ctx.fillStyle="rgba(255,210,77,.92)"; ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; ctx.fillStyle="rgba(0,0,0,.25)"; ctx.beginPath(); ctx.arc(c.x,c.y,c.r*0.55,0,Math.PI*2); ctx.fill(); ctx.fillStyle="rgba(255,255,255,.95)"; ctx.font="900 11px system-ui, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(String(c.val)+"x", c.x, c.y+0.5); ctx.restore(); }
-  function drawPickup(p){ ctx.save(); ctx.shadowBlur=18; ctx.shadowColor="rgba(124,255,234,.85)"; ctx.fillStyle="rgba(124,255,234,.18)"; ctx.beginPath(); ctx.arc(p.x,p.y,p.r*1.25,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; ctx.fillStyle="rgba(0,0,0,.35)"; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); ctx.fillStyle="rgba(255,255,255,.95)"; ctx.font="900 14px system-ui, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; const map={shield:"🛡",magnet:"🧲",slowmo:"⏱",nitro:"🚀",invisibility:"👻"}; ctx.fillText(map[p.type]||"⭐", p.x, p.y+0.5); ctx.restore(); }
+  function drawPickup(p){ ctx.save(); ctx.shadowBlur=18; ctx.shadowColor="rgba(124,255,234,.85)"; ctx.fillStyle="rgba(124,255,234,.18)"; ctx.beginPath(); ctx.arc(p.x,p.y,p.r*1.25,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; ctx.fillStyle="rgba(0,0,0,.35)"; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); ctx.fillStyle="rgba(255,255,255,.95)"; ctx.font="900 14px system-ui, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; const map={shield:"🛡",magnet:"🧲",slowmo:"⏱",nitro:"🚀",invisibility:"👻", laser:"⚡"}; ctx.fillText(map[p.type]||"⭐", p.x, p.y+0.5); ctx.restore(); }
 
   function applyPickup(type){
     if(inBonus){ bonusCollected[type] = (bonusCollected[type]||0) + 1; return; }
@@ -1033,6 +1047,7 @@
     if(type==="slowmo") buffSlowmo = Math.min(15, buffSlowmo+5); 
     if(type==="nitro") { nitro = Math.min(1.8, nitro + 0.18); toastTop("Nitro +10%!"); }
     if(type==="invisibility") buffInvisibility = Math.min(12, buffInvisibility+6);
+    if(type==="laser") { runLasers++; toastTop("Laser Acquired!"); }
   }
 
   function startBonus(){ inBonus=true; bonusT=12.0; hudBonus.style.display="inline-flex"; playSfx("bonus"); buffBackup = { shield:buffShield, magnet:buffMagnet, slowmo:buffSlowmo, invisibility:buffInvisibility }; buffShield=0; buffMagnet=0; buffSlowmo=0; buffInvisibility=0; traffic.length=0; }
@@ -1074,6 +1089,9 @@
     if(runSmash > 0) lifeStr += ` [💥${runSmash}]`;
     hudLives.textContent = lifeStr; 
     
+    hudLasers.textContent = runLasers;
+    if(laserCountBtn) laserCountBtn.textContent = runLasers;
+
     hudRank.textContent = rankFor(profile.bestScore||0); hudNitro.textContent = `${Math.round((nitro/1.8)*100)}%`; if(inBonus) hudBonusT.textContent = bonusT.toFixed(1);
     if(combo>0){ hudCombo.style.display="inline-flex"; hudComboV.textContent = `x${comboMult().toFixed(2)}`; }else{ hudCombo.style.display="none"; }
     if(driftSlip>0.05){ hudDrift.style.display="inline-flex"; hudDriftV.textContent = `${Math.round(driftSlip*100)}%`; }else{ hudDrift.style.display="none"; }
@@ -1091,6 +1109,21 @@
   function update(dt){
     if(hitStop > 0){ hitStop = Math.max(0, hitStop - dt); return; }
     if(countdown && !countdown.done){ countdown.t += dt; if(countdown.t > 0.9){ countdown.phase++; countdown.t=0; if(countdown.phase>=4){ countdown.done=true; countdown.onDone?.(); } } return; }
+
+    for(let i=lasers.length-1; i>=0; i--){
+        const l = lasers[i];
+        l.life -= dt;
+        l.x = player.x; 
+        for(let j=traffic.length-1; j>=0; j--){
+            const t = traffic[j];
+            if(t.y < player.y && Math.abs(t.x - l.x) < l.w*0.8) {
+                traffic.splice(j, 1);
+                score += 150;
+                for(let k=0; k<12; k++) debris.push({ x: t.x, y: t.y, vx: rand(-300, 300), vy: rand(-500, -100), rot: rand(0, Math.PI*2), rotV: rand(-12, 12), size: rand(8, 20), color: "#ff4b5c", life: rand(0.6, 1.5) });
+            }
+        }
+        if(l.life <= 0) lasers.splice(i, 1);
+    }
 
     if(playerBlasted) {
        for(let i=debris.length-1;i>=0;i--){ const d = debris[i]; d.x += d.vx*dt; d.y += d.vy*dt; d.vy += 1200*dt; d.rot += d.rotV*dt; d.life -= dt; if(d.life<=0) debris.splice(i,1); }
@@ -1199,19 +1232,7 @@
       t.cd -= dt; const laneChangeSpeed = DIFF.laneChangeSpeed + clamp(score/4200, 0, 1.5);
       
       if(t.cd<=0){ 
-          let next = t.targetLane;
-          // Intelligent AI blocking logic
-          if(intelActive && Math.random() < (aggressive ? 0.4 : 0.2)) {
-             if (t.y < player.y && t.y > player.y - vh*0.5) {
-                 let pLane = Math.floor((player.x - roadX()) / laneW());
-                 if (pLane > t.targetLane) next = t.targetLane + 1;
-                 else if (pLane < t.targetLane) next = t.targetLane - 1;
-             }
-          } else if (Math.random() < baseChangeRate) {
-             const dir = Math.random()<0.5 ? -1 : 1;
-             next = clamp(t.targetLane + dir, 0, laneCount-1);
-          }
-          
+          let next = randi(0, laneCount-1); 
           const safe = !traffic.some(o=>o!==t && o.targetLane===next && Math.abs(o.y - t.y) < t.h*1.1); 
           if(safe) t.targetLane=next; 
           t.cd = rand(0.85, 1.9); 
@@ -1285,6 +1306,18 @@
 
     const phaseColors = getPhase(score);
     drawRoad(phaseColors); const activeVeh = getActiveVehicle(); const activePaint = getActivePaint(); drawWarp(nitroActive ? 1 : 0);
+
+    for(const l of lasers) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, l.life / 0.3);
+        ctx.fillStyle = "#ff3366";
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = "#ff3366";
+        ctx.fillRect(l.x - l.w/2, 0, l.w, player.y);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(l.x - l.w/4, 0, l.w/2, player.y);
+        ctx.restore();
+    }
 
     if(skids.length){ ctx.save(); ctx.strokeStyle = "rgba(255,255,255,.22)"; ctx.lineWidth = 3; for(const s of skids){ ctx.globalAlpha = 0.12 + s.life*0.35; ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); ctx.stroke(); } ctx.restore(); }
     for(const s of smokes){ ctx.save(); const size = 10 + (1-s.life)*28*s.size; ctx.globalAlpha = 0.10 + s.life*0.25; ctx.fillStyle = "rgba(255,255,255,.35)"; ctx.beginPath(); ctx.arc(s.x, s.y, size, 0, Math.PI*2); ctx.fill(); ctx.restore(); }
