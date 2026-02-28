@@ -787,7 +787,11 @@
   
   laserTouch.addEventListener("pointerdown", (e)=>{ e.preventDefault(); fireLaser(); });
 
-  const laneCount=5; function laneW(){ return vw * 0.56 / laneCount; } function roadX(){ return vw * 0.22; } function roadW(){ return vw * 0.56; } function laneCenter(l){ return roadX() + laneW()*(l+0.5); }
+  const laneCount=5; 
+  function roadW(){ return vw < 760 ? vw * 0.90 : vw * 0.56; } 
+  function roadX(){ return vw < 760 ? vw * 0.05 : vw * 0.22; } 
+  function laneW(){ return roadW() / laneCount; } 
+  function laneCenter(l){ return roadX() + laneW()*(l+0.5); }
   const DIFF = { baseSpeed: 90, accel: 2.0, spawnBase: 0.62, spawnRamp: 0.00095, laneChangeRate: 0.055, laneChangeSpeed: 3.1 };
 
   const player = { x:0, y:0, w:0, h:0, vx:0, vy:0 };
@@ -853,8 +857,11 @@
     runArmor=activeVeh.armor || 0; 
     runSmash = activeVeh.smash || 0;
     carHP = 7; wallHitCD = 0; skidTimer = 0; playerBlasted = false;
-    speed=DIFF.baseSpeed; roadScroll=0; nitro = (cart.nitro||0)*0.5; // Start with some nitro if bought
-    warpFov = 1.0; runLasers = 0; lasers.length = 0;
+    speed=DIFF.baseSpeed; roadScroll=0; 
+    nitro = 0.9 + (cart.nitro||0)*0.3; // Starts at 0.9 out of 1.8 max (50%)
+    warpFov = 1.0; 
+    runLasers = 3; // Start with 3 lasers
+    lasers.length = 0;
     buffShield = (cart.shield||0); buffMagnet = (cart.magnet||0) * 7; buffSlowmo = (cart.slowmo||0) * 5; buffInvisibility = (cart.invisibility||0) * 6; invulnT = 0;
     for(const k in cart) cart[k]=0; renderShop(shopEl); renderShop(shop2El);
     traffic.length=0; coins.length=0; pickups.length=0; debris.length=0;
@@ -906,11 +913,11 @@
 
   function spawnTraffic(){
     // Dynamic max traffic logic based on score
-    let maxTraffic = 2;
-    if (score < 1200) maxTraffic = 2 + Math.floor(score / 400); // 2 to 4
-    else if (score < 3000) maxTraffic = 5;
-    else maxTraffic = 6 + Math.floor((score - 3000) / 2000); 
-    maxTraffic = Math.min(maxTraffic, 8); // hard cap
+    let maxTraffic = 4;
+    if (score < 1200) maxTraffic = 4 + Math.floor(score / 600); // 4 to 6
+    else if (score < 3000) maxTraffic = 6;
+    else maxTraffic = 7 + Math.floor((score - 3000) / 2000); 
+    maxTraffic = Math.min(maxTraffic, 10); // hard cap
 
     if (traffic.length >= maxTraffic) return;
     const lane=randi(0,laneCount-1); const w=clamp(vw*0.06, 34, 50); const h=w*1.75;
@@ -1229,7 +1236,10 @@
 
     for(let i=traffic.length-1;i>=0;i--){
       const t=traffic[i]; if(!t.passed && t.y > player.y + player.h*0.6){ t.passed=true; passedCars++; }
-      t.cd -= dt; const laneChangeSpeed = DIFF.laneChangeSpeed + clamp(score/4200, 0, 1.5);
+      t.cd -= dt; 
+      
+      // Much slower lane changing logic
+      const laneChangeSpeed = (DIFF.laneChangeSpeed * 0.35) + clamp(score/6000, 0, 0.8);
       
       if(t.cd<=0){ 
           let next = randi(0, laneCount-1); 
